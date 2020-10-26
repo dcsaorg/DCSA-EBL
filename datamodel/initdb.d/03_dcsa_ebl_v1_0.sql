@@ -34,7 +34,7 @@ DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipment_location_type CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipment_party CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipment_term CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipment_transport CASCADE;
-DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipping_transport CASCADE;
+DROP TABLE IF EXISTS dcsa_ebl_v1_0.shipping_instruction CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.transport CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.transport_call CASCADE;
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.transport_call_voyage CASCADE;
@@ -263,7 +263,7 @@ CREATE TABLE dcsa_ebl_v1_0.shipment_transport (
 	sequence_number integer NOT NULL
 );
 
-CREATE TABLE dcsa_ebl_v1_0.shipping_transport (
+CREATE TABLE dcsa_ebl_v1_0.shipping_instruction (
 	shipping_instruction_number varchar(20) PRIMARY KEY,
 	shipment_id uuid NOT NULL
 );
@@ -351,7 +351,7 @@ ALTER TABLE dcsa_ebl_v1_0.cargo_item ADD CONSTRAINT "FK_Cargo Item_HS Code"
 ;
 
 ALTER TABLE dcsa_ebl_v1_0.cargo_item ADD CONSTRAINT "FK_Cargo Item_Shipping Instruction"
-	FOREIGN KEY (shipping_instruction_number) REFERENCES dcsa_ebl_v1_0.shipping_transport (shipping_instruction_number) ON DELETE No Action ON UPDATE No Action
+	FOREIGN KEY (shipping_instruction_number) REFERENCES dcsa_ebl_v1_0.shipping_instruction (shipping_instruction_number) ON DELETE No Action ON UPDATE No Action
 ;
 
 ALTER TABLE dcsa_ebl_v1_0.cargo_item ADD CONSTRAINT "FK_Commodity_Shipment"
@@ -511,7 +511,7 @@ ALTER TABLE dcsa_ebl_v1_0.transport_document ADD CONSTRAINT "FK_Transport Docume
 ;
 
 ALTER TABLE dcsa_ebl_v1_0.transport_document ADD CONSTRAINT "FK_Transport Document_Shipping Instruction"
-	FOREIGN KEY (shipping_instruction_number) REFERENCES dcsa_ebl_v1_0.shipping_transport (shipping_instruction_number) ON DELETE No Action ON UPDATE No Action
+	FOREIGN KEY (shipping_instruction_number) REFERENCES dcsa_ebl_v1_0.shipping_instruction (shipping_instruction_number) ON DELETE No Action ON UPDATE No Action
 ;
 
 ALTER TABLE dcsa_ebl_v1_0.transport_document ADD CONSTRAINT "FK_Transport Document_Transport Document Type"
