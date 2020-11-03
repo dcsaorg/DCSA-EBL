@@ -1,6 +1,6 @@
 package org.dcsa.ebl.model.enums;
 
-public enum TransportDocumentType {
+public enum TransportDocumentTypeCode {
     BOL,
     SWB
 }
