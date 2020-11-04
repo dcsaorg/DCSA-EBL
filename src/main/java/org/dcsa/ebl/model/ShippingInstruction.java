@@ -3,40 +3,32 @@ package org.dcsa.ebl.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.model.enums.TransportDocumentType;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Table("shipping_instruction")
 @Data
 @NoArgsConstructor
-public class ShippingInstruction extends AuditBase implements GetId<UUID> {
+public class ShippingInstruction extends BaseClass {
 
     @Id
     @JsonProperty("shippingInstructionID")
-    @Column("shipping_instruction_number")
     private UUID id;
 
+    @NotNull
+    @Size(max = 50)
+    private String transportReference;
 
-    @Column("carrier_booking_number")
-    private String carrierBookingNumber;
+    @NotNull
+    private LocalDate dateOfIssue;
 
-    @Column("transport_document_type")
-    private TransportDocumentType transportDocumentType;
+    @Size(max = 20)
+    private String taxReference;
 
-    @Column("transport_reference")
-    private UUID transportReference;
-
-    @Column("carrierVoyageNumber")
-    private UUID carrierVoyageNumber;
-
-
-    @JsonProperty("shipmentID")
-    @Column("shipment_id")
-    private UUID shipmentId;
+    private Integer verifiedGrossMass;
 }
