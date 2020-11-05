@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -22,5 +23,11 @@ public class ShippingInstructionServiceImpl extends ExtendedBaseServiceImpl<Ship
     @Override
     public Class<ShippingInstruction> getModelClass() {
         return ShippingInstruction.class;
+    }
+
+    @Override
+    public Mono<ShippingInstruction> create(ShippingInstruction shippingInstruction) {
+        // For now just return shippingInstruction
+        return Mono.just(shippingInstruction);
     }
 }

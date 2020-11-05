@@ -3,6 +3,7 @@ package org.dcsa.ebl.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dcsa.core.model.GetId;
 import org.dcsa.core.util.ValidationUtils;
 import org.dcsa.ebl.model.enums.DocumentStatus;
 import org.springframework.data.annotation.Id;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Table("transport_document")
 @Data
 @NoArgsConstructor
-public class TransportDocument extends BaseClass {
+public class TransportDocument extends BaseClass implements GetId<UUID> {
 
     @Id
     @JsonProperty("transportDocumentID")
