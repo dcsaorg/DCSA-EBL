@@ -37,6 +37,8 @@ public class ShippingInstruction extends BaseClass implements GetId<UUID> {
     private Integer verifiedGrossMass;
 
 
+    @Column("is_electronic")
+    private Boolean isElectronic;
 
     @Column("call_back_url")
     private String callBackUrl;
