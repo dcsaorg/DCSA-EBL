@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Shipment;
+import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.service.ShipmentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -70,5 +72,10 @@ public class ShipmentController extends ExtendedBaseController<ShipmentService, 
     @Override
     public Mono<Shipment> update(UUID id, @Valid @RequestBody Shipment shipment) {
         return super.update(id, shipment);
+    }
+
+    @Override
+    public Mono<Shipment> create(@Valid @RequestBody Shipment shipment) {
+        return Mono.error(new CreateException("Not possible to create a Shipment"));
     }
 }

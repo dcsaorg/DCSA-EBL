@@ -9,7 +9,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Location;
+import org.dcsa.ebl.model.Location;
+import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.service.LocationService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -70,5 +73,10 @@ public class LocationController extends ExtendedBaseController<LocationService, 
     @Override
     public Mono<Location> update(UUID id, @Valid @RequestBody Location location) {
         return super.update(id, location);
+    }
+
+    @Override
+    public Mono<Location> create(@Valid @RequestBody Location location) {
+        return Mono.error(new CreateException("Not possible to create a Location"));
     }
 }

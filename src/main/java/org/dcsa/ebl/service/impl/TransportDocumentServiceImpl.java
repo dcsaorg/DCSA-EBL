@@ -25,10 +25,4 @@ public class TransportDocumentServiceImpl extends ExtendedBaseServiceImpl<Transp
     public Class<TransportDocument> getModelClass() {
         return TransportDocument.class;
     }
-
-    @Override
-    public Mono<TransportDocument> create(TransportDocument transportDocument) {
-        // For now just return transportDocument
-        return Mono.just(transportDocument);
-    }
 }

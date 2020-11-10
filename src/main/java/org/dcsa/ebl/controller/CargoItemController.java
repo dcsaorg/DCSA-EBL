@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.CargoItem;
+import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.service.CargoItemService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -70,5 +72,10 @@ public class CargoItemController extends ExtendedBaseController<CargoItemService
     @Override
     public Mono<CargoItem> update(UUID id, @Valid @RequestBody CargoItem shipment) {
         return super.update(id, shipment);
+    }
+
+    @Override
+    public Mono<CargoItem> create(@Valid @RequestBody CargoItem cargoItem) {
+        return Mono.error(new CreateException("Not possible to create a Cargo Item"));
     }
 }

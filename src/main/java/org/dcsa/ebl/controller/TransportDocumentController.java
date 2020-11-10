@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.http.MediaType;
@@ -54,7 +55,7 @@ public class TransportDocumentController extends ExtendedBaseController<Transpor
     }
 
     @Operation(summary = "Find Transport Document by ID", description = "Returns a single Transport Document", tags = { "Transport Document" }, parameters = {
-            @Parameter(in = ParameterIn.PATH, name = "id", description="Id of the Transport Document to be obtained. Cannot be empty.", required=true),
+            @Parameter(in = ParameterIn.PATH, name = "id", description="Id of the Transport Document to be obtained. Cannot be empty.", required = true),
     })
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation"),
@@ -66,13 +67,21 @@ public class TransportDocumentController extends ExtendedBaseController<Transpor
         return super.findById(id);
     }
 
-    @Operation(summary = "Creates a Transport Document", description = "Creates a Transport Document", tags = { "Transport Document" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation")
+    @Operation(summary = "Update a Transport Document", description = "Updates a single Transport Document", tags = { "Transport Document" }, parameters = {
+            @Parameter(in = ParameterIn.PATH, name = "id", description="Id of the Transport Document to be updated. Cannot be empty.", required = true),
     })
-    @PostMapping(consumes = "application/json", produces = "application/json")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation"),
+            @ApiResponse(responseCode = "404", description = "Transport Document not found")
+    })
+    @GetMapping(value="{id}", produces = "application/json")
+    @Override
+    public Mono<TransportDocument> update(@PathVariable UUID id, @Valid @RequestBody TransportDocument transportDocument) {
+        return super.update(id, transportDocument);
+    }
+
     @Override
     public Mono<TransportDocument> create(@Valid @RequestBody TransportDocument transportDocument) {
-        return super.create(transportDocument);
+        return Mono.error(new CreateException("Not possible to create a Transport Document"));
     }
 }

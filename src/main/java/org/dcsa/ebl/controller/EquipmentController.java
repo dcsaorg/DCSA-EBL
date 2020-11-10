@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Equipment;
+import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.service.EquipmentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -69,5 +71,10 @@ public class EquipmentController extends ExtendedBaseController<EquipmentService
     @Override
     public Mono<Equipment> update(String equipmentReference, @Valid @RequestBody Equipment equipment) {
         return super.update(equipmentReference, equipment);
+    }
+
+    @Override
+    public Mono<Equipment> create(@Valid @RequestBody Equipment equipment) {
+        return Mono.error(new CreateException("Not possible to create an Equipment"));
     }
 }

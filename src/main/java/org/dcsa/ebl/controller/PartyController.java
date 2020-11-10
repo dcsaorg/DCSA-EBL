@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Party;
+import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.service.PartyService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -70,5 +72,10 @@ public class PartyController extends ExtendedBaseController<PartyService, Party,
     @Override
     public Mono<Party> update(UUID id, @Valid @RequestBody Party party) {
         return super.update(id, party);
+    }
+
+    @Override
+    public Mono<Party> create(@Valid @RequestBody Party party) {
+        return Mono.error(new CreateException("Not possible to create a Party"));
     }
 }

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Table("shipping_instruction")
 @Data
 @NoArgsConstructor
-public class ShippingInstruction extends AuditBase implements GetId<String> {
+public class ShippingInstruction extends AuditBase implements GetId<UUID> {
     @JsonProperty("shippingInstructionID")
     private UUID id;
 
