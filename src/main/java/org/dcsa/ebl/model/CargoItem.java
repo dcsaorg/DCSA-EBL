@@ -26,23 +26,22 @@ public class CargoItem extends AuditBase implements GetId<UUID> {
     private UUID shipmentID;
 
     @Column("commodity_type")
-    @Size(max = 50)
+    @Size(max = 20)
     private String commodityType;
 
     @Column("shipping_marks")
     private String shippingMarks;
 
     @Column("description_of_goods")
-    @Size(max = 2000)
     private String descriptionOfGoods;
 
     @Column("hs_code")
-    @Size(max = 50)
+    @Size(max = 10)
     private String hsCode;
 
-    private Integer weight;
+    private Float weight;
 
-    private Integer volume;
+    private Float volume;
 
     @Column("weight_unit")
     @Size(max = 3)

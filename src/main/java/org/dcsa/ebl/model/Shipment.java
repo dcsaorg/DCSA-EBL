@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
@@ -16,11 +17,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class Shipment extends AuditBase implements GetId<UUID> {
-    @Id
-    private UUID id;
 
-    @Column("transport_document_id")
-    private UUID transportDocumentID;
+    @Id
+    @JsonProperty("shipmentID")
+    private UUID id;
 
     @Column("collection_datetime")
     private LocalDateTime collectionDatetime;
@@ -32,27 +32,10 @@ public class Shipment extends AuditBase implements GetId<UUID> {
     @Size(max = 10)
     private String carrierCode;
 
-    @Column("export_reference_number")
-    private Integer exportReferenceNumber;
+    @Column("confirmed_equipment_type")
+    @Size(max = 4)
+    private String confirmedEquipmentType;
 
-    @Column("shipment_on_board_date")
-    private LocalDateTime shipmentOnBoardDate;
-
-    @Column("pre_carrier_mode_of_transport")
-    @Size(max = 3)
-    private String preCarrierModeOfTransport;
-
-    @Column("shipment_equipment_quantity")
-    private Integer shipmentEquipmentQuantity;
-
-    @Column("svc_contract")
-    @Size(max = 30)
-    private String svcContract;
-
-    @Column("declared_value")
-    private Integer declaredValue;
-
-    @Column("declared_value_currency")
-    @Size(max = 3)
-    private String declaredValueCurrency;
+    @Column("confirmed_equipment_units")
+    private Integer confirmedEquipmentUnits;
 }

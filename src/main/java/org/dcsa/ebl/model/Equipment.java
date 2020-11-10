@@ -27,13 +27,14 @@ public class Equipment extends AuditBase implements GetId<String> {
         equipmentReference = id;
     }
 
-    @Column("iso_equipment_code")
+    @Column("iso_equipment")
     @Size(max = 4)
-    private String isoEquipmentCode;
+    private String isoEquipment;
 
-    private Integer tareWeight;
+    @Column("tare_weight")
+    private Float tareWeight;
 
     @Column("weight_unit")
-    @Size(max = 50)
+    @Size(max = 20)
     private String weightUnit;
 }

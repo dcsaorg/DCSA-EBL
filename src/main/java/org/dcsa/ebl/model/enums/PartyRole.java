@@ -1,6 +1,6 @@
 package org.dcsa.ebl.model.enums;
 
-public enum PartyType {
+public enum PartyRole {
     ISSUER,
     SHIPPER,
     CONSIGNEE,
