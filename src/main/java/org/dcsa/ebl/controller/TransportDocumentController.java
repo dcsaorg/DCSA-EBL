@@ -61,7 +61,7 @@ public class TransportDocumentController extends ExtendedBaseController<Transpor
             @ApiResponse(responseCode = "200", description = "Successful operation"),
             @ApiResponse(responseCode = "404", description = "Transport Document not found")
     })
-    @GetMapping(value="{id}", produces = "application/json")
+    @GetMapping(path="{id}", produces = "application/json")
     @Override
     public Mono<TransportDocument> findById(@PathVariable UUID id) {
         return super.findById(id);
@@ -74,7 +74,7 @@ public class TransportDocumentController extends ExtendedBaseController<Transpor
             @ApiResponse(responseCode = "200", description = "Successful operation"),
             @ApiResponse(responseCode = "404", description = "Transport Document not found")
     })
-    @GetMapping(value="{id}", produces = "application/json")
+    @PutMapping(path="{id}", produces = "application/json")
     @Override
     public Mono<TransportDocument> update(@PathVariable UUID id, @Valid @RequestBody TransportDocument transportDocument) {
         return super.update(id, transportDocument);

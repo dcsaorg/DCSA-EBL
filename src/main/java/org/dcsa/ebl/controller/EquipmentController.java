@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Equipment;
-import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.service.EquipmentService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -56,9 +55,9 @@ public class EquipmentController extends ExtendedBaseController<EquipmentService
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Equipment.class))))
     })
-    @GetMapping
+    @GetMapping(path = "{equipmentReference}")
     @Override
-    public Mono<Equipment> findById(String equipmentReference) {
+    public Mono<Equipment> findById(@PathVariable String equipmentReference) {
         return super.findById(equipmentReference);
     }
 
@@ -67,7 +66,7 @@ public class EquipmentController extends ExtendedBaseController<EquipmentService
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Equipment.class))))
     })
-    @PutMapping( consumes = "application/json", produces = "application/json")
+    @PutMapping( path = "{equipmentReference}", consumes = "application/json", produces = "application/json")
     @Override
     public Mono<Equipment> update(String equipmentReference, @Valid @RequestBody Equipment equipment) {
         return super.update(equipmentReference, equipment);

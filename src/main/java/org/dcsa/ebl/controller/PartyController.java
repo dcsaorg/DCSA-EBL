@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.Party;
-import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.service.PartyService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -57,9 +56,9 @@ public class PartyController extends ExtendedBaseController<PartyService, Party,
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Party.class))))
     })
-    @GetMapping
+    @GetMapping(path = "{id}")
     @Override
-    public Mono<Party> findById(UUID id) {
+    public Mono<Party> findById(@PathVariable UUID id) {
         return super.findById(id);
     }
 
@@ -68,9 +67,9 @@ public class PartyController extends ExtendedBaseController<PartyService, Party,
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Party.class))))
     })
-    @PutMapping( consumes = "application/json", produces = "application/json")
+    @PutMapping( path = "{id}", consumes = "application/json", produces = "application/json")
     @Override
-    public Mono<Party> update(UUID id, @Valid @RequestBody Party party) {
+    public Mono<Party> update(@PathVariable UUID id, @Valid @RequestBody Party party) {
         return super.update(id, party);
     }
 

@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.CargoItem;
-import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.service.CargoItemService;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -57,9 +56,9 @@ public class CargoItemController extends ExtendedBaseController<CargoItemService
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = CargoItem.class))))
     })
-    @GetMapping
+    @GetMapping(path = "{id}")
     @Override
-    public Mono<CargoItem> findById(UUID id) {
+    public Mono<CargoItem> findById(@PathVariable  UUID id) {
         return super.findById(id);
     }
 
@@ -68,9 +67,9 @@ public class CargoItemController extends ExtendedBaseController<CargoItemService
             @ApiResponse(responseCode = "200", description = "Successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = CargoItem.class))))
     })
-    @PutMapping( consumes = "application/json", produces = "application/json")
+    @PutMapping( path = "{id}", consumes = "application/json", produces = "application/json")
     @Override
-    public Mono<CargoItem> update(UUID id, @Valid @RequestBody CargoItem shipment) {
+    public Mono<CargoItem> update(@PathVariable UUID id, @Valid @RequestBody CargoItem shipment) {
         return super.update(id, shipment);
     }
 
