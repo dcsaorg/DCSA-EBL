@@ -1,26 +1,25 @@
 package org.dcsa.ebl.model;
 
-import org.dcsa.ebl.model.enums.PartyType;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.dcsa.core.model.GetId;
+import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Size;
+import java.util.UUID;
 
-public class Party {
-    private PartyType partyType;
+@Table("party")
+@Data
+@NoArgsConstructor
+public class Party implements GetId<UUID> {
+    private UUID id;
 
     @Size(max = 100)
-    private String partyName;
-
-    @Email
-    @Size(max = 250)
-    private String email;
+    private String party_name;
 
     @Size(max = 20)
-    private String phoneNumber;
+    private String tax_reference;
 
-    @Size(max = 20)
-    private String fax;
-
-    @Size(max = 20)
-    private String taxReference;
+    @Size(max = 500)
+    private String public_key;
 }

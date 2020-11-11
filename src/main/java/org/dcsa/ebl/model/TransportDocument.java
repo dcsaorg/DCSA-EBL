@@ -3,12 +3,14 @@ package org.dcsa.ebl.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.util.ValidationUtils;
+import org.dcsa.core.model.AuditBase;
+import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.DocumentStatus;
+import org.dcsa.ebl.model.enums.WeightUnit;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -16,46 +18,47 @@ import java.util.UUID;
 @Table("transport_document")
 @Data
 @NoArgsConstructor
-public class TransportDocument extends BaseClass {
+public class TransportDocument extends AuditBase implements GetId<UUID> {
 
     @Id
     @JsonProperty("transportDocumentID")
     private UUID id;
 
-    @NotNull
-    private UUID shippingInstructionID;
+    @Column("transport_document_type_code")
+    @Size(max = 3)
+    private String transportDocumentType;
 
-    @NotNull
-    private DocumentStatus documentStatus;
-
-    @NotNull
-    @Size(max = 7)
-    private String vesselIMONumber;
-
-    public void setVesselIMONumber(String vesselIMONumber) {
-        ValidationUtils.validateVesselIMONumber(vesselIMONumber);
-        this.vesselIMONumber = vesselIMONumber;
-    }
-
-    @NotNull
-    private Integer totalContainerWeight;
-
-    @NotNull
+    @Column("onboard_date")
     private LocalDate onboardDate;
 
-    @NotNull
-    private LocalDate shippedOnboardDate;
-
-    @NotNull
-    private String termsAndConditions;
-
-    private UUID placeOfIssue;
-
-    @Size(max = 20)
-    private String chargeType;
-
+    @Column("received_for_shipment_date")
     private LocalDate receivedForShipmentDate;
 
-    @Size(max = 500)
-    private String signature;
+    @Column("document_reference_number")
+    @Size(max = 20)
+    private String documentReferenceNumber;
+
+    @Column("number_of_originals")
+    private Integer numberOfOriginals;
+
+    @Column("issuer")
+    private UUID issuer;
+
+    @Column("document_status")
+    @Size(max = 50)
+    private DocumentStatus documentStatus;
+
+    public void setDocumentStatus(String documentStatus) {
+        this.documentStatus = DocumentStatus.valueOf(documentStatus);
+    }
+
+    @Column("shipping_instruction")
+    private UUID shippingInstruction;
+
+    @Column("declared_value")
+    private Float declaredValue;
+
+    @Column("declared_value_currency")
+    @Size(max = 3)
+    private String declaredValueCurrency;
 }
