@@ -7,11 +7,13 @@ import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Table("booking")
 @Data
 @NoArgsConstructor
 public class Booking extends AuditBase implements GetId<String> {

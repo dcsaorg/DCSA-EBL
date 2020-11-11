@@ -3,10 +3,12 @@ package org.dcsa.ebl.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
+@Table("party")
 @Data
 @NoArgsConstructor
 public class Party implements GetId<UUID> {
