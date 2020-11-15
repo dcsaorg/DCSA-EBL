@@ -4,5 +4,6 @@ public enum ReferenceTypeCode {
     FF,
     SI,
     PO,
-    CR;
+    CR,
+    AAO;
 }
