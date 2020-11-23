@@ -436,7 +436,7 @@ CREATE TABLE dcsa_ebl_v1_0.transport_call (
 );
 
 DROP TABLE IF EXISTS dcsa_ebl_v1_0.voyage CASCADE;
-CREATlE TABLE dcsa_ebl_v1_0.voyage (
+CREATE TABLE dcsa_ebl_v1_0.voyage (
 	id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
 	carrier_voyage_number varchar(50) NULL,
 	service_id uuid NULL
