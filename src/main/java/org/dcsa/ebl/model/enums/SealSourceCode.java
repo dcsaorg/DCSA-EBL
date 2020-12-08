@@ -4,5 +4,6 @@ public enum SealSourceCode {
     CAR,
     SHI,
     PHY,
-    VET;
+    VET,
+    CUS;
 }
