@@ -1,17 +1,14 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
+import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.UpdateException;
 import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.service.PartyService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -40,41 +37,41 @@ public class PartyController extends ExtendedBaseController<PartyService, Party,
         return "Party";
     }
 
-    @Operation(summary = "Find all Parties", description = "Finds all Parties in the database", tags = { "Party" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Party.class))))
-    })
     @GetMapping
     @Override
     public Flux<Party> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         return super.findAll(response, request);
     }
 
-    @Operation(summary = "Find a Party", description = "Finds a specific Party in the database", tags = { "Party" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Party.class))))
-    })
     @GetMapping(path = "{id}")
     @Override
     public Mono<Party> findById(@PathVariable UUID id) {
         return super.findById(id);
     }
 
-    @Operation(summary = "Update a Party", description = "Update a Party", tags = { "Party" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Party.class))))
-    })
-    @PutMapping( path = "{id}", consumes = "application/json", produces = "application/json")
-    @Override
-    public Mono<Party> update(@PathVariable UUID id, @Valid @RequestBody Party party) {
-        return super.update(id, party);
-    }
-
+    @PostMapping
     @Override
     public Mono<Party> create(@Valid @RequestBody Party party) {
         return Mono.error(new CreateException("Not possible to create a Party"));
+    }
+
+    @PutMapping( path = "{partyID}")
+    @Override
+    public Mono<Party> update(@PathVariable UUID partyID, @Valid @RequestBody Party party) {
+        return Mono.error(new UpdateException("Not possible to update a Party"));
+    }
+
+    @DeleteMapping
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> delete(@RequestBody Party party) {
+        return Mono.error(new DeleteException("Not possible to delete a Party"));
+    }
+
+    @DeleteMapping( path ="{partyID}" )
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> deleteById(@PathVariable UUID partyID) {
+        return Mono.error(new DeleteException("Not possible to delete a Party"));
     }
 }
