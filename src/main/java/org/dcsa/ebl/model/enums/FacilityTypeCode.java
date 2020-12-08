@@ -5,6 +5,7 @@ public enum FacilityTypeCode {
     CLOC,
     COFS,
     COYA,
+    OFFD,
     DEPO,
     INTE,
     POTE,

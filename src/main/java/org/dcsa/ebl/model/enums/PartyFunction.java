@@ -4,5 +4,10 @@ public enum PartyFunction {
     FW,
     OS,
     CN,
-    COW;
+    COW,
+    COX,
+    N1,
+    N2,
+    SFA,
+    CFA;
 }
