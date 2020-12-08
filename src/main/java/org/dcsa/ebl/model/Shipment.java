@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -23,19 +24,18 @@ public class Shipment extends AuditBase implements GetId<UUID> {
     private UUID id;
 
     @Column("collection_datetime")
+    @NotNull
     private LocalDateTime collectionDatetime;
 
     @Column("delivery_datetime")
+    @NotNull
     private LocalDateTime deliveryDatetime;
 
-    @Column("carrier_code")
-    @Size(max = 10)
-    private String carrierCode;
+    @Column("carrier_id")
+    private UUID carrierID;
 
-    @Column("confirmed_equipment_type")
-    @Size(max = 4)
-    private String confirmedEquipmentType;
-
-    @Column("confirmed_equipment_units")
-    private Integer confirmedEquipmentUnits;
+    @Column("carrier_booking_reference")
+    @Size(max = 35)
+    @NotNull
+    private String carrierBookingReference;
 }

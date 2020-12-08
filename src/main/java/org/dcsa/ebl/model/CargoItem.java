@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 public class CargoItem extends AuditBase implements GetId<UUID> {
+    @JsonProperty("cargoItemID")
     @Id
     private UUID id;
 
@@ -25,19 +27,17 @@ public class CargoItem extends AuditBase implements GetId<UUID> {
     @NotNull
     private UUID shipmentID;
 
-    @Column("commodity_type")
-    @Size(max = 20)
-    private String commodityType;
-
-    @Column("shipping_marks")
-    private String shippingMarks;
-
     @Column("description_of_goods")
+    @NotNull
     private String descriptionOfGoods;
 
     @Column("hs_code")
     @Size(max = 10)
+    @NotNull
     private String hsCode;
+
+    @Column("number_of_packages")
+    private Integer numberOfPackages;
 
     private Float weight;
 
@@ -51,6 +51,10 @@ public class CargoItem extends AuditBase implements GetId<UUID> {
         this.weightUnit = WeightUnit.valueOf(weightUnit);
     }
 
+    public void setWeightUnit(WeightUnit weightUnit) {
+        this.weightUnit = weightUnit;
+    }
+
     @Column("volume_unit")
     @Size(max = 16)
     private VolumeUnit volumeUnit;
@@ -59,14 +63,15 @@ public class CargoItem extends AuditBase implements GetId<UUID> {
         this.volumeUnit = VolumeUnit.valueOf(volumeUnit);
     }
 
-    @Column("number_of_packages")
-    private Integer numberOfPackages;
+    public void setVolumeUnit(VolumeUnit volumeUnit) {
+        this.volumeUnit = volumeUnit;
+    }
 
-    @Column("carrier_booking_reference")
-    @Size(max = 35)
-    private String carrierBookingReference;
+    @Column("package_code")
+    @Size(max = 3)
+    private String packageCode;
 
-    @Column("shipping_instruction_number")
-    @Size(max = 20)
-    private String shippingInstructionNumber;
+    @Column("shipment_equipment_id")
+    @NotNull
+    private UUID shipmentEquipmentID;
 }

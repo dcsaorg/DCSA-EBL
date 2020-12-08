@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
+import org.dcsa.ebl.model.enums.TransportDocumentTypeCode;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -18,11 +19,30 @@ public class ShippingInstruction extends AuditBase implements GetId<UUID> {
     @JsonProperty("shippingInstructionID")
     private UUID id;
 
-    @NotNull
-    @Column("shipment_id")
-    private UUID shipmentID;
+    @Column("number_of_copies")
+    private Integer numberOfCopies;
 
-    @NotNull
+    @Column("number_of_originals")
+    private Integer numberOfOriginals;
+
+    @Column("is_electronic")
+    private Boolean isElectronic;
+
+    @Column("is_part_load")
+    private Boolean isPartLoad;
+
+    @Column("transport_document_type")
+    private TransportDocumentTypeCode transportDocumentType;
+
+    public void setTransportDocumentType(String transportDocumentType) {
+        this.transportDocumentType = TransportDocumentTypeCode.valueOf(transportDocumentType);
+    }
+
+    public void setTransportDocumentType(TransportDocumentTypeCode transportDocumentType) {
+        this.transportDocumentType = transportDocumentType;
+    }
+
     @Column("callback_url")
+    @NotNull
     private String callbackUrl;
 }
