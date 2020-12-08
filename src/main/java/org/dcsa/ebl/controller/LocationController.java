@@ -1,17 +1,14 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
+import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.UpdateException;
 import org.dcsa.ebl.model.Location;
 import org.dcsa.ebl.service.LocationService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -40,41 +37,41 @@ public class LocationController extends ExtendedBaseController<LocationService, 
         return "Location";
     }
 
-    @Operation(summary = "Find all Locations", description = "Finds all Locations in the database", tags = { "Location" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Location.class))))
-    })
     @GetMapping
     @Override
     public Flux<Location> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         return super.findAll(response, request);
     }
 
-    @Operation(summary = "Find a Location", description = "Finds a specific Location in the database", tags = { "Location" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Location.class))))
-    })
-    @GetMapping(path = "{id}")
+    @GetMapping( path = "{locationID}" )
     @Override
-    public Mono<Location> findById(@PathVariable UUID id) {
-        return super.findById(id);
+    public Mono<Location> findById(@PathVariable UUID locationID) {
+        return super.findById(locationID);
     }
 
-    @Operation(summary = "Update a Location", description = "Update a Location", tags = { "Location" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Location.class))))
-    })
-    @PutMapping( path = "{id}", consumes = "application/json", produces = "application/json")
-    @Override
-    public Mono<Location> update(@PathVariable UUID id, @Valid @RequestBody Location location) {
-        return super.update(id, location);
-    }
-
+    @PostMapping
     @Override
     public Mono<Location> create(@Valid @RequestBody Location location) {
         return Mono.error(new CreateException("Not possible to create a Location"));
+    }
+
+    @PutMapping( path = "{locationID}")
+    @Override
+    public Mono<Location> update(@PathVariable UUID locationID, @Valid @RequestBody Location location) {
+        return Mono.error(new UpdateException("Not possible to update a Location"));
+    }
+
+    @DeleteMapping
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> delete(@RequestBody Location location) {
+        return Mono.error(new DeleteException("Not possible to delete a Location"));
+    }
+
+    @DeleteMapping( path ="{locationID}" )
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> deleteById(@PathVariable UUID locationID) {
+        return Mono.error(new DeleteException("Not possible to delete a Location"));
     }
 }
