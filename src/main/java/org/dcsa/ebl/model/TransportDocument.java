@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.model.enums.DocumentStatus;
-import org.dcsa.ebl.model.enums.WeightUnit;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -24,9 +22,11 @@ public class TransportDocument extends AuditBase implements GetId<UUID> {
     @JsonProperty("transportDocumentID")
     private UUID id;
 
-    @Column("transport_document_type_code")
-    @Size(max = 3)
-    private String transportDocumentType;
+    @Column("place_of_issue")
+    private UUID placeOfIssue;
+
+    @Column("date_of_issue")
+    private LocalDate dateOfIssue;
 
     @Column("onboard_date")
     private LocalDate onboardDate;
@@ -41,24 +41,19 @@ public class TransportDocument extends AuditBase implements GetId<UUID> {
     @Column("number_of_originals")
     private Integer numberOfOriginals;
 
+    @Column("terms_and_conditions")
+    private String termsAndConditions;
+
     @Column("issuer")
     private UUID issuer;
-
-    @Column("document_status")
-    @Size(max = 50)
-    private DocumentStatus documentStatus;
-
-    public void setDocumentStatus(String documentStatus) {
-        this.documentStatus = DocumentStatus.valueOf(documentStatus);
-    }
-
-    @Column("shipping_instruction")
-    private UUID shippingInstruction;
-
-    @Column("declared_value")
-    private Float declaredValue;
 
     @Column("declared_value_currency")
     @Size(max = 3)
     private String declaredValueCurrency;
+
+    @Column("declared_value")
+    private Float declaredValue;
+
+    @Column("number_of_rider_pages")
+    private Integer numberOfRiderPages;
 }
