@@ -1,17 +1,14 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
-import org.dcsa.ebl.model.Booking;
-import org.dcsa.ebl.service.BookingService;
+import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.UpdateException;
+import org.dcsa.ebl.model.transferobjects.BookingTO;
+import org.dcsa.ebl.service.BookingTOService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -25,13 +22,13 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 @RequestMapping(value = "bookings", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Tag(name = "Bookings", description = "The Booking API")
-public class BookingController extends ExtendedBaseController<BookingService, Booking, String> {
+public class BookingController extends ExtendedBaseController<BookingTOService, BookingTO, String> {
 
-    private final BookingService bookingService;
+    private final BookingTOService bookingTOService;
 
     @Override
-    public BookingService getService() {
-        return bookingService;
+    public BookingTOService getService() {
+        return bookingTOService;
     }
 
     @Override
@@ -39,42 +36,41 @@ public class BookingController extends ExtendedBaseController<BookingService, Bo
         return "Booking";
     }
 
-    @Operation(summary = "Find all Bookings", description = "Finds all Bookings in the database", tags = { "Booking" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Booking.class))))
-    })
     @GetMapping
     @Override
-    public Flux<Booking> findAll(ServerHttpResponse response, ServerHttpRequest request) {
+    public Flux<BookingTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         return super.findAll(response, request);
     }
 
-    @Operation(summary = "Find a Booking", description = "Finds a specific Booking in the database", tags = { "Booking" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Booking.class))))
-    })
-    @GetMapping(path = "{bookingReference}")
+    @GetMapping( path = "{bookingReference}" )
     @Override
-    public Mono<Booking> findById(@PathVariable String bookingReference) {
+    public Mono<BookingTO> findById(@PathVariable String bookingReference) {
         return super.findById(bookingReference);
     }
 
-    @Operation(summary = "Update a Booking", description = "Update a Booking", tags = { "Booking" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Booking.class))))
-    })
-    @PutMapping( path = "{bookingReference}", consumes = "application/json", produces = "application/json")
+    @PostMapping
     @Override
-    public Mono<Booking> update(@PathVariable String bookingReference, @Valid @RequestBody Booking booking) {
-        return super.update(bookingReference, booking);
+    public Mono<BookingTO> create(@Valid @RequestBody BookingTO booking) {
+        return Mono.error(new CreateException("Not possible to create a Booking"));
     }
 
+    @PutMapping( path = "{bookingReference}" )
     @Override
-    @PostMapping
-    public Mono<Booking> create(@Valid @RequestBody Booking booking) {
-        return Mono.error(new CreateException("Not possible to create an Booking"));
+    public Mono<BookingTO> update(@PathVariable String bookingReference, @Valid @RequestBody BookingTO booking) {
+        return Mono.error(new UpdateException("Not possible to update a Booking"));
+    }
+
+    @DeleteMapping
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> delete(@RequestBody BookingTO bookingTO) {
+        return Mono.error(new DeleteException("Not possible to delete a Booking"));
+    }
+
+    @DeleteMapping( path = "{bookingReference}" )
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Override
+    public Mono<Void> deleteById(@PathVariable String bookingReference) {
+        return Mono.error(new DeleteException("Not possible to delete a Booking"));
     }
 }
