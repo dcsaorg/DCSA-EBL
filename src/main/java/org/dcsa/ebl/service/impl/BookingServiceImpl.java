@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class BookingServiceImpl extends ExtendedBaseServiceImpl<BookingRepository, Booking, String> implements BookingService {
     private final BookingRepository BookingRepository;
 
-
     @Override
     public BookingRepository getRepository() {
         return BookingRepository;
