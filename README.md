@@ -14,15 +14,12 @@ Then build and run with
 ```
 mvn install:install-file -Dfile=../DCSA-Core/target/dcsa_core-$DCSA_Version.jar -DgroupId=org.dcsa -DartifactId=dcsa_core -Dversion=local-SNAPSHOT -Dpackaging=jar -DgeneratePom=true
 mvn spring-boot:run -Ddcsa.version=local-SNAPSHOT
-
 ```
 or using docker-compose
-
 ```
 mvn package -Ddcsa.version=local-SNAPSHOT
-
 docker-compose up -d -V --build
-´´´
+```
 
 Building and running using docker-compose
 -----------------------------------------
