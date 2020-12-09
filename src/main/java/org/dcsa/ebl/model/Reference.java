@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,7 @@ public class Reference extends AuditBase implements GetId<UUID> {
 
     @JsonProperty("referenceID")
     @Column("reference_id")
-    private UUID id;
+    private UUID referenceID;
 
     private ReferenceTypeCode referenceType;
 
@@ -31,4 +32,12 @@ public class Reference extends AuditBase implements GetId<UUID> {
 
     @Size(max = 100)
     private String referenceValue;
+
+    @Column("shipping_instruction_id")
+    private UUID shippingInstructionID;
+
+    @JsonIgnore
+    public UUID getId() {
+        return getReferenceID();
+    }
 }

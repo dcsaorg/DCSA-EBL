@@ -3,19 +3,18 @@ package org.dcsa.ebl.model.transferobjects;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.Reference;
 import org.dcsa.ebl.model.ShipmentLocation;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@Table("shipping_instruction")
 @Data
 @NoArgsConstructor
-public class ShippingInstructionTO extends ShippingInstruction {
+public class ShippingInstructionTO extends AbstractShippingInstruction {
 
     @NotNull
     @Transient

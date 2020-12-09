@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.CargoItem;
 import org.dcsa.ebl.repository.CargoItemRepository;
 import org.dcsa.ebl.service.CargoItemService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -23,5 +24,9 @@ public class CargoItemServiceImpl extends ExtendedBaseServiceImpl<CargoItemRepos
     @Override
     public Class<CargoItem> getModelClass() {
         return CargoItem.class;
+    }
+
+    public Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID) {
+        return cargoItemRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 }
