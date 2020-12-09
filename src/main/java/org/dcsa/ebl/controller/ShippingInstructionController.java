@@ -1,18 +1,12 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
-import org.dcsa.core.exception.CreateException;
-import org.dcsa.ebl.model.ShippingInstruction;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
-import org.dcsa.ebl.service.ShippingInstructionService;
+import org.dcsa.core.exception.DeleteException;
+import org.dcsa.ebl.model.transferobjects.*;
+import org.dcsa.ebl.service.ShippingInstructionTOService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -21,19 +15,20 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "shipping-instructions", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Tag(name = "Shipping Instructions", description = "The Shipping Instruction API")
-public class ShippingInstructionController extends ExtendedBaseController<ShippingInstructionService, ShippingInstruction, UUID> {
+public class ShippingInstructionController extends ExtendedBaseController<ShippingInstructionTOService, ShippingInstructionTO, UUID> {
 
-    private final ShippingInstructionService shippingInstructionService;
+    private final ShippingInstructionTOService shippingInstructionTOService;
 
     @Override
-    public ShippingInstructionService getService() {
-        return shippingInstructionService;
+    public ShippingInstructionTOService getService() {
+        return shippingInstructionTOService;
     }
 
     @Override
@@ -41,49 +36,61 @@ public class ShippingInstructionController extends ExtendedBaseController<Shippi
         return "ShippingInstruction";
     }
 
-    @Operation(summary = "Find all Shipping Instructions", description = "Finds all Shipping Instructions in the database", tags = { "Shipping Instruction" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ShippingInstruction.class))))
-    })
     @GetMapping
     @Override
-    public Flux<ShippingInstruction> findAll(ServerHttpResponse response, ServerHttpRequest request) {
+    public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         return super.findAll(response, request);
     }
 
-    @Operation(summary = "Find a Shipping Instruction", description = "Finds a specific Shipping Instruction in the database", tags = { "Shipping Instruction" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ShippingInstruction.class))))
-    })
-    @GetMapping(path = "{id}")
+    @GetMapping(path = "{shippingInstructionID}")
     @Override
-    public Mono<ShippingInstruction> findById(@PathVariable UUID id) {
-        return super.findById(id);
-    }
-
-    @Operation(summary = "Update a Shipping Instruction", description = "Update a Shipping Instruction", tags = { "Shipping Instruction" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ShippingInstruction.class))))
-    })
-    @PutMapping( path = "{id}", consumes = "application/json", produces = "application/json")
-    @Override
-    public Mono<ShippingInstruction> update(@PathVariable UUID id, @Valid @RequestBody ShippingInstruction shippingInstruction) {
-        return super.update(id, shippingInstruction);
+    public Mono<ShippingInstructionTO> findById(@PathVariable UUID shippingInstructionID) {
+        return super.findById(shippingInstructionID);
     }
 
     @Override
-    public Mono<ShippingInstruction> create(@Valid @RequestBody ShippingInstruction shippingInstruction) {
-        return Mono.error(new CreateException("Not possible to create a Shipping Instruction"));
+    @PostMapping
+    public Mono<ShippingInstructionTO> create(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
+        return super.create(shippingInstructionTO);
     }
 
-    public Mono<ShippingInstructionTO> createShippingInstructionTO(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-        if (shippingInstructionTO.getId() != null) {
-            return Mono.error(new CreateException("Id not allowed when creating a new Full Shipping Instruction"));
-        } else {
-            return getService().createShippingInstructionTO(shippingInstructionTO);
-        }
+    @PutMapping( path = "{shippingInstructionID}")
+    @Override
+    public Mono<ShippingInstructionTO> update(@PathVariable UUID shippingInstructionID, @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
+        return super.update(shippingInstructionID, shippingInstructionTO);
+    }
+
+    @PutMapping( path = "{shippingInstructionID}/stuffing")
+    public Flux<StuffingTO> updateStuffing(@PathVariable UUID shippingInstructionID, @Valid @RequestBody List<StuffingTO> stuffingList) {
+        return getService().updateStuffing(shippingInstructionID, stuffingList);
+    }
+
+    @PutMapping( path = "{shippingInstructionID}/equipments")
+    public Flux<EquipmentTO> updateEquipments(@PathVariable UUID shippingInstructionID, @Valid @RequestBody List<EquipmentTO> equipmentList) {
+        return getService().updateEquipments(shippingInstructionID, equipmentList);
+    }
+
+    @PutMapping( path = "{shippingInstructionID}/cargo-items")
+    public Flux<CargoItemTO> updateCargoItems(@PathVariable UUID shippingInstructionID, @Valid @RequestBody List<CargoItemTO> cargoItemList) {
+        return getService().updateCargoItems(shippingInstructionID, cargoItemList);
+    }
+
+    @PutMapping( path = "{shippingInstructionID}/parties")
+    public Flux<DocumentPartyTO> updateParties(@PathVariable UUID shippingInstructionID, @Valid @RequestBody List<DocumentPartyTO> partyList) {
+        return getService().updateParties(shippingInstructionID, partyList);
+    }
+
+    @DeleteMapping
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> delete(@RequestBody ShippingInstructionTO shippingInstructionTO) {
+        return Mono.error(new DeleteException("Not possible to delete a ShippingInstruction"));
+    }
+
+    @DeleteMapping( path ="{shippingInstructionID}" )
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> deleteById(@PathVariable UUID shippingInstructionID) {
+        return Mono.error(new DeleteException("Not possible to delete a ShippingInstruction"));
     }
 }

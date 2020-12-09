@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,7 @@ public class CargoItem extends AuditBase implements GetId<UUID> {
     @Id
     private UUID id;
 
+    @JsonIgnore
     @Column("shipment_id")
     @NotNull
     private UUID shipmentID;
