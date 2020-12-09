@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
-import org.dcsa.ebl.model.transferobjects.ChargeTO;
-import org.dcsa.ebl.model.EBLEndorsementChain;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
 import org.springframework.http.HttpStatus;
@@ -18,7 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -55,16 +52,6 @@ public class TransportDocumentController extends ExtendedBaseController<Transpor
     @Override
     public Mono<TransportDocumentTO> update(@PathVariable UUID ID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return super.update(ID, transportDocumentTO);
-    }
-
-    @PutMapping(path="{ID}/charges")
-    public Flux<ChargeTO> updateCharges(@PathVariable UUID ID, @Valid @RequestBody List<ChargeTO> chargeList) {
-        return getService().updateCharges(ID, chargeList);
-    }
-
-    @PutMapping(path="{ID}/ebl-endorsement-chain")
-    public Flux<EBLEndorsementChain> updateEBLEndorsementChain(@PathVariable UUID ID, @Valid @RequestBody List<EBLEndorsementChain> eblEndorsementChainList) {
-        return getService().updateEBLEndorsementChain(ID, eblEndorsementChainList);
     }
 
 

@@ -37,8 +37,9 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
 
     @GetMapping
     public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
+        // FIXME
         //return shippingInstructionTOService.findAll(response, request);
-        return Flux.error(new UnsupportedOperationException("Not implemented yet"));
+        return Flux.empty();
     }
 
     @GetMapping(path = "{shippingInstructionID}")

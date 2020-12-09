@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 
 public class MappingUtil {
 
-    @SneakyThrows({InvocationTargetException.class, IllegalAccessException.class})
     public static <C, S extends C, T extends C> T instanceFrom(S source, Supplier<T> targetConstructor, Class<C> clazz) {
         T target = targetConstructor.get();
         copyFields(source, target, clazz);

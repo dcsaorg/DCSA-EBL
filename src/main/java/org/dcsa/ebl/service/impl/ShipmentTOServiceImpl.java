@@ -2,7 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.model.ShipmentTO;
+import org.dcsa.ebl.model.transferobjects.ShipmentTO;
 import org.dcsa.ebl.repository.ShipmentTORepository;
 import org.dcsa.ebl.service.ShipmentTOService;
 import org.springframework.stereotype.Service;
