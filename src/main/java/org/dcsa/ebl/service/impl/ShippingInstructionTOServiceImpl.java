@@ -7,7 +7,6 @@ import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.CargoItemTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
-import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -22,6 +21,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private final ShippingInstructionService shippingInstructionService;
     private final CargoItemService cargoItemService;
+    private final CargoLineItemService cargoLineItemService;
     private final ReferenceService referenceService;
 
 
@@ -38,12 +38,16 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             )
                     ),
             cargoItemService.findAllByShippingInstructionID(id)
-                .map(cargoItem -> {
+                .concatMap(cargoItem -> {
                     CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
 
                     // cargoItemTO.equipmentReference is intentionally null
-                    // FIXME: Missing cargoItemTO.setCargoLineItems(...);
-                    return cargoItemTO;
+
+                    // TODO Performance: This suffers from N+1 syndrome (1 Query for the CargoItems and then N for the Cargo Lines)
+                    return cargoLineItemService.findAllByCargoItemID(cargoItem.getId())
+                            .collectList()
+                            .doOnNext(cargoItemTO::setCargoLineItems)
+                            .thenReturn(cargoItemTO);
                 })
                 .collectList()
                 .doOnNext(shippingInstructionTO::setCargoItems),
@@ -51,7 +55,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .collectList()
                 .doOnNext(shippingInstructionTO::setReferences)
         )
-
                 /* Consume all the items; we want the side-effect, not the return value */
                 .then(Mono.just(shippingInstructionTO));
     }
@@ -60,11 +63,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Flux.fromIterable(cargoItemTOs)
                 .flatMap(cargoItemTO -> {
                     CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
-                    // FIXME: Convert cargoItemTO.getCargoLineItems();
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     return cargoItemService.create(cargoItem)
-                            .doOnNext(savedCargoItem -> {
-                                cargoItemTO.setId(savedCargoItem.getId());
+                            .flatMapMany(savedCargoItem -> {
+                                UUID cargoItemId = savedCargoItem.getId();
+                                List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
+                                cargoItemTO.setId(cargoItemId);
+                                cargoLineItems.forEach(cli -> cli.setCargoItemID(cargoItemId));
+                                return cargoLineItemService.createAll(cargoLineItems);
                             });
                 })
                 /* Consume all the items; we want the side-effect, not the return value */
