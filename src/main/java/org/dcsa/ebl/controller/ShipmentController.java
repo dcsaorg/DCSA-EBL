@@ -6,7 +6,7 @@ import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.UpdateException;
-import org.dcsa.ebl.model.ShipmentTO;
+import org.dcsa.ebl.model.transferobjects.ShipmentTO;
 import org.dcsa.ebl.service.ShipmentTOService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

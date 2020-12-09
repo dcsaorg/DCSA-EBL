@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.NotNull;
@@ -13,7 +14,10 @@ import java.util.UUID;
 
 @NoArgsConstructor
 @Data
-public class EBLEndorsementChain extends AuditBase implements GetId<Void> {
+public class EBLEndorsementChain extends AuditBase implements GetId<UUID> {
+
+    @Id
+    private UUID id;  /* TODO: Remove */
 
     @Column("transport_document_id")
     @NotNull
