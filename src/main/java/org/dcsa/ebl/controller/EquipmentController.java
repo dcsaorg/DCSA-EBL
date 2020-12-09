@@ -1,17 +1,13 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
-import org.dcsa.core.exception.CreateException;
+import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.UpdateException;
 import org.dcsa.ebl.model.Equipment;
 import org.dcsa.ebl.service.EquipmentService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -39,41 +35,41 @@ public class EquipmentController extends ExtendedBaseController<EquipmentService
         return "Equipment";
     }
 
-    @Operation(summary = "Find all Equipments", description = "Finds all Equipments in the database", tags = { "Equipment" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Equipment.class))))
-    })
     @GetMapping
     @Override
     public Flux<Equipment> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         return super.findAll(response, request);
     }
 
-    @Operation(summary = "Find a Equipment", description = "Finds a specific Equipment in the database", tags = { "Equipment" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Equipment.class))))
-    })
     @GetMapping(path = "{equipmentReference}")
     @Override
     public Mono<Equipment> findById(@PathVariable String equipmentReference) {
         return super.findById(equipmentReference);
     }
 
-    @Operation(summary = "Update a Equipment", description = "Update a Equipment", tags = { "Equipment" })
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Equipment.class))))
-    })
-    @PutMapping( path = "{equipmentReference}", consumes = "application/json", produces = "application/json")
     @Override
-    public Mono<Equipment> update(String equipmentReference, @Valid @RequestBody Equipment equipment) {
-        return super.update(equipmentReference, equipment);
+    @PostMapping
+    public Mono<Equipment> create(@Valid @RequestBody Equipment equipment) {
+        return super.create(equipment);
     }
 
+    @PutMapping( path = "{equipmentReference}")
     @Override
-    public Mono<Equipment> create(@Valid @RequestBody Equipment equipment) {
-        return Mono.error(new CreateException("Not possible to create an Equipment"));
+    public Mono<Equipment> update(@PathVariable String equipmentReference, @Valid @RequestBody Equipment equipment) {
+        return Mono.error(new UpdateException("Not possible to update an Equipment"));
+    }
+
+    @DeleteMapping
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> delete(@RequestBody Equipment equipment) {
+        return Mono.error(new DeleteException("Not possible to delete an Equipment"));
+    }
+
+    @DeleteMapping( path ="{equipmentReference}" )
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @Override
+    public Mono<Void> deleteById(@PathVariable String equipmentReference) {
+        return Mono.error(new DeleteException("Not possible to delete an Equipment"));
     }
 }
