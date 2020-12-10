@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import javax.validation.constraints.Size;
 
 @Data
-public class AbstractEquipment extends AuditBase {
+public abstract class AbstractEquipment extends AuditBase {
 
     @Id
     @JsonProperty("equipmentReference")
