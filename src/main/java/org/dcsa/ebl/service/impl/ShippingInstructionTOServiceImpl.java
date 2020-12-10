@@ -34,6 +34,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ReferenceService referenceService;
     private final SealService sealService;
     private final ShipmentEquipmentService shipmentEquipmentService;
+    private final ShipmentLocationService shipmentLocationService;
     private final ShipmentService shipmentService;
 
 
@@ -178,6 +179,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
+    private Mono<Void> mapShipmentLocations(UUID shipmentID, Iterable<ShipmentLocation> shipmentLocations) {
+        return Flux.fromIterable(shipmentLocations)
+                .flatMap(shipmentLocation -> {
+                    shipmentLocation.setShipmentID(shipmentID);
+                    return shipmentLocationService.create(shipmentLocation);
+                })
+                .then();
+    }
+
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
         ShippingInstruction shippingInstruction = new ShippingInstruction();
@@ -204,7 +214,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionID,
                                         shipment.getId(),
                                         shippingInstructionTO.getDocumentParties()
-                                )
+                                ),
+                                mapShipmentLocations(shipment.getId(), shippingInstructionTO.getShipmentLocations())
                         )
                     );
         }).then(Mono.just(shippingInstructionTO));
