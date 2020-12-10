@@ -124,6 +124,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     equipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
                     equipment.setWeightUnit(shipmentEquipmentTO.getWeightUnit());
 
+                    /* Order is important due to FK constraints between Equipment and ShipmentEquipment */
                     return equipmentService.create(equipment)
                             .flatMap(ignored -> shipmentEquipmentService.create(shipmentEquipment))
                             .flatMap(savedShipmentEquipment -> {
