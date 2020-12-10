@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.Shipment;
 import org.dcsa.ebl.repository.ShipmentRepository;
 import org.dcsa.ebl.service.ShipmentService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -22,5 +23,10 @@ public class ShipmentServiceImpl extends ExtendedBaseServiceImpl<ShipmentReposit
     @Override
     public Class<Shipment> getModelClass() {
         return Shipment.class;
+    }
+
+    @Override
+    public Mono<Shipment> findByCarrierBookingReference(String carrierBookingReference) {
+        return shipmentRepository.findByCarrierBookingReference(carrierBookingReference);
     }
 }

@@ -7,10 +7,15 @@ import org.dcsa.ebl.model.Seal;
 
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.UUID;
 
+/* Note: This is very distinct ShipmentEquipment */
 @NoArgsConstructor
 @Data
 public class ShipmentEquipmentTO {
+
+    private UUID shipmentEquipmentID;
+
     @Size(max = 15)
     private String equipmentReference;
 

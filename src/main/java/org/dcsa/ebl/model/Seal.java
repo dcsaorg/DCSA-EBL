@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
@@ -15,6 +16,7 @@ import java.util.UUID;
 public class Seal extends AuditBase implements GetId<UUID> {
 
     @Id
+    @JsonProperty("sealID")
     private UUID id;
 
     @Column("shipment_equipment_id")

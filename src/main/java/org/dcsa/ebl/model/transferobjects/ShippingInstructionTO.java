@@ -41,6 +41,11 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ShipmentLocation> shipmentLocations;
 
+    @NotNull
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String carrierBookingReference;
+
     public ShippingInstruction getShippingInstruction() {
         ShippingInstruction shippingInstruction = new ShippingInstruction();
 //        shippingInstruction.setId(getId());
