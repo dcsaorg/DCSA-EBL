@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class AbstractShippingInstruction extends AuditBase implements GetId<UUID> {
+public abstract class AbstractShippingInstruction extends AuditBase implements GetId<UUID> {
 
     @JsonProperty("shippingInstructionID")
     private UUID id;

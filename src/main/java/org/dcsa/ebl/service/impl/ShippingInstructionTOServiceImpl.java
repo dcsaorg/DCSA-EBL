@@ -1,10 +1,13 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
+import org.dcsa.ebl.model.base.AbstractDocumentParty;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.CargoItemTO;
+import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
@@ -25,7 +28,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ActiveReeferSettingsService activeReeferSettingsService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
+    private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
+    private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
     private final ShipmentEquipmentService shipmentEquipmentService;
@@ -140,6 +145,39 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.just(referenceToDBId));
     }
 
+    private Mono<Void> mapParties(UUID shippingInstructionID, UUID shipmentID, Iterable<DocumentPartyTO> documentPartyTOs) {
+        return Flux.fromIterable(documentPartyTOs)
+                .concatMap(documentPartyTO -> {
+                    DocumentParty documentParty;
+                    Party party = documentPartyTO.getParty();
+                    Mono<Party> partyMono;
+
+                    documentPartyTO.setShippingInstructionID(shippingInstructionID);
+
+                    documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
+                    documentParty.setShipmentID(shipmentID);
+
+                    if (party == null) {
+                        UUID partyID = documentPartyTO.getPartyID();
+                        if (partyID == null) {
+                            return Mono.error(new CreateException("DocumentParty did not have a partyID nor a party field; please include exactly one of these fields"));
+                        }
+                        partyMono = partyService.findById(partyID);
+                    } else {
+                        if (documentPartyTO.getPartyID() != null) {
+                            return Mono.error(new CreateException("DocumentParty had both a partyID and a party field; please include exactly one of these fields"));
+                        }
+                        partyMono = partyService.create(party);
+                    }
+                    return partyMono.flatMap(resolvedParty -> {
+                        documentParty.setPartyID(resolvedParty.getId());
+                        documentPartyTO.setParty(null);
+                        return documentPartyService.create(documentParty);
+                    });
+                })
+                .then();
+    }
+
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
         ShippingInstruction shippingInstruction = new ShippingInstruction();
@@ -161,7 +199,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionTO.getCargoItems(),
                                         equipmentReference2ID
                                 ),
-                                createReferences(shippingInstructionID, shippingInstructionTO.getReferences())
+                                createReferences(shippingInstructionID, shippingInstructionTO.getReferences()),
+                                mapParties(
+                                        shippingInstructionID,
+                                        shipment.getId(),
+                                        shippingInstructionTO.getDocumentParties()
+                                )
                         )
                     );
         }).then(Mono.just(shippingInstructionTO));
