@@ -19,8 +19,6 @@ import java.util.UUID;
 public class ActiveReeferSettings extends AuditBase implements GetId<UUID> {
 
     @Id
-    private UUID id;  /* TODO: Remove */
-
     /* We do not show this in JSON as it is an internal detail */
     @JsonIgnore
     @Column("shipment_equipment_id")
@@ -55,4 +53,10 @@ public class ActiveReeferSettings extends AuditBase implements GetId<UUID> {
 
     @Column("ventilation_max")
     private Float ventilationMax;
+
+    @Override
+    @JsonIgnore
+    public UUID getId() {
+        return getShipmentEquipmentID();
+    }
 }
