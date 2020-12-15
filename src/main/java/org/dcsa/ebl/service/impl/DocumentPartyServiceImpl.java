@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.DocumentParty;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -22,5 +23,10 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     @Override
     public Class<DocumentParty> getModelClass() {
         return DocumentParty.class;
+    }
+
+    @Override
+    public Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID) {
+        return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 }
