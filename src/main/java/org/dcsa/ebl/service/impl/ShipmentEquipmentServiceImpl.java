@@ -6,7 +6,9 @@ import org.dcsa.ebl.model.ShipmentEquipment;
 import org.dcsa.ebl.repository.ShipmentEquipmentRepository;
 import org.dcsa.ebl.service.ShipmentEquipmentService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -22,5 +24,10 @@ public class ShipmentEquipmentServiceImpl extends ExtendedBaseServiceImpl<Shipme
     @Override
     public Class<ShipmentEquipment> getModelClass() {
         return ShipmentEquipment.class;
+    }
+
+    @Override
+    public Flux<ShipmentEquipment> findAllByShipmentIDIn(List<UUID> shipmentIDs) {
+        return shipmentEquipmentRepository.findAllByShipmentIDIn(shipmentIDs);
     }
 }
