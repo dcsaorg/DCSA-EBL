@@ -129,9 +129,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     shipmentEquipment.setShipmentID(shipment.getId());
                     shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
                     shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
+                    shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
+                    shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
 
                     equipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
+                    equipment.setTareWeight(shipmentEquipmentTO.getContainerTareWeight());
                     equipment.setWeightUnit(shipmentEquipmentTO.getWeightUnit());
+                    equipment.setIsoEquipmentCode(shipmentEquipmentTO.getIsoEquipmentCode());
 
                     /* Order is important due to FK constraints between Equipment and ShipmentEquipment */
                     return equipmentService.create(equipment)
