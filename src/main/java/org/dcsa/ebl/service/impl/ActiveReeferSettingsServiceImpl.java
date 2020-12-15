@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.ActiveReeferSettings;
 import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
 import org.dcsa.ebl.service.ActiveReeferSettingsService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -22,5 +23,10 @@ public class ActiveReeferSettingsServiceImpl extends ExtendedBaseServiceImpl<Act
     @Override
     public Class<ActiveReeferSettings> getModelClass() {
         return ActiveReeferSettings.class;
+    }
+
+    @Override
+    public Mono<ActiveReeferSettings> findByShipmentEquipmentID(UUID shipmentEquipmentID) {
+        return activeReeferSettingsRepository.findByShipmentEquipmentID(shipmentEquipmentID);
     }
 }

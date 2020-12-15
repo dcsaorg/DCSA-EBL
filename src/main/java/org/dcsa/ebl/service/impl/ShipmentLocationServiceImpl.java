@@ -8,6 +8,7 @@ import org.dcsa.ebl.service.ShipmentLocationService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -26,10 +27,16 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
         return ShipmentLocation.class;
     }
 
+    @Override
     public Flux<ShipmentLocation> createAll(Flux<ShipmentLocation> shipmentLocations) {
         return shipmentLocations
                 .concatMap(this::preCreateHook)
                 .buffer(70)
                 .concatMap(shipmentLocationRepository::saveAll);
+    }
+
+    @Override
+    public Flux<ShipmentLocation> findAllByShipmentIDIn(List<UUID> shipmentIDs) {
+        return shipmentLocationRepository.findAllByShipmentIDIn(shipmentIDs);
     }
 }

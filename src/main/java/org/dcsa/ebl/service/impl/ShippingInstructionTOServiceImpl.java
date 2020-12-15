@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -37,6 +38,48 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ShipmentService shipmentService;
 
 
+    private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO, List<UUID> shipmentIDs) {
+        return Flux.concat(
+                shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
+                    .collectList()
+                    .doOnNext(shippingInstructionTO::setShipmentLocations),
+                shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
+                    .concatMap(shipmentEquipment -> {
+                        ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+
+                        shipmentEquipmentTO.setShipmentEquipmentID(shipmentEquipment.getId());
+                        shipmentEquipmentTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
+                        shipmentEquipmentTO.setVerifiedGrossMass(shipmentEquipment.getVerifiedGrossMass());
+                        shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
+                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit().name());
+
+                        // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
+                        //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
+                        //
+                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 JOIN between
+                        // ShipmentEquipment, Equipment, and ActiveReeferSettings.  Seals are a bit more
+                        // problematic as it will force a lot of data to be repeated for each seal (plus r2dbc
+                        // does not have a good solution for 1:N relations at the moment)
+                        //
+                        // Anyway, we start here and can improve it later.
+                        return Flux.concat(
+                                sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
+                                    .collectList()
+                                    .doOnNext(shipmentEquipmentTO::setSeals),
+                                activeReeferSettingsService.findByShipmentEquipmentID(shipmentEquipment.getId())
+                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings),
+                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
+                                    .doOnNext(equipment -> {
+                                        shipmentEquipmentTO.setIsoEquipmentCode(equipment.getIsoEquipmentCode());
+                                        shipmentEquipmentTO.setContainerTareWeight(equipment.getTareWeight());
+                                        shipmentEquipmentTO.setContainerTareWeightUnit(equipment.getWeightUnit().name());
+                                        shipmentEquipmentTO.setWeightUnit(equipment.getWeightUnit().name());
+                                    })
+                        ).then(Mono.just(shipmentEquipmentTO));
+                    }).collectList()
+                    .doOnNext(shippingInstructionTO::setShipmentEquipments)
+        ).then(Mono.just(shippingInstructionTO));
+    }
 
     @Override
     public Mono<ShippingInstructionTO> findById(UUID id) {
@@ -63,7 +106,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .thenReturn(cargoItemTO);
                 })
                 .collectList()
-                .doOnNext(shippingInstructionTO::setCargoItems),
+                .doOnNext(shippingInstructionTO::setCargoItems)
+                .flatMapMany(cargoItemTOs -> {
+                    List<UUID> shipmentIds = cargoItemTOs.stream().map(CargoItemTO::getShipmentID)
+                            .distinct().collect(Collectors.toList());
+
+                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds);
+
+                }),
            documentPartyService.findAllByShippingInstructionID(id)
                 .map(documentParty ->
                         MappingUtil.instanceFrom(documentParty, DocumentPartyTO::new, AbstractDocumentParty.class))
