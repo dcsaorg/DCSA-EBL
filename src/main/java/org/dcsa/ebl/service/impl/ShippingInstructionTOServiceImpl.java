@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.Size;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -65,6 +64,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 })
                 .collectList()
                 .doOnNext(shippingInstructionTO::setCargoItems),
+           documentPartyService.findAllByShippingInstructionID(id)
+                .map(documentParty ->
+                        MappingUtil.instanceFrom(documentParty, DocumentPartyTO::new, AbstractDocumentParty.class))
+                .collectList()
+                .doOnNext(shippingInstructionTO::setDocumentParties),
            referenceService.findAllByShippingInstructionID(id)
                 .collectList()
                 .doOnNext(shippingInstructionTO::setReferences)
