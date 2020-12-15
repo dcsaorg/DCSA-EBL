@@ -21,14 +21,23 @@ public class ShipmentEquipmentTO {
 
     private String verifiedGrossMass;
 
-    @Size(max = 20)
+    @Size(max = 3)
     private String weightUnit;
 
-    private Float totalContainerWeight;
+    @Size(max = 4)
+    private String isoEquipmentCode;
 
-    private Integer partLoad;
+    private Float containerTareWeight;
+
+    private String containerTareWeightUnit;
+
+    private Float cargoGrossWeight;
+
+    @Size(max = 3)
+    private String cargoGrossWeightUnit;
 
     private ActiveReeferSettings activeReeferSettings;
 
     private List<Seal> seals;
+
 }
