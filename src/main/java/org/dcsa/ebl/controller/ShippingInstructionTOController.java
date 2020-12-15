@@ -3,6 +3,10 @@ package org.dcsa.ebl.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.GetException;
+import org.dcsa.core.extendedrequest.ExtendedParameters;
+import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
 import org.springframework.http.HttpStatus;
@@ -15,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -22,6 +27,8 @@ import java.util.UUID;
 @RequestMapping(value = "shipping-instructions", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Tag(name = "Shipping Instructions", description = "The Shipping Instruction API")
 public class ShippingInstructionTOController extends AbstractTOController<ShippingInstructionTOService> {
+
+    private final ExtendedParameters extendedParameters;
 
     private final ShippingInstructionTOService shippingInstructionTOService;
 
@@ -37,9 +44,19 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
 
     @GetMapping
     public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        // FIXME
-        //return shippingInstructionTOService.findAll(response, request);
-        return Flux.empty();
+        ExtendedRequest<ShippingInstruction> extendedRequest = new ExtendedRequest<>(extendedParameters,
+                ShippingInstruction.class);
+
+        try {
+            Map<String, String> params = request.getQueryParams().toSingleValueMap();
+            extendedRequest.parseParameter(params);
+        } catch (GetException e) {
+            return Flux.error(e);
+        }
+
+        return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
+                () -> extendedRequest.insertHeaders(response, request)
+        );
     }
 
     @GetMapping(path = "{shippingInstructionID}")

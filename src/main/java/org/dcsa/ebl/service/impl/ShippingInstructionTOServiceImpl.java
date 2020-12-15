@@ -2,6 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
+import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
 import org.dcsa.ebl.model.base.AbstractDocumentParty;
@@ -278,4 +279,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         }).then(Mono.just(shippingInstructionTO));
     }
 
+    public Flux<ShippingInstructionTO> findAllExtended(final ExtendedRequest<ShippingInstruction> extendedRequest) {
+        return shippingInstructionService.findAllExtended(extendedRequest)
+                .map(shippingInstruction -> MappingUtil.instanceFrom(shippingInstruction, ShippingInstructionTO::new, AbstractShippingInstruction.class));
+    }
 }
