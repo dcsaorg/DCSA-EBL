@@ -128,8 +128,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     ShipmentEquipment shipmentEquipment = new ShipmentEquipment();
                     shipmentEquipment.setShipmentID(shipment.getId());
                     shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
-                    // FIXME: Type discrepancy between IM and IF
-                    // shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
+                    shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
 
                     equipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
                     equipment.setWeightUnit(shipmentEquipmentTO.getWeightUnit());

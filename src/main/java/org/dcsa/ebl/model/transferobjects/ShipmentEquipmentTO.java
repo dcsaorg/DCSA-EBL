@@ -19,7 +19,7 @@ public class ShipmentEquipmentTO {
     @Size(max = 15)
     private String equipmentReference;
 
-    private Float verifiedGrossMass;
+    private String verifiedGrossMass;
 
     @Size(max = 20)
     private String weightUnit;
