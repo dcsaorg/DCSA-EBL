@@ -11,6 +11,13 @@ jobs:
       uses: actions/setup-java@v1.4.3
       with:
         java-version: 11
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
     - name: maven-settings-xml-action
       uses: whelk-io/maven-settings-xml-action@v12
       with:
