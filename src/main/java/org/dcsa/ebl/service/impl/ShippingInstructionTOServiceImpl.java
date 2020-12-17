@@ -133,8 +133,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .flatMap(cargoItemTO -> {
                     CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
                     String equipmentReference = cargoItemTO.getEquipmentReference();
-                    UUID shipmentEquipmentID = Objects.requireNonNull(equipmentReference2ID.get(equipmentReference));
                     List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
+                    UUID shipmentEquipmentID = equipmentReference2ID.get(equipmentReference);
+                    if (shipmentEquipmentID == null) {
+                        return Mono.error(new CreateException("Invalid equipment reference: " + equipmentReference));
+                    }
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
                     // Clear the EquipmentReference on exit because it is "input-only"
@@ -300,9 +303,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 ShippingInstruction::new,
                 AbstractShippingInstruction.class
         );
+        String bookingReference = shippingInstructionTO.getCarrierBookingReference();
 
         return Mono.zip(
-                shipmentService.findByCarrierBookingReference(shippingInstructionTO.getCarrierBookingReference()),
+                shipmentService.findByCarrierBookingReference(bookingReference)
+                        .switchIfEmpty(Mono.error(new CreateException("Invalid booking reference: " + bookingReference))),
                 shippingInstructionService.create(shippingInstruction)
         ).flatMapMany(tuple -> {
             Shipment shipment = tuple.getT1();
