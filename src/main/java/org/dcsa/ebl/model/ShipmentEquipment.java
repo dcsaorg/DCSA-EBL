@@ -12,7 +12,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
-@Table("equipment")
+@Table("shipment_equipment")
 @Data
 @NoArgsConstructor
 public class ShipmentEquipment extends AbstractShipmentEquipment implements GetId<UUID> {
