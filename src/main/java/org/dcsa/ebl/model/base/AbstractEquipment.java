@@ -13,7 +13,6 @@ import javax.validation.constraints.Size;
 public abstract class AbstractEquipment extends AuditBase {
 
     @Id
-    @JsonProperty("equipmentReference")
     @Column("equipment_reference")
     @Size(max = 15)
     private String equipmentReference;
