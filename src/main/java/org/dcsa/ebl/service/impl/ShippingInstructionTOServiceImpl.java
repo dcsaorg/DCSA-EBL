@@ -199,30 +199,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;
                     Party party = documentPartyTO.getParty();
-                    Mono<Party> partyMono;
+                    UUID partyID = documentPartyTO.getPartyID();
 
                     documentPartyTO.setShippingInstructionID(shippingInstructionID);
-
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
                     documentParty.setShipmentID(shipmentID);
 
-                    if (party == null) {
-                        UUID partyID = documentPartyTO.getPartyID();
-                        if (partyID == null) {
-                            return Mono.error(new CreateException("DocumentParty did not have a partyID nor a party field; please include exactly one of these fields"));
-                        }
-                        partyMono = partyService.findById(partyID);
-                    } else {
-                        if (documentPartyTO.getPartyID() != null) {
-                            return Mono.error(new CreateException("DocumentParty had both a partyID and a party field; please include exactly one of these fields"));
-                        }
-                        partyMono = partyService.create(party);
+                    if (partyID == null) {
+                        return Mono.error(new CreateException("DocumentParty is missing required partyID field"));
                     }
-                    return partyMono.flatMap(resolvedParty -> {
-                        documentParty.setPartyID(resolvedParty.getId());
-                        documentPartyTO.setParty(null);
-                        return documentPartyService.create(documentParty);
-                    });
+                    if (party != null) {
+                        return Mono.error(new CreateException("DocumentParty contains a Party object but we cannot"
+                                + " create it via this call.  Please create the party separately and reference them"
+                                + " via partyID"));
+                    }
+                    return partyService.findById(partyID)
+                            .flatMap(resolvedParty -> documentPartyService.create(documentParty));
                 })
                 .then();
     }
