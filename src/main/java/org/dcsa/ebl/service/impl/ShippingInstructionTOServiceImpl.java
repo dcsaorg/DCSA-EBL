@@ -7,6 +7,7 @@ import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
 import org.dcsa.ebl.model.base.AbstractDocumentParty;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
+import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.transferobjects.CargoItemTO;
 import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
@@ -263,11 +264,31 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Mono<Void> mapShipmentLocations(UUID shipmentID, Iterable<ShipmentLocation> shipmentLocations) {
+    private Mono<Void> processShipmentLocations(UUID shipmentID, Iterable<ShipmentLocation> shipmentLocations) {
         return Flux.fromIterable(shipmentLocations)
                 .flatMap(shipmentLocation -> {
-                    shipmentLocation.setShipmentID(shipmentID);
-                    return shipmentLocationService.create(shipmentLocation);
+                    UUID locationId = shipmentLocation.getLocationID();
+                    ShipmentLocationType shipmentLocationType = shipmentLocation.getLocationType();
+                    if (shipmentLocation.getShipmentID() != null && !shipmentID.equals(shipmentLocation.getShipmentID())) {
+                        return Mono.error(new CreateException("Invalid shipmentID on shipmentLocation with locationID "
+                                + locationId + " and locationType " + shipmentLocationType.name()
+                                + ": You can omit the shipmentID field"));
+                    }
+
+                    // TODO: 1+N performance wise.  Ideally we would pull all of them in one go (should be doable
+                    //  but not trivial with the current tooling provided by r2dbc).
+                    return shipmentLocationService.findByShipmentIDAndLocationTypeAndLocationID(shipmentID,
+                            shipmentLocationType,
+                            locationId
+                    ).switchIfEmpty(Mono.error(
+                            new CreateException("Invalid shipmentLocation: Could not find any location with"
+                                    + " locationID " + locationId + " and shipmentLocationType " + shipmentLocationType
+                                    + " related to this shipping instruction"
+                            )
+                    )).flatMap(originalShipmentLocation -> {
+                        originalShipmentLocation.setDisplayedName(shipmentLocation.getDisplayedName());
+                        return shipmentLocationService.update(originalShipmentLocation);
+                    });
                 })
                 .then();
     }
@@ -302,7 +323,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shipment.getId(),
                                         shippingInstructionTO.getDocumentParties()
                                 ),
-                                mapShipmentLocations(shipment.getId(), shippingInstructionTO.getShipmentLocations())
+                                processShipmentLocations(shipment.getId(), shippingInstructionTO.getShipmentLocations())
                         )
                     );
         }).then(Mono.just(shippingInstructionTO));
