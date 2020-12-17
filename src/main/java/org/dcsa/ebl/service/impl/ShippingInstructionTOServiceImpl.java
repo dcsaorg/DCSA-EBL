@@ -230,12 +230,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
-        ShippingInstruction shippingInstruction = new ShippingInstruction();
-        MappingUtil.copyFields(shippingInstructionTO, shippingInstruction, AbstractShippingInstruction.class);
+        ShippingInstruction shippingInstruction = MappingUtil.instanceFrom(
+                shippingInstructionTO,
+                ShippingInstruction::new,
+                AbstractShippingInstruction.class
+        );
 
         return Mono.zip(
                 shipmentService.findByCarrierBookingReference(shippingInstructionTO.getCarrierBookingReference()),
-                shippingInstructionService.create(shippingInstructionTO.getShippingInstruction())
+                shippingInstructionService.create(shippingInstruction)
         ).flatMapMany(tuple -> {
             Shipment shipment = tuple.getT1();
             ShippingInstruction savedShippingInstruction = tuple.getT2();
