@@ -29,7 +29,7 @@ public class MappingUtil {
                 String fieldName = field.getName();
                 Object value;
                 /* skip fields that have already been seen in a subclass */
-                if (seenFields.add(fieldName)) {
+                if (!seenFields.add(fieldName)) {
                     continue;
                 }
                 if (field.isAnnotationPresent(Transient.class)) {
