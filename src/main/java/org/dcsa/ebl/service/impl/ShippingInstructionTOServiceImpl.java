@@ -68,14 +68,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     .collectList()
                                     .doOnNext(shipmentEquipmentTO::setSeals),
                                 activeReeferSettingsService.findByShipmentEquipmentID(shipmentEquipment.getId())
-                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings),
-                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
-                                    .doOnNext(equipment -> {
-                                        shipmentEquipmentTO.setIsoEquipmentCode(equipment.getIsoEquipmentCode());
-                                        shipmentEquipmentTO.setContainerTareWeight(equipment.getTareWeight());
-                                        shipmentEquipmentTO.setContainerTareWeightUnit(equipment.getWeightUnit().name());
-                                        shipmentEquipmentTO.setWeightUnit(equipment.getWeightUnit().name());
-                                    })
+                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
                         ).then(Mono.just(shipmentEquipmentTO));
                     }).collectList()
                     .doOnNext(shippingInstructionTO::setShipmentEquipments)
@@ -184,9 +177,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
 
                     equipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
-                    equipment.setTareWeight(shipmentEquipmentTO.getContainerTareWeight());
-                    equipment.setWeightUnit(shipmentEquipmentTO.getWeightUnit());
-                    equipment.setIsoEquipmentCode(shipmentEquipmentTO.getIsoEquipmentCode());
 
                     /* Order is important due to FK constraints between Equipment and ShipmentEquipment */
                     return equipmentService.create(equipment)
