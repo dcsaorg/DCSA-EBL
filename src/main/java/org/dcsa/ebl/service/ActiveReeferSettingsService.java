@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 public interface ActiveReeferSettingsService extends ExtendedBaseService<ActiveReeferSettings, UUID> {
-    Mono<ActiveReeferSettings> findByShipmentEquipmentID(UUID shipmentEquipmentID);
+
 }
