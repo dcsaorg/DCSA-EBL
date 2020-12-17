@@ -21,16 +21,6 @@ public class ShipmentEquipmentTO {
 
     private String verifiedGrossMass;
 
-    @Size(max = 3)
-    private String weightUnit;
-
-    @Size(max = 4)
-    private String isoEquipmentCode;
-
-    private Float containerTareWeight;
-
-    private String containerTareWeightUnit;
-
     private Float cargoGrossWeight;
 
     @Size(max = 3)
