@@ -127,25 +127,43 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private Mono<Void> createCargoItems(UUID shippingInstructionID,
                                         Iterable<CargoItemTO> cargoItemTOs,
                                         Map<String, UUID> equipmentReference2ID) {
+        Set<String> usedEquipmentReferences = new HashSet<>();
         return Flux.fromIterable(cargoItemTOs)
                 .flatMap(cargoItemTO -> {
                     CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
-                    UUID shipmentEquipmentID = Objects.requireNonNull(equipmentReference2ID.get(cargoItemTO.getEquipmentReference()));
+                    String equipmentReference = cargoItemTO.getEquipmentReference();
+                    UUID shipmentEquipmentID = Objects.requireNonNull(equipmentReference2ID.get(equipmentReference));
+                    List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
                     // Clear the EquipmentReference on exit because it is "input-only"
                     cargoItemTO.setEquipmentReference(null);
+                    if (cargoLineItems == null || cargoLineItems.isEmpty()) {
+                        return Mono.error(new CreateException("CargoItem with reference " + equipmentReference +
+                                ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
+                        ));
+                    }
+                    usedEquipmentReferences.add(equipmentReference);
                     return cargoItemService.create(cargoItem)
                             .flatMapMany(savedCargoItem -> {
                                 UUID cargoItemId = savedCargoItem.getId();
-                                List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
                                 cargoItemTO.setId(cargoItemId);
                                 cargoLineItems.forEach(cli -> cli.setCargoItemID(cargoItemId));
                                 return cargoLineItemService.createAll(cargoLineItems);
                             });
                 })
                 /* Consume all the items; we want the side-effect, not the return value */
-                .then();
+                .count()
+                .flatMap(ignored -> {
+                    for (String reference : equipmentReference2ID.keySet()) {
+                        if (!usedEquipmentReferences.contains(reference)) {
+                            return Mono.error(new CreateException("Missing Cargo Line Items for reference "
+                                    + reference
+                            ));
+                        }
+                    }
+                    return Mono.empty();
+                });
     }
 
     private Mono<Void> createReferences(UUID shippingInstructionID, Iterable<Reference> references) {
