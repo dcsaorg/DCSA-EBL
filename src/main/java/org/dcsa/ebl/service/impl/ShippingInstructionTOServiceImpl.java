@@ -12,6 +12,7 @@ import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
+import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
 import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -26,11 +27,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private final ShippingInstructionService shippingInstructionService;
 
+    /* We need the repository because the service gives an error if the object does not exist */
+    private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
     private final ActiveReeferSettingsService activeReeferSettingsService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
-    private final EquipmentService equipmentService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
@@ -57,7 +59,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
                         //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
                         //
-                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 JOIN between
+                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 (LEFT) JOIN between
                         // ShipmentEquipment, Equipment, and ActiveReeferSettings.  Seals are a bit more
                         // problematic as it will force a lot of data to be repeated for each seal (plus r2dbc
                         // does not have a good solution for 1:N relations at the moment)
@@ -67,7 +69,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
                                     .collectList()
                                     .doOnNext(shipmentEquipmentTO::setSeals),
-                                activeReeferSettingsService.findByShipmentEquipmentID(shipmentEquipment.getId())
+                                // ActiveRefeerSettings is optional
+                                activeReeferSettingsRepository.findById(shipmentEquipment.getId())
                                     .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
                         ).then(Mono.just(shipmentEquipmentTO));
                     }).collectList()
@@ -164,31 +167,54 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 }).then();
     }
 
-    private Mono<Map<String, UUID>> createEquipment(Shipment shipment, Iterable<ShipmentEquipmentTO> shipmentEquipmentTOs) {
+    private Mono<Map<String, UUID>> createEquipment(Iterable<ShipmentEquipmentTO> shipmentEquipmentTOs) {
         Map<String, UUID> referenceToDBId = new HashMap<>();
         return Flux.fromIterable(shipmentEquipmentTOs)
                 .map(shipmentEquipmentTO -> {
-                    Equipment equipment = new Equipment();
-                    ShipmentEquipment shipmentEquipment = new ShipmentEquipment();
-                    shipmentEquipment.setShipmentID(shipment.getId());
-                    shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
-                    shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
-                    shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
-                    shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
+                    String equipmentReference = shipmentEquipmentTO.getEquipmentReference();
 
-                    equipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
-
-                    /* Order is important due to FK constraints between Equipment and ShipmentEquipment */
-                    return equipmentService.create(equipment)
-                            .flatMap(ignored -> shipmentEquipmentService.create(shipmentEquipment))
-                            .flatMap(savedShipmentEquipment -> {
-                                UUID shipmentEquipmentID = savedShipmentEquipment.getId();
-                                ActiveReeferSettings activeReeferSettings = shipmentEquipmentTO.getActiveReeferSettings();
-                                shipmentEquipmentTO.setShipmentEquipmentID(shipmentEquipmentID);
-                                referenceToDBId.put(savedShipmentEquipment.getEquipmentReference(), shipmentEquipmentID);
-                                activeReeferSettings.setShipmentEquipmentID(shipmentEquipmentID);
-                                return activeReeferSettingsService.create(activeReeferSettings)
-                                        .then(createSeals(shipmentEquipmentID, shipmentEquipmentTO.getSeals()));
+                    // TODO Performance: 1 Query for each ShipmentEquipment and then 1 for each ActiveReeferSettings
+                    // This probably be reduced to one big "LEFT JOIN ... WHERE shipmentEquipmentId IN (LIST)".
+                    return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
+                            .doOnNext(shipmentEquipment -> {
+                                shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
+                                shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
+                                shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
+                                shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
+                                referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
+                            }).flatMap(shipmentEquipmentService::save)
+                            .flatMap(shipmentEquipment ->
+                                    createSeals(shipmentEquipment.getId(), shipmentEquipmentTO.getSeals())
+                                            .thenReturn(shipmentEquipment)
+                            ).flatMap(shipmentEquipment -> {
+                                if (shipmentEquipmentTO.getActiveReeferSettings() == null) {
+                                    // Short cut: If no changes to the ActiveReeferSettings is requested, then we save
+                                    // the look up.
+                                    return Mono.empty();
+                                }
+                                /*
+                                 * ActiveReeferSettings can be absent; abort if it is absent AND there is an attempt to
+                                 * change it.
+                                 */
+                                return activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+                                        .switchIfEmpty(
+                                                // We get here if there was no ActiveReeferSettings related to the
+                                                // Shipment Equipment
+                                                Mono.error(new CreateException(
+                                                                "Cannot modify ActiveReeferSettings on "
+                                                                        + shipmentEquipmentTO.getEquipmentReference()
+                                                                        + ": It does not have an active reefer."
+                                                        ))
+                                        ).flatMap(current -> {
+                                            ActiveReeferSettings update = shipmentEquipmentTO.getActiveReeferSettings();
+                                            if (update.getShipmentEquipmentID() != null) {
+                                                return Mono.error(new CreateException(
+                                                        "Cannot modify ActiveReeferSettings on "
+                                                                + shipmentEquipmentTO.getEquipmentReference()
+                                                                + ": Please omit shipmentEquipmentID (it is implicit)"));
+                                            }
+                                            return activeReeferSettingsService.update(update);
+                                        });
                             });
                 })
                 .then(Mono.just(referenceToDBId));
@@ -244,7 +270,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             ShippingInstruction savedShippingInstruction = tuple.getT2();
             UUID shippingInstructionID = savedShippingInstruction.getId();
             shippingInstructionTO.setId(savedShippingInstruction.getId());
-            return createEquipment(shipment, shippingInstructionTO.getShipmentEquipments())
+            return createEquipment(shippingInstructionTO.getShipmentEquipments())
                     .flatMapMany(equipmentReference2ID ->
                         Flux.concat(
                                 createCargoItems(

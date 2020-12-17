@@ -7,6 +7,7 @@ import org.dcsa.ebl.repository.ShipmentEquipmentRepository;
 import org.dcsa.ebl.service.ShipmentEquipmentService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,5 +30,10 @@ public class ShipmentEquipmentServiceImpl extends ExtendedBaseServiceImpl<Shipme
     @Override
     public Flux<ShipmentEquipment> findAllByShipmentIDIn(List<UUID> shipmentIDs) {
         return shipmentEquipmentRepository.findAllByShipmentIDIn(shipmentIDs);
+    }
+
+    @Override
+    public Mono<ShipmentEquipment> findByEquipmentReference(String equipmentReference) {
+        return shipmentEquipmentRepository.findByEquipmentReference(equipmentReference);
     }
 }

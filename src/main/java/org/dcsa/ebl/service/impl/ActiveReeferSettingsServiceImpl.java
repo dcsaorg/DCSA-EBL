@@ -24,9 +24,4 @@ public class ActiveReeferSettingsServiceImpl extends ExtendedBaseServiceImpl<Act
     public Class<ActiveReeferSettings> getModelClass() {
         return ActiveReeferSettings.class;
     }
-
-    @Override
-    public Mono<ActiveReeferSettings> findByShipmentEquipmentID(UUID shipmentEquipmentID) {
-        return activeReeferSettingsRepository.findByShipmentEquipmentID(shipmentEquipmentID);
-    }
 }
