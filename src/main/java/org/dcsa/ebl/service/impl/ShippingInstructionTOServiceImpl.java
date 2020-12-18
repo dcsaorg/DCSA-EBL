@@ -223,11 +223,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
                     return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
                             .switchIfEmpty(Mono.error(new CreateException("Invalid equipment reference (create): " + equipmentReference)))
-                            .flatMap(shipmentEquipment -> {
-                                Mono<ShipmentEquipment> mono;
+                            .<ShipmentEquipment>flatMap(shipmentEquipment -> {
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
-                                mono = updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
-                                return mono;
+                                return updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
                             })
                             .flatMap(shipmentEquipmentService::save)
                             .flatMap(shipmentEquipment ->
