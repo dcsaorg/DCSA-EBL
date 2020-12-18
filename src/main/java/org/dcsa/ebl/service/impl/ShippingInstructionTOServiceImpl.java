@@ -191,6 +191,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 }).then();
     }
 
+    private Mono<ShipmentEquipment> updateShipmentEquipmentFields(ShipmentEquipment shipmentEquipment,
+                                                                  ShipmentEquipmentTO shipmentEquipmentTO) {
+        if (shipmentEquipmentTO.getCargoGrossWeight() == null || shipmentEquipmentTO.getCargoGrossWeightUnit() == null) {
+            return Mono.error(new CreateException("Error in ShipmentEquipment with equipmentReference "
+                    + shipmentEquipment.getEquipmentReference() + ": Please include both cargoGrossWeight and cargoGrossWeightUnit"));
+        }
+        if (shipmentEquipmentTO.getVerifiedGrossMass() == null) {
+            return Mono.error(new CreateException("Error in ShipmentEquipment with equipmentReference "
+                    + shipmentEquipment.getEquipmentReference() + ": Please include verifiedGrossMass"));
+        }
+        shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
+        shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
+        shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
+        return Mono.just(shipmentEquipment);
+    }
+
     private Mono<Map<String, UUID>> createEquipment(Iterable<ShipmentEquipmentTO> shipmentEquipmentTOs) {
         Map<String, UUID> referenceToDBId = new HashMap<>();
         return Flux.fromIterable(shipmentEquipmentTOs)
@@ -207,13 +223,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
                     return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
                             .switchIfEmpty(Mono.error(new CreateException("Invalid equipment reference (create): " + equipmentReference)))
-                            .doOnNext(shipmentEquipment -> {
-                                shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
-                                shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
-                                shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
-                                shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
+                            .flatMap(shipmentEquipment -> {
+                                Mono<ShipmentEquipment> mono;
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
-                            }).flatMap(shipmentEquipmentService::save)
+                                mono = updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
+                                return mono;
+                            })
+                            .flatMap(shipmentEquipmentService::save)
                             .flatMap(shipmentEquipment ->
                                     createSeals(shipmentEquipment.getId(), seals)
                                             .thenReturn(shipmentEquipment)
