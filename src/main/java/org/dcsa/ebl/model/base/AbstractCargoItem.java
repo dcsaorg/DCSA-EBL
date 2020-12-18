@@ -33,6 +33,7 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     @NotNull
     private String descriptionOfGoods;
 
+    @JsonProperty("HSCode")
     @Column("hs_code")
     @Size(max = 10)
     @NotNull
