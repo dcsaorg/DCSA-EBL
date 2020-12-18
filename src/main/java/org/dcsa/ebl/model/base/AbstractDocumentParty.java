@@ -21,6 +21,7 @@ public class AbstractDocumentParty extends AuditBase {
     @Column("party_id")
     private UUID partyID;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column("shipment_id")
     private UUID shipmentID;
 
