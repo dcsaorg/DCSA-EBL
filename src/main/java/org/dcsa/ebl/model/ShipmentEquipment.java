@@ -20,6 +20,7 @@ public class ShipmentEquipment extends AbstractShipmentEquipment implements GetI
     @Id
     private UUID id;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column("shipment_id")
     private UUID shipmentID;
 
