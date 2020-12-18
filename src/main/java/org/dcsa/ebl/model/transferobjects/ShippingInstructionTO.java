@@ -2,6 +2,7 @@ package org.dcsa.ebl.model.transferobjects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.Reference;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class ShippingInstructionTO extends AbstractShippingInstruction {
 
     @NotNull

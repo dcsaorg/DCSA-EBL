@@ -2,6 +2,7 @@ package org.dcsa.ebl.model.base;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public abstract class AbstractShippingInstruction extends AuditBase implements GetId<UUID> {
 
