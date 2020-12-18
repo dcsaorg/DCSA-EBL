@@ -46,25 +46,6 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String carrierBookingReference;
 
-    public ShippingInstruction getShippingInstruction() {
-        ShippingInstruction shippingInstruction = new ShippingInstruction();
-//        shippingInstruction.setId(getId());
-//        shippingInstruction.setCallbackUrl(getCallbackUrl());
-//        shippingInstruction.setIsElectronic(getIsElectronic());
-//        shippingInstruction.setNumberOfRiderPages(getNumberOfRiderPages());
-//        shippingInstruction.setTransportDocumentType(getTransportDocumentType());
-        return shippingInstruction;
-    }
-
-    public static ShippingInstructionTO create(ShippingInstruction shippingInstruction) {
-        ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
-//        shippingInstructionTO.setId(shippingInstruction.getId());
-//        shippingInstructionTO.setCallbackUrl(shippingInstruction.getCallbackUrl());
-//        shippingInstructionTO.setIsElectronic(shippingInstruction.getIsElectronic());
-//        shippingInstructionTO.setNumberOfRiderPages(shippingInstruction.getNumberOfRiderPages());
-//        shippingInstructionTO.setTransportDocumentType(shippingInstruction.getTransportDocumentType());
-        return shippingInstructionTO;
-    }
 }
 
 
