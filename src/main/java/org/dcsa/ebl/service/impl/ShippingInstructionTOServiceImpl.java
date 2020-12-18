@@ -126,7 +126,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     }
 
     private Mono<Void> createCargoItems(UUID shippingInstructionID,
-                                        Iterable<CargoItemTO> cargoItemTOs,
+                                        UUID shipmentID,
+                                        List<CargoItemTO> cargoItemTOs,
                                         Map<String, UUID> equipmentReference2ID) {
         Set<String> usedEquipmentReferences = new HashSet<>();
         return Flux.fromIterable(cargoItemTOs)
@@ -138,6 +139,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     if (shipmentEquipmentID == null) {
                         return Mono.error(new CreateException("Invalid equipment reference: " + equipmentReference));
                     }
+                    cargoItem.setShipmentID(shipmentID);
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
                     // Clear the EquipmentReference on exit because it is "input-only"
@@ -320,22 +322,24 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             Shipment shipment = tuple.getT1();
             ShippingInstruction savedShippingInstruction = tuple.getT2();
             UUID shippingInstructionID = savedShippingInstruction.getId();
+            UUID shipmentID = shipment.getId();
             shippingInstructionTO.setId(savedShippingInstruction.getId());
             return createEquipment(shippingInstructionTO.getShipmentEquipments())
                     .flatMapMany(equipmentReference2ID ->
                         Flux.concat(
                                 createCargoItems(
                                         shippingInstructionID,
+                                        shipmentID,
                                         shippingInstructionTO.getCargoItems(),
                                         equipmentReference2ID
                                 ),
                                 createReferences(shippingInstructionID, shippingInstructionTO.getReferences()),
                                 mapParties(
                                         shippingInstructionID,
-                                        shipment.getId(),
+                                        shipmentID,
                                         shippingInstructionTO.getDocumentParties()
                                 ),
-                                processShipmentLocations(shipment.getId(), shippingInstructionTO.getShipmentLocations())
+                                processShipmentLocations(shipmentID, shippingInstructionTO.getShipmentLocations())
                         )
                     );
         }).then(Mono.just(shippingInstructionTO));
