@@ -194,6 +194,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Flux.fromIterable(shipmentEquipmentTOs)
                 .concatMap(shipmentEquipmentTO -> {
                     String equipmentReference = shipmentEquipmentTO.getEquipmentReference();
+                    List<Seal> seals;
+                    if (shipmentEquipmentTO.getSeals() != null) {
+                        seals = shipmentEquipmentTO.getSeals();
+                    } else {
+                        seals = Collections.emptyList();
+                    }
 
                     // TODO Performance: 1 Query for each ShipmentEquipment and then 1 for each ActiveReeferSettings
                     // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
@@ -207,7 +213,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
                             }).flatMap(shipmentEquipmentService::save)
                             .flatMap(shipmentEquipment ->
-                                    createSeals(shipmentEquipment.getId(), shipmentEquipmentTO.getSeals())
+                                    createSeals(shipmentEquipment.getId(), seals)
                                             .thenReturn(shipmentEquipment)
                             ).flatMap(shipmentEquipment -> {
                                 if (shipmentEquipmentTO.getActiveReeferSettings() == null) {
