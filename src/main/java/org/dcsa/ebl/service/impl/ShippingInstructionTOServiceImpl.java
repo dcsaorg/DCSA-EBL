@@ -70,7 +70,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
                                     .collectList()
                                     .doOnNext(shipmentEquipmentTO::setSeals),
-                                // ActiveRefeerSettings is optional
+                                // ActiveReeferSettings is optional
                                 activeReeferSettingsRepository.findById(shipmentEquipment.getId())
                                     .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
                         ).then(Mono.just(shipmentEquipmentTO));
@@ -192,12 +192,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private Mono<Map<String, UUID>> createEquipment(Iterable<ShipmentEquipmentTO> shipmentEquipmentTOs) {
         Map<String, UUID> referenceToDBId = new HashMap<>();
         return Flux.fromIterable(shipmentEquipmentTOs)
-                .map(shipmentEquipmentTO -> {
+                .concatMap(shipmentEquipmentTO -> {
                     String equipmentReference = shipmentEquipmentTO.getEquipmentReference();
 
                     // TODO Performance: 1 Query for each ShipmentEquipment and then 1 for each ActiveReeferSettings
-                    // This probably be reduced to one big "LEFT JOIN ... WHERE shipmentEquipmentId IN (LIST)".
+                    // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
                     return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
+                            .switchIfEmpty(Mono.error(new CreateException("Invalid equipment reference (create): " + equipmentReference)))
                             .doOnNext(shipmentEquipment -> {
                                 shipmentEquipment.setEquipmentReference(shipmentEquipmentTO.getEquipmentReference());
                                 shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
@@ -212,7 +213,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 if (shipmentEquipmentTO.getActiveReeferSettings() == null) {
                                     // Short cut: If no changes to the ActiveReeferSettings is requested, then we save
                                     // the look up.
-                                    return Mono.empty();
+                                    return Mono.just(shipmentEquipment);
                                 }
                                 /*
                                  * ActiveReeferSettings can be absent; abort if it is absent AND there is an attempt to
