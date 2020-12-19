@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.ReferenceTypeCode;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -20,7 +21,7 @@ import java.util.UUID;
 @Data
 public class Reference extends AuditBase implements GetId<UUID> {
 
-    @JsonProperty("referenceID")
+    @Id
     @Column("id")
     private UUID referenceID;
 
