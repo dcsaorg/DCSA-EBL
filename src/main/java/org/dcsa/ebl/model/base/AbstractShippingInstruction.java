@@ -38,7 +38,11 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
     private TransportDocumentTypeCode transportDocumentType;
 
     public void setTransportDocumentType(String transportDocumentType) {
-        this.transportDocumentType = TransportDocumentTypeCode.valueOf(transportDocumentType);
+        if (transportDocumentType != null) {
+            this.transportDocumentType = TransportDocumentTypeCode.valueOf(transportDocumentType);
+        } else {
+            this.transportDocumentType = null;
+        }
     }
 
     public void setTransportDocumentType(TransportDocumentTypeCode transportDocumentType) {
