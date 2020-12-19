@@ -55,6 +55,9 @@ springdoc:
 
 server:
   port: 9090
+  error:
+    include-binding-errors: on_param
+    include-message: always
 
 logging:
   level:
