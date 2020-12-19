@@ -7,6 +7,7 @@ import org.dcsa.core.model.AuditBase;
 import org.dcsa.ebl.model.enums.PartyFunction;
 import org.springframework.data.relational.core.mapping.Column;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
@@ -26,7 +27,7 @@ public class AbstractDocumentParty extends AuditBase {
     private UUID shipmentID;
 
     @Column("party_function")
-    @Size(max = 3)
+    @NotNull
     private PartyFunction partyFunction;
 
     public void setPartyFunction(String partyFunction) {

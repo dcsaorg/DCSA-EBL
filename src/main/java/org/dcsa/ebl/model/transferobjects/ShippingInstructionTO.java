@@ -10,6 +10,7 @@ import org.dcsa.ebl.model.ShipmentLocation;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.springframework.data.annotation.Transient;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -20,22 +21,22 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
 
     @NotNull
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Valid
     private List<CargoItemTO> cargoItems;
 
     @NotNull
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Valid
     private List<ShipmentEquipmentTO> shipmentEquipments;
 
     @NotNull
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Valid
     private List<Reference> references;
 
     @NotNull
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Valid
     private List<DocumentPartyTO> documentParties;
 
     @NotNull
@@ -45,7 +46,6 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
 
     @NotNull
     @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String carrierBookingReference;
 
 }

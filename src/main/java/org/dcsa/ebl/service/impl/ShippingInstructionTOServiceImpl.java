@@ -18,6 +18,7 @@ import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -101,17 +102,18 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     return cargoLineItemService.findAllByCargoItemID(cargoItem.getId())
                             .collectList()
                             .doOnNext(cargoItemTO::setCargoLineItems)
-                            .thenReturn(cargoItemTO);
+                            .then(Mono.zip(Mono.just(cargoItem), Mono.just(cargoItemTO)));
                 })
                 .collectList()
-                .doOnNext(shippingInstructionTO::setCargoItems)
-                .flatMapMany(cargoItemTOs -> {
-                    List<UUID> shipmentIds = cargoItemTOs.stream().map(CargoItemTO::getShipmentID)
+                .flatMapMany(tuples -> {
+                    List<CargoItemTO> cargoItemTOs = tuples.stream().map(Tuple2::getT2).collect(Collectors.toList());
+                    List<UUID> shipmentIds = tuples.stream().map(Tuple2::getT1).map(CargoItem::getShipmentID)
                             .distinct().collect(Collectors.toList());
-
-                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds);
-
-                }),
+                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds)
+                            .then(Mono.just(cargoItemTOs));
+                })
+                .doOnNext(shippingInstructionTO::setCargoItems)
+                .count(),
            documentPartyService.findAllByShippingInstructionID(id)
                 .map(documentParty ->
                         MappingUtil.instanceFrom(documentParty, DocumentPartyTO::new, AbstractDocumentParty.class))
@@ -142,8 +144,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     cargoItem.setShipmentID(shipmentID);
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
+                    // Update the TO variant to match
                     // Clear the EquipmentReference on exit because it is "input-only"
                     cargoItemTO.setEquipmentReference(null);
+                    cargoItemTO.setShipmentEquipmentID(shipmentEquipmentID);
                     if (cargoLineItems == null || cargoLineItems.isEmpty()) {
                         return Mono.error(new CreateException("CargoItem with reference " + equipmentReference +
                                 ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
