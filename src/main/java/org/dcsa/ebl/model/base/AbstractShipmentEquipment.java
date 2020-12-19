@@ -20,7 +20,6 @@ public abstract class AbstractShipmentEquipment {
     private Float cargoGrossWeight;
 
     @Column("cargo_gross_weight_unit")
-    @Size(max = 3)
     private WeightUnit cargoGrossWeightUnit;
 
     public void setCargoGrossWeightUnit(String cargoGrossWeightUnit) {

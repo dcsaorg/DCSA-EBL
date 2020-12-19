@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 import org.dcsa.ebl.model.CargoLineItem;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.UUID;
 
 @NoArgsConstructor
 @Data

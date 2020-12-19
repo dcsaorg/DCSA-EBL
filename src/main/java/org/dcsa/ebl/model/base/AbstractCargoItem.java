@@ -1,6 +1,5 @@
 package org.dcsa.ebl.model.base;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -24,11 +23,6 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     @Id
     private UUID id;
 
-    @JsonIgnore
-    @Column("shipment_id")
-    @NotNull
-    private UUID shipmentID;
-
     @Column("description_of_goods")
     @NotNull
     private String descriptionOfGoods;
@@ -47,7 +41,6 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     private Float volume;
 
     @Column("weight_unit")
-    @Size(max = 3)
     private WeightUnit weightUnit;
 
     public void setWeightUnit(String weightUnit) {
@@ -59,7 +52,6 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     }
 
     @Column("volume_unit")
-    @Size(max = 16)
     private VolumeUnit volumeUnit;
 
     public void setVolumeUnit(String volumeUnit) {
@@ -74,10 +66,10 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     @Size(max = 3)
     private String packageCode;
 
-    @Column("shipping_instruction_id")
-    private UUID shippingInstructionID;
-
     @Column("shipment_equipment_id")
-    @NotNull
-    private UUID shipmentEquipmentID;
+    /* Database does not allow this to be null, but we receive requests where it is
+     * null, so we do not have a @NotNull here.
+     * Examples: POST /shipping-instructions (null on entry, not null on exit)
+     */
+    protected UUID shipmentEquipmentID;
 }
