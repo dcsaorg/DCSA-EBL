@@ -52,7 +52,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     .concatMap(shipmentEquipment -> {
                         ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
 
-                        shipmentEquipmentTO.setShipmentEquipmentID(shipmentEquipment.getId());
+                        shipmentEquipmentTO.setId(shipmentEquipment.getId());
                         shipmentEquipmentTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
                         shipmentEquipmentTO.setVerifiedGrossMass(shipmentEquipment.getVerifiedGrossMass());
                         shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
@@ -276,9 +276,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Party party = documentPartyTO.getParty();
                     UUID partyID = documentPartyTO.getPartyID();
 
-                    documentPartyTO.setShippingInstructionID(shippingInstructionID);
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
-                    documentParty.setShipmentID(shipmentID);
+                    documentParty.setShippingInstructionID(shippingInstructionID);
 
                     if (partyID == null) {
                         return Mono.error(new CreateException("DocumentParty is missing required partyID field"));
