@@ -191,6 +191,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private Mono<Void> createSeals(UUID shipmentEquipmentID, Iterable<Seal> seals) {
         return Flux.fromIterable(seals)
                 .flatMap(seal -> {
+                    if (seal.getId() != null) {
+                        return Mono.error(new CreateException("New Seal instances must not have an ID.  Please remove ID " + seal.getId()
+                                + " on  seal " + seal.getSealNumber() + " (type: " + seal.getSealType() + ", source: "
+                                + seal.getSealSource() + ")"));
+                    }
                     seal.setShipmentEquipmentID(shipmentEquipmentID);
                     return sealService.create(seal);
                 }).then();
