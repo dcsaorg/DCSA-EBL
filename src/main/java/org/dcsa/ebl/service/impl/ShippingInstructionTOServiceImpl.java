@@ -80,6 +80,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         ).then(Mono.just(shippingInstructionTO));
     }
 
+    @Transactional
     @Override
     public Mono<ShippingInstructionTO> findById(UUID id) {
         ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
@@ -322,6 +323,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
+    @Transactional
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
         ShippingInstruction shippingInstruction = MappingUtil.instanceFrom(
