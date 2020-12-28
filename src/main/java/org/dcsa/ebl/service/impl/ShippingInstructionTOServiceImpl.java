@@ -270,6 +270,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .switchIfEmpty(Mono.error(new CreateException("Invalid equipment reference (create): " + equipmentReference)))
                             .<ShipmentEquipment>flatMap(shipmentEquipment -> {
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
+                                shipmentEquipmentTO.setId(shipmentEquipment.getId());
                                 return updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
                             })
                             .flatMap(shipmentEquipmentService::update)
