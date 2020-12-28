@@ -1,6 +1,5 @@
 package org.dcsa.ebl.model.base;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dcsa.core.model.AuditBase;
@@ -15,16 +14,8 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class AbstractDocumentParty extends AuditBase {
 
-    @Column("shipping_instruction_id")
-    private UUID shippingInstructionID;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Column("party_id")
     private UUID partyID;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Column("shipment_id")
-    private UUID shipmentID;
 
     @Column("party_function")
     @NotNull
