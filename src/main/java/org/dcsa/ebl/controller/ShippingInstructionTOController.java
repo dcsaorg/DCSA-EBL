@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.json.JsonPatch;
 import javax.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
@@ -71,10 +72,16 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
         return shippingInstructionTOService.create(shippingInstructionTO);
     }
 
+    @Transactional
+    @PatchMapping(path = "{shippingInstructionID}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<ShippingInstructionTO> patch(@PathVariable UUID shippingInstructionID, @Valid @RequestBody JsonPatch patch) {
+        return shippingInstructionTOService.patchOriginal(shippingInstructionID, patch);
+    }
+
     @PutMapping( path = "{shippingInstructionID}")
     public Mono<ShippingInstructionTO> update(@PathVariable UUID shippingInstructionID, @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-        // return shippingInstructionTOService.update(shippingInstructionID, shippingInstructionTO);
-        return Mono.error(new UnsupportedOperationException("Not implemented yet"));
+        return shippingInstructionTOService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
     }
 
     @DeleteMapping

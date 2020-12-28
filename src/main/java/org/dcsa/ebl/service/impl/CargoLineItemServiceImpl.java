@@ -7,7 +7,9 @@ import org.dcsa.ebl.repository.CargoLineItemRepository;
 import org.dcsa.ebl.service.CargoLineItemService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -31,6 +33,20 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
     }
 
     public Flux<CargoLineItem> createAll(Iterable<CargoLineItem> cargoLineItems) {
-        return cargoLineItemRepository.saveAll(cargoLineItems);
+        return cargoLineItemRepository.saveAll(
+                Flux.fromIterable(cargoLineItems)
+                    .concatMap(this::preCreateHook)
+                    .concatMap(this::preSaveHook)
+        );
+    }
+
+    public Flux<CargoLineItem> updateAll(Iterable<CargoLineItem> cargoLineItems) {
+        // FIXME: This does N x SELECT 1 + N x UPDATE 1 queries rather than 1 x SELECT N + 1 x UPDATE N query
+        return Flux.fromIterable(cargoLineItems)
+                    .concatMap(this::update);
+    }
+
+    public Mono<Void> deleteByCargoItemIDAndCargoLineItemIDIn(UUID cargoItemID, List<String> cargoLineItemIDs) {
+        return cargoLineItemRepository.deleteByCargoItemIDAndCargoLineItemIDIn(cargoItemID, cargoLineItemIDs);
     }
 }
