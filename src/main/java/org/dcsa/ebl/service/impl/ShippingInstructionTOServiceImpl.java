@@ -166,22 +166,45 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                   UUID shipmentID,
                                                   List<CargoItemTO> cargoItemTOs,
                                                   Map<String, UUID> equipmentReference2ID,
-                                                  boolean createAll) {
-        Set<String> usedEquipmentReferences = new HashSet<>();
-        Function<String, RuntimeException> exceptionType = createAll ? CreateException::new : UpdateException::new;
+                                                  boolean creationFlow) {
+        Map<UUID, String> usedEquipmentReferences = new HashMap<>();
+        Function<String, RuntimeException> exceptionType = creationFlow ? CreateException::new : UpdateException::new;
         return Flux.fromIterable(cargoItemTOs)
                 .flatMap(cargoItemTO -> {
                     CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
                     String equipmentReference = cargoItemTO.getEquipmentReference();
                     List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
-                    UUID shipmentEquipmentID = equipmentReference2ID.get(equipmentReference);
+                    UUID shipmentEquipmentID;
 
-                    if (createAll && cargoItem.getId() != null) {
-                        return Mono.error(exceptionType.apply("The id of CargoItem is auto-generated: please omit it"));
+                    if (creationFlow) {
+                        shipmentEquipmentID = equipmentReference2ID.get(equipmentReference);
+                        if (cargoItem.getId() != null) {
+                            return Mono.error(exceptionType.apply("The id of CargoItem is auto-generated: please omit it"));
+                        }
+                        if (shipmentEquipmentID == null) {
+                            return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
+                        }
+                    } else {
+                        UUID idFromEquipmentReference = equipmentReference2ID.get(equipmentReference);
+                        shipmentEquipmentID = cargoItem.getShipmentEquipmentID();
+                        if (equipmentReference != null && idFromEquipmentReference == null) {
+                            return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
+                        }
+                        if (shipmentEquipmentID == null) {
+                            // Could be a newly crated equipment
+                            shipmentEquipmentID = idFromEquipmentReference;
+                        } else if (equipmentReference != null && !shipmentEquipmentID.equals(idFromEquipmentReference)) {
+                            return Mono.error(exceptionType.apply("Conflicting shipment equipment ID - explicit id is "
+                                    + shipmentEquipmentID + " and ID via equipmentReference (" + equipmentReference
+                                    + ") is: " + idFromEquipmentReference));
+                        }
+                        if (shipmentEquipmentID == null) {
+                            return Mono.error(exceptionType.apply("CargoItem must have either a shipmentEquipmentID"
+                                    + " or a valid equipmentReference"));
+                        }
                     }
-                    if (shipmentEquipmentID == null) {
-                        return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
-                    }
+
+                    usedEquipmentReferences.put(shipmentEquipmentID, equipmentReference);
                     cargoItem.setShipmentID(shipmentID);
                     cargoItem.setShippingInstructionID(shippingInstructionID);
                     cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
@@ -194,7 +217,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
                         ));
                     }
-                    usedEquipmentReferences.add(equipmentReference);
                     return Mono.just(cargoItem)
                             .flatMap(cargoItemInner -> {
                                 if (cargoItem.getId() == null) {
@@ -209,9 +231,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             }).thenMany(Flux.fromIterable(cargoLineItems));
                 })
                 .doOnComplete(() -> {
-                    for (String reference : equipmentReference2ID.keySet()) {
-                        if (!usedEquipmentReferences.contains(reference)) {
-                            throw exceptionType.apply("Missing Cargo Line Items for reference " + reference);
+                    for (UUID shipmentEquipmentID: equipmentReference2ID.values()) {
+                        if (!usedEquipmentReferences.containsKey(shipmentEquipmentID)) {
+                            String equipmentReference = usedEquipmentReferences.get(shipmentEquipmentID);
+                            if (equipmentReference == null) {
+                                equipmentReference = "N/A";
+                            }
+                            throw exceptionType.apply("Missing Cargo Items for equipment with ID "
+                                    + shipmentEquipmentID + ", equipmentReference: " + equipmentReference);
                         }
                     }
                 });
