@@ -763,12 +763,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         );
     }
 
+    @Data(staticConstructor = "of")
+    private static class FakeCargoLineItemID {
+        final UUID cargoItemID;
+        final String cargoLineItemID;
+
+        public static FakeCargoLineItemID of(CargoLineItem cargoLineItem) {
+            return of(cargoLineItem.getCargoItemID(), cargoLineItem.getCargoLineItemID());
+        }
+    }
+
     private static ChangeSet<CargoLineItem> cargoLineItemChangeDetector(List<CargoItemTO> itemsFromOriginal, List<CargoItemTO> itemsFromUpdate) {
         return flatteningChangeDetector(
                 itemsFromOriginal,
                 itemsFromUpdate,
                 CargoItemTO::getCargoLineItems,
-                CargoLineItem::getCargoLineItemID,
+                FakeCargoLineItemID::of,
                 "CargoLineItem"
         );
     }
