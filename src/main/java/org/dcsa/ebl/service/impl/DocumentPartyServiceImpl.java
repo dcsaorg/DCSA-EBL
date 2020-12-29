@@ -1,12 +1,14 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.model.DocumentParty;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
@@ -29,4 +31,24 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     public Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID) {
         return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
+
+    protected Mono<DocumentParty> preUpdateHook(DocumentParty current, DocumentParty update) {
+        // FIXME: Revise this when we get compound Id support figured out
+        if (!current.getPartyID().equals(update.getPartyID())) {
+            return Mono.error(new UpdateException("update called with a non-matching item!"));
+        }
+        if (!current.getPartyFunction().equals(update.getPartyFunction())) {
+            return Mono.error(new UpdateException("update called with a non-matching item!"));
+        }
+        update.setId(current.getId());
+        return super.preUpdateHook(current, update);
+    }
+
+    @Override
+    public Mono<DocumentParty> update(final DocumentParty update) {
+        return documentPartyRepository.findByPartyIDAndPartyFunction(update.getPartyID(), update.getPartyFunction())
+                .flatMap(current -> this.preUpdateHook(current, update))
+                .flatMap(this::save);
+    }
+
 }
