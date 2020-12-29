@@ -32,6 +32,11 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
         return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 
+    @Override
+    public Mono<DocumentParty> findById(UUID id) {
+        return Mono.error(new UnsupportedOperationException("findById not supported"));
+    }
+
     protected Mono<DocumentParty> preUpdateHook(DocumentParty current, DocumentParty update) {
         // FIXME: Revise this when we get compound Id support figured out
         if (!current.getPartyID().equals(update.getPartyID())) {
