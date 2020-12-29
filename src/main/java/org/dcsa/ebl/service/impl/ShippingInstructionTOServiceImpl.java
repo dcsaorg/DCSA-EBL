@@ -70,7 +70,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
 
     private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO, List<UUID> shipmentIDs) {
+        if (shipmentIDs.size() != 1) {
+            /* Assumption comes because we need to pull a booking reference from the shipment and that gives the 1:1 */
+            return Mono.error(new UnsupportedOperationException("Expected Cargo items would lead to exactly" +
+                    " one shipment, got " + shipmentIDs.size()));
+        }
         return Flux.concat(
+                shipmentService.findById(shipmentIDs.get(0))
+                    .doOnNext(shipment ->
+                            shippingInstructionTO.setCarrierBookingReference(shipment.getCarrierBookingReference())),
                 shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
                     .collectList()
                     .doOnNext(shippingInstructionTO::setShipmentLocations),
