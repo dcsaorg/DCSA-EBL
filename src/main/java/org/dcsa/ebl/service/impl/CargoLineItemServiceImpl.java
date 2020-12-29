@@ -44,6 +44,11 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
         );
     }
 
+    @Override
+    public Mono<CargoLineItem> findById(UUID id) {
+        return Mono.error(new UnsupportedOperationException("findById not supported"));
+    }
+
     protected Mono<CargoLineItem> preUpdateHook(CargoLineItem current, CargoLineItem update) {
         // FIXME: Revise this when we get compound Id support figured out
         // NB: We rely on this control check in the updateAll method
