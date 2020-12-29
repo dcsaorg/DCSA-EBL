@@ -1,5 +1,6 @@
 package org.dcsa.ebl.controller;
 
+import com.github.fge.jsonpatch.JsonPatch;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.DeleteException;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.json.JsonPatch;
 import javax.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
@@ -73,8 +73,7 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     }
 
     @Transactional
-    @PatchMapping(path = "{shippingInstructionID}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PatchMapping(path = "{shippingInstructionID}", consumes = "application/json-patch+json")
     public Mono<ShippingInstructionTO> patch(@PathVariable UUID shippingInstructionID, @Valid @RequestBody JsonPatch patch) {
         return shippingInstructionTOService.patchOriginal(shippingInstructionID, patch);
     }

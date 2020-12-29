@@ -1,6 +1,9 @@
 package org.dcsa.ebl.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
@@ -24,8 +27,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 
-import javax.json.JsonPatch;
-import javax.json.JsonStructure;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
@@ -463,8 +464,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     @Override
     public Mono<ShippingInstructionTO> patchOriginal(UUID shippingInstructionId, JsonPatch patch) {
         return genericUpdate(shippingInstructionId, original -> {
-            JsonStructure target = objectMapper.convertValue(original, JsonStructure.class);
-            JsonStructure jsonValue = patch.apply(target);
+            JsonNode target = objectMapper.convertValue(original, JsonNode.class);
+            JsonNode jsonValue;
+            try {
+                jsonValue = patch.apply(target);
+            } catch (JsonPatchException e) {
+                throw new UpdateException(e.getMessage());
+            }
             return objectMapper.convertValue(jsonValue, ShippingInstructionTO.class);
         });
     }

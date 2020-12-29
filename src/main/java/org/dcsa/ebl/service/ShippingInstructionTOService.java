@@ -1,12 +1,12 @@
 package org.dcsa.ebl.service;
 
+import com.github.fge.jsonpatch.JsonPatch;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.json.JsonPatch;
 import java.util.UUID;
 
 public interface ShippingInstructionTOService {
