@@ -527,7 +527,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     }
                     if (!shipmentLocationChangeSet.orphanedInstances.isEmpty()) {
                         ShipmentLocation orphaned = shipmentLocationChangeSet.orphanedInstances.get(0);
-                        return Mono.error(new UpdateException("Cannot create ShipmentLocations"
+                        return Mono.error(new UpdateException("Cannot delete ShipmentLocations"
                                 + " (shipmentID, locationID, and locationType must not be changed): Deleted instance was: "
                                 + orphaned.getShipmentID() + ", " +  orphaned.getLocationID()
                                 + ", " + orphaned.getLocationType()
