@@ -12,4 +12,5 @@ public interface CargoLineItemRepository extends ExtendedRepository<CargoLineIte
 
     Flux<CargoLineItem> findAllByCargoItemID(UUID cargoItemID);
     Mono<Void> deleteByCargoItemIDAndCargoLineItemIDIn(UUID cargoItemID, List<String> cargoLineItemIDs);
+    Flux<CargoLineItem> findAllByCargoItemIDAndCargoLineItemIDInOrderByCargoLineItemID(UUID cargoItemID, List<String> cargoLineItemIDs);
 }
