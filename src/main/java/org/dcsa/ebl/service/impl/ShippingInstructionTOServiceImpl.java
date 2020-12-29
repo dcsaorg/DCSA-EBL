@@ -574,40 +574,43 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
-                            deleteAllFromChangeSet(referenceChangeSet, referenceService::delete)
+                            deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
+                            // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
+                            // cargo line item is moved between two cargo items (as you can only use the ID once).
+                            Flux.fromIterable(cargoLineItemChangeSet.orphanedInstances)
+                                    .groupBy(CargoLineItem::getCargoItemID, CargoLineItem::getCargoLineItemID)
+                                    .flatMap(uuidStringGroupedFlux ->
+                                            uuidStringGroupedFlux.buffer(SQL_LIST_BUFFER_SIZE)
+                                                    .concatMap(idList ->
+                                                            cargoLineItemService.deleteByCargoItemIDAndCargoLineItemIDIn(
+                                                                    uuidStringGroupedFlux.key(), idList))
+                                    ).thenMany(Flux.fromStream(cargoItemTOChangeSet.orphanedInstances.stream().map(CargoItemTO::getId)))
+                                    .buffer(SQL_LIST_BUFFER_SIZE)
+                                    .concatMap(cargoItemService::deleteAllByIdIn)
                     );
 
-                    Flux<?> handleEquipmentAndCargoItems = updateEquipment(shipmentEquipmentTOChangeSet.updatedInstances, true)
-                            .flatMapMany(equipmentTuple ->
-                                // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
-                                // cargo line item is moved between two cargo items (as you can only use the ID once).
-                                Flux.fromIterable(cargoLineItemChangeSet.orphanedInstances)
-                                        .groupBy(CargoLineItem::getCargoItemID, CargoLineItem::getCargoLineItemID)
-                                        .flatMap(uuidStringGroupedFlux ->
-                                                uuidStringGroupedFlux.buffer(SQL_LIST_BUFFER_SIZE)
-                                                        .concatMap(idList ->
-                                                                cargoLineItemService.deleteByCargoItemIDAndCargoLineItemIDIn(
-                                                                        uuidStringGroupedFlux.key(), idList))
-                                        ).thenMany(Flux.fromStream(cargoItemTOChangeSet.orphanedInstances.stream().map(CargoItemTO::getId)))
-                                        .buffer(SQL_LIST_BUFFER_SIZE)
-                                        .flatMap(cargoItemService::deleteAllByIdIn)
-                                        // With the deletion out of the way, we can move on to updating the cargo items
-                                        // Use Flux.defer to avoid triggering any code in processCargoItems before we are ready
-                                        .thenMany(Flux.defer(
-                                                () -> processCargoItems(
-                                                        shippingInstructionId,
-                                                        shipmentID,
-                                                        nonDeletedCargoItems,
-                                                        equipmentTuple.getT1(),
-                                                        false))
-                                        ).groupBy(cargoLineItem -> knownCargoLineItems.contains(cargoLineItem.getCargoLineItemID()))
-                                        .flatMap(cargoLineItemGroup ->
-                                                cargoLineItemGroup.buffer(SQL_LIST_BUFFER_SIZE)
-                                                    .concatMap(Objects.requireNonNull(cargoLineItemGroup.key())
-                                                            ? cargoLineItemService::updateAll
-                                                            : cargoLineItemService::createAll)
-                                        ).thenMany(Flux.fromIterable(equipmentTuple.getT2()))
-                                        .flatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, false))
+                    Flux<CargoLineItem> handleEquipmentAndCargoItems = updateEquipment(
+                                shipmentEquipmentTOChangeSet.updatedInstances,
+                                true
+                            ).flatMapMany(equipmentTuple ->
+                                Flux.fromIterable(equipmentTuple.getT2())
+                                .flatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, false))
+                                .thenMany(
+                                    processCargoItems(
+                                            shippingInstructionId,
+                                            shipmentID,
+                                            nonDeletedCargoItems,
+                                            equipmentTuple.getT1(),
+                                            false
+                                    )
+                                )
+                                .groupBy(cargoLineItem -> knownCargoLineItems.contains(cargoLineItem.getCargoLineItemID()))
+                                .flatMap(cargoLineItemGroup ->
+                                            cargoLineItemGroup.buffer(SQL_LIST_BUFFER_SIZE)
+                                                .concatMap(Objects.requireNonNull(cargoLineItemGroup.key())
+                                                        ? cargoLineItemService::updateAll
+                                                        : cargoLineItemService::createAll)
+                                )
                     );
 
                     Flux<?> deferredUpdates = Flux.concat(
