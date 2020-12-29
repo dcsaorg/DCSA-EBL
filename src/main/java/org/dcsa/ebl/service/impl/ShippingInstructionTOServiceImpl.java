@@ -779,6 +779,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             + " create a new instance)");
                 }
                 usedIds.add(updateId);
+                updatedObjects.add(update);
             } else {
                 newObjects.add(update);
             }
