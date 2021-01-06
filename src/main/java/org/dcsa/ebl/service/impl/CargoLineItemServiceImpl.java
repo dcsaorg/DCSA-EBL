@@ -59,7 +59,7 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
             return Mono.error(new UpdateException("update called with a non-matching item!"));
         }
         update.setId(current.getId());
-        return Mono.just(update);
+        return super.preUpdateHook(current, update);
     }
 
     @Transactional
