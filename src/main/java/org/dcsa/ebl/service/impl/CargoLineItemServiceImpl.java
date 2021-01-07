@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
+
 @RequiredArgsConstructor
 @Service
 public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineItemRepository, CargoLineItem, UUID> implements CargoLineItemService {
@@ -75,7 +77,7 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
                     .groupBy(CargoLineItem::getCargoItemID)
                     .flatMap(keyedCargoLineItemFlux ->
                         keyedCargoLineItemFlux
-                                .buffer(70)
+                                .buffer(SQL_LIST_BUFFER_SIZE)
                                 .concatMap(bufferedCargoLineItems -> {
                                     UUID cargoItemID = keyedCargoLineItemFlux.key();
                                     List<String> cargoLineItemIDs;
@@ -103,7 +105,7 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
                         return this.preUpdateHook(original, update);
                     })
                     .concatMap(this::preSaveHook)
-                    .buffer(70)
+                    .buffer(SQL_LIST_BUFFER_SIZE)
                     .concatMap(cargoLineItemRepository::saveAll);
     }
 

@@ -36,20 +36,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
+
 @RequiredArgsConstructor
 @Service
 public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOService {
-
-    /* For use with ".buffer(...).concatMap(service::createOrUpdateOrDeleteAll), etc. where the underlying
-     * operation uses a variant "WHERE foo IN (LIST)".
-     *
-     * A higher number means fewer queries but after a certain size postgres performance will degrade.
-     * Plus a higher number will also require more memory (java-side) as we build up a list of items.
-     *
-     * The number should be sufficient to bundle most trivial things into a single query without hitting
-     * performance issues.
-     */
-    private static final int SQL_LIST_BUFFER_SIZE = 70;
 
     private final ShippingInstructionService shippingInstructionService;
 
