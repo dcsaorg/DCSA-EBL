@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.UUID;
 
+import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
+
 @RequiredArgsConstructor
 @Service
 public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<ShipmentLocationRepository, ShipmentLocation, UUID> implements ShipmentLocationService {
@@ -64,7 +66,7 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     public Flux<ShipmentLocation> createAll(Flux<ShipmentLocation> shipmentLocations) {
         return shipmentLocations
                 .concatMap(this::preCreateHook)
-                .buffer(70)
+                .buffer(SQL_LIST_BUFFER_SIZE)
                 .concatMap(shipmentLocationRepository::saveAll);
     }
 
