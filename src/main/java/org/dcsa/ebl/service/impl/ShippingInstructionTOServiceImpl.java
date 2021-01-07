@@ -19,7 +19,6 @@ import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
-import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
 import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ShippingInstructionService shippingInstructionService;
 
     /* We need the repository because the service gives an error if the object does not exist */
-    private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
     private final ActiveReeferSettingsService activeReeferSettingsService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
@@ -107,7 +105,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     .collectList()
                                     .doOnNext(shipmentEquipmentTO::setSeals),
                                 // ActiveReeferSettings is optional
-                                activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+                                activeReeferSettingsService.findById(shipmentEquipment.getId())
                                     .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
                         ).then(Mono.just(shipmentEquipmentTO));
                     }).collectList()
@@ -313,7 +311,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .flatMap(shipmentEquipment -> {
                                 if (shipmentEquipmentTO.getActiveReeferSettings() == null) {
                                     if (nullReeferEnsuresAbsence) {
-                                        return activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+                                        return activeReeferSettingsService.findById(shipmentEquipment.getId())
                                                 // We assume the Mono is empty and if not, then you are deleting an
                                                 // active reefer from the equipment, which is not possible.
                                                 .flatMap(activeReeferSettings ->
@@ -324,7 +322,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                         ))
                                                 ).thenReturn(shipmentEquipment);
                                     }
-                                    return activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+                                    return activeReeferSettingsService.findById(shipmentEquipment.getId())
                                             .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
                                             .thenReturn(shipmentEquipment);
                                 }
@@ -332,7 +330,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                  * ActiveReeferSettings can be absent; abort if it is absent AND there is an attempt to
                                  * change it.
                                  */
-                                return activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+                                return activeReeferSettingsService.findById(shipmentEquipment.getId())
                                         .switchIfEmpty(
                                                 // We get here if there was no ActiveReeferSettings related to the
                                                 // Shipment Equipment
