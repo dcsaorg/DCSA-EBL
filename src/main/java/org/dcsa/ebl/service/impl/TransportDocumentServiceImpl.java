@@ -13,8 +13,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 public class TransportDocumentServiceImpl extends ExtendedBaseServiceImpl<TransportDocumentRepository, TransportDocument, UUID> implements TransportDocumentService {
-    private final TransportDocumentRepository transportDocumentRepository;
 
+    private final TransportDocumentRepository transportDocumentRepository;
 
     @Override
     public TransportDocumentRepository getRepository() {

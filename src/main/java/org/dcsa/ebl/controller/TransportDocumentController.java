@@ -5,6 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
+import org.dcsa.core.exception.GetException;
+import org.dcsa.core.exception.UpdateException;
+import org.dcsa.core.extendedrequest.ExtendedParameters;
+import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.model.ShippingInstruction;
+import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
 import org.springframework.http.HttpStatus;
@@ -16,60 +22,70 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "transport-documents", produces = {MediaType.APPLICATION_JSON_VALUE})
 @Tag(name = "Transport Documents", description = "The Transport Document API")
-public class TransportDocumentController extends ExtendedBaseController<TransportDocumentTOService, TransportDocumentTO, UUID> {
+public class TransportDocumentController extends AbstractTOController<TransportDocumentTOService> {
+
+    private final ExtendedParameters extendedParameters;
 
     private final TransportDocumentTOService transportDocumentTOService;
-
-    @Override
-    public String getType() {
-        return "TransportDocument";
-    }
 
     @Override
     public TransportDocumentTOService getService() {
         return transportDocumentTOService;
     }
 
-    @GetMapping
     @Override
+    public String getType() {
+        return "TransportDocument";
+    }
+
+    @GetMapping
     public Flux<TransportDocumentTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        return super.findAll(response, request);
+        ExtendedRequest<TransportDocument> extendedRequest = new ExtendedRequest<>(extendedParameters,
+                TransportDocument.class);
+
+        try {
+            Map<String, String> params = request.getQueryParams().toSingleValueMap();
+            extendedRequest.parseParameter(params);
+        } catch (GetException e) {
+            return Flux.error(e);
+        }
+
+        return transportDocumentTOService.findAllExtended(extendedRequest).doOnComplete(
+                () -> extendedRequest.insertHeaders(response, request)
+        );
     }
 
     @GetMapping(path="{ID}")
-    @Override
-    public Mono<TransportDocumentTO> findById(@PathVariable UUID ID) {
-        return super.findById(ID);
+    public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID) {
+        return transportDocumentTOService.findById(transportDocumentID);
     }
 
     @PutMapping( path = "{ID}")
-    @Override
     public Mono<TransportDocumentTO> update(@PathVariable UUID ID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
-        return super.update(ID, transportDocumentTO);
+        return Mono.error(new UpdateException("Not possible to update a TransportDocument"));
     }
 
 
-    @Override
+    @PostMapping
     public Mono<TransportDocumentTO> create(@Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new CreateException("Not possible to create a TransportDocument"));
     }
 
     @DeleteMapping
     @ResponseStatus( HttpStatus.NO_CONTENT )
-    @Override
     public Mono<Void> delete(@RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
     }
 
     @DeleteMapping( path ="{ID}" )
     @ResponseStatus( HttpStatus.NO_CONTENT )
-    @Override
     public Mono<Void> deleteById(@PathVariable UUID ID) {
         return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
     }
