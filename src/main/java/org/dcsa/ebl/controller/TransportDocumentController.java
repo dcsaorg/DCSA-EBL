@@ -2,14 +2,12 @@ package org.dcsa.ebl.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.controller.ExtendedBaseController;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
@@ -46,7 +44,7 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     }
 
     @GetMapping
-    public Flux<TransportDocumentTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
+    public Flux<TransportDocument> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         ExtendedRequest<TransportDocument> extendedRequest = new ExtendedRequest<>(extendedParameters,
                 TransportDocument.class);
 
@@ -62,18 +60,19 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         );
     }
 
-    @GetMapping(path="{ID}")
+    @GetMapping(path="{transportDocumentID}")
     public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID) {
         return transportDocumentTOService.findById(transportDocumentID);
     }
 
-    @PutMapping( path = "{ID}")
-    public Mono<TransportDocumentTO> update(@PathVariable UUID ID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
+    @PutMapping( path = "{transportDocumentID}")
+    public Mono<TransportDocumentTO> update(@PathVariable UUID transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new UpdateException("Not possible to update a TransportDocument"));
     }
 
 
     @PostMapping
+    @ResponseStatus( HttpStatus.CREATED )
     public Mono<TransportDocumentTO> create(@Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new CreateException("Not possible to create a TransportDocument"));
     }
@@ -84,9 +83,9 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
     }
 
-    @DeleteMapping( path ="{ID}" )
+    @DeleteMapping( path ="{transportDocumentID}" )
     @ResponseStatus( HttpStatus.NO_CONTENT )
-    public Mono<Void> deleteById(@PathVariable UUID ID) {
+    public Mono<Void> deleteById(@PathVariable UUID transportDocumentID) {
         return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
     }
 }
