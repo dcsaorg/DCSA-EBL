@@ -20,9 +20,4 @@ public class TransportDocumentTO extends TransportDocument {
     @Transient
     @Valid
     private ShippingInstructionTO shippingInstruction;
-
-    @NotNull
-    @Transient
-    @Valid
-    private List<Charge> charges;
 }
