@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model.transferobjects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -20,4 +21,10 @@ public class TransportDocumentTO extends TransportDocument {
     @Transient
     @Valid
     private ShippingInstructionTO shippingInstruction;
+
+    @NotNull
+    @Transient
+    @Valid
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Charge> charges;
 }
