@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model.base;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,12 +27,15 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
     private UUID placeOfIssue;
 
     @Column("date_of_issue")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfIssue;
 
     @Column("onboard_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate onboardDate;
 
     @Column("received_for_shipment_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate receivedForShipmentDate;
 
     @Column("document_reference_number")
