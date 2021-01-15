@@ -61,8 +61,8 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     }
 
     @GetMapping(path="{transportDocumentID}")
-    public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID) {
-        return transportDocumentTOService.findById(transportDocumentID);
+    public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID, @RequestParam(defaultValue = "false") boolean displayCharges) {
+        return transportDocumentTOService.findById(transportDocumentID, displayCharges);
     }
 
     @PutMapping( path = "{transportDocumentID}")

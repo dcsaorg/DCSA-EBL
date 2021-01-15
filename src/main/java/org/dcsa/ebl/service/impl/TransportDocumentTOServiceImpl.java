@@ -7,6 +7,7 @@ import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
+import org.dcsa.ebl.service.ChargeService;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.dcsa.ebl.service.TransportDocumentTOService;
@@ -22,36 +23,43 @@ import java.util.UUID;
 public class TransportDocumentTOServiceImpl implements TransportDocumentTOService {
     private final TransportDocumentService transportDocumentService;
     private final ShippingInstructionTOService shippingInstructionTOService;
+    private final ChargeService chargeService;
 
     @Transactional
     @Override
-    public Mono<TransportDocumentTO> findById(UUID transportDocumentID) {
+    public Mono<TransportDocumentTO> findById(UUID transportDocumentID, boolean includeCharges) {
         TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
 
-        return transportDocumentService.findById(transportDocumentID)
-                .switchIfEmpty(
-                        Mono.error(new GetException("No TransportDocument for id: " + transportDocumentID))
-                )
-                .flatMap(
-                        transportDocument -> {
-                            MappingUtil.copyFields(
-                                    transportDocument,
-                                    transportDocumentTO,
-                                    AbstractTransportDocument.class
-                            );
-                            if (transportDocument.getShippingInstructionID() == null) {
-                                return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument"));
-                            } else {
-                                return shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
-                                        .switchIfEmpty(
-                                                Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
-                                        )
-                                        .doOnNext(
-                                                shippingInstruction ->
-                                                        transportDocumentTO.setShippingInstruction(shippingInstruction))
-                                        .thenReturn(transportDocumentTO);
-                            }
-                });
+        return Flux.concat(
+                transportDocumentService.findById(transportDocumentID)
+                    .switchIfEmpty(
+                            Mono.error(new GetException("No TransportDocument for id: " + transportDocumentID))
+                    )
+                    .flatMap(
+                            transportDocument -> {
+                                MappingUtil.copyFields(
+                                        transportDocument,
+                                        transportDocumentTO,
+                                        AbstractTransportDocument.class
+                                );
+                                if (transportDocument.getShippingInstructionID() == null) {
+                                    return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument"));
+                                } else {
+                                    return shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
+                                            .switchIfEmpty(
+                                                    Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
+                                            )
+                                            .doOnNext(
+                                                    shippingInstruction ->
+                                                            transportDocumentTO.setShippingInstruction(shippingInstruction))
+                                            .thenReturn(transportDocumentTO);
+                                }
+                    }),
+                includeCharges ?
+                    chargeService.findAllByTransportDocumentID(transportDocumentID)
+                            .collectList()
+                            .doOnNext(transportDocumentTO::setCharges) : Flux.empty()
+        ).then(Mono.just(transportDocumentTO));
     }
 
     @Override
