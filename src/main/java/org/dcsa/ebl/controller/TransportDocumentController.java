@@ -2,7 +2,6 @@ package org.dcsa.ebl.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.exception.UpdateException;
@@ -70,11 +69,10 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         return Mono.error(new UpdateException("Not possible to update a TransportDocument"));
     }
 
-
     @PostMapping
     @ResponseStatus( HttpStatus.CREATED )
     public Mono<TransportDocumentTO> create(@Valid @RequestBody TransportDocumentTO transportDocumentTO) {
-        return Mono.error(new CreateException("Not possible to create a TransportDocument"));
+        return transportDocumentTOService.create(transportDocumentTO);
     }
 
     @DeleteMapping
