@@ -4,10 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.Reference;
-import org.dcsa.ebl.model.ShipmentLocation;
-import org.dcsa.ebl.model.ShippingInstruction;
+import org.dcsa.ebl.model.ShipmentLocationTO;
+import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.springframework.data.annotation.Transient;
 
 import javax.validation.Valid;
@@ -42,7 +41,7 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
     @NotNull
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<ShipmentLocation> shipmentLocations;
+    private List<ShipmentLocationTO> shipmentLocations;
 
     @NotNull
     @Transient

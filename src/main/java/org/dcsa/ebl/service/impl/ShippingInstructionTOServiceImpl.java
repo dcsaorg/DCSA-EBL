@@ -12,6 +12,7 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
 import org.dcsa.ebl.model.base.AbstractDocumentParty;
+import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.transferobjects.CargoItemTO;
@@ -72,6 +73,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     .doOnNext(shipment ->
                             shippingInstructionTO.setCarrierBookingReference(shipment.getCarrierBookingReference())),
                 shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
+                    .map(shipmentLocation -> MappingUtil.instanceFrom(shipmentLocation, ShipmentLocationTO::new, AbstractShipmentLocation.class))
+                    // We can have duplicates after mapping to ShipmentLocationTO.
+                    // Remove them as the consumer cannot use the duplicates for anything.
+                    .distinct()
                     .collectList()
                     .doOnNext(shippingInstructionTO::setShipmentLocations),
                 shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
@@ -372,16 +377,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Mono<Void> processShipmentLocations(UUID shipmentID, Iterable<ShipmentLocation> shipmentLocations) {
+    private Mono<Void> processShipmentLocations(UUID shipmentID, Iterable<ShipmentLocationTO> shipmentLocations) {
         return Flux.fromIterable(shipmentLocations)
                 .flatMap(shipmentLocation -> {
                     UUID locationId = shipmentLocation.getLocationID();
                     ShipmentLocationType shipmentLocationType = shipmentLocation.getLocationType();
-                    if (shipmentLocation.getShipmentID() != null && !shipmentID.equals(shipmentLocation.getShipmentID())) {
-                        return Mono.error(new CreateException("Invalid shipmentID on shipmentLocation with locationID "
-                                + locationId + " and locationType " + shipmentLocationType.name()
-                                + ": You can omit the shipmentID field"));
-                    }
 
                     // TODO: 1+N performance wise.  Ideally we would pull all of them in one go (should be doable
                     //  but not trivial with the current tooling provided by r2dbc).
@@ -475,12 +475,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     @Transactional
     private Mono<ShippingInstructionTO> genericUpdate(UUID shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
         return findById(shippingInstructionId)
-                .flatMap(original -> {
+                .flatMap(original -> Mono.zip(
+                        Mono.just(original),
+                        shipmentService.findByCarrierBookingReference(original.getCarrierBookingReference())
+                )).flatMap(tuple -> {
+                    ShippingInstructionTO original = tuple.getT1();
                     ShippingInstructionTO update = mutator.apply(original);
+                    Shipment originalShipment = tuple.getT2();
+                    UUID shipmentID = originalShipment.getId();
                     Set<ConstraintViolation<ShippingInstructionTO>> violations = validator.validate(update);
-                    UUID shipmentID = original.getShipmentLocations().stream().map(ShipmentLocation::getShipmentID).findFirst().orElseThrow(
-                            () -> new RuntimeException("No shipment location has a ShipmentID? (or there are no ShipmentLocations!?)")
-                    );
                     if (!violations.isEmpty()) {
                         throw new ConstraintViolationException(violations);
                     }
@@ -505,14 +508,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             fieldMustEqual("Reference", "shippingInstructionID",
                                     Reference::getShippingInstructionID, shippingInstructionId, true)
                     );
-                    ChangeSet<ShipmentLocation> shipmentLocationChangeSet = changeListDetector(
+                    ChangeSet<ShipmentLocationTO> shipmentLocationChangeSet = changeListDetector(
                             original.getShipmentLocations(),
                             update.getShipmentLocations(),
                             // With our chosen ID, then the only "change" you can make is the display - anything else
                             // results in create/delete.
                             FakeShipmentLocationId::of,
-                            fieldMustEqual("ShipmentLocation", "shipmentID",
-                                    ShipmentLocation::getShipmentID, shipmentID, true)
+                            acceptAny()
                     );
                     ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
                             original.getCargoItems(),
@@ -542,19 +544,17 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .map(CargoLineItem::getCargoLineItemID)
                             .collect(Collectors.toSet());
                     if (!shipmentLocationChangeSet.newInstances.isEmpty()) {
-                        ShipmentLocation newInstance = shipmentLocationChangeSet.newInstances.get(0);
+                        ShipmentLocationTO newInstance = shipmentLocationChangeSet.newInstances.get(0);
                         return Mono.error(new UpdateException("Cannot create ShipmentLocations"
                                 + " (shipmentID, locationID, and locationType must not be changed): New instance is: "
-                                + newInstance.getShipmentID() + ", " +  newInstance.getLocationID()
-                                + ", " + newInstance.getLocationType()
+                                + newInstance.getLocationID() + ", " + newInstance.getLocationType()
                                 ));
                     }
                     if (!shipmentLocationChangeSet.orphanedInstances.isEmpty()) {
-                        ShipmentLocation orphaned = shipmentLocationChangeSet.orphanedInstances.get(0);
+                        ShipmentLocationTO orphaned = shipmentLocationChangeSet.orphanedInstances.get(0);
                         return Mono.error(new UpdateException("Cannot delete ShipmentLocations"
                                 + " (shipmentID, locationID, and locationType must not be changed): Deleted instance was: "
-                                + orphaned.getShipmentID() + ", " +  orphaned.getLocationID()
-                                + ", " + orphaned.getLocationType()
+                                + orphaned.getLocationID() + ", " + orphaned.getLocationType()
                         ));
                     }
                     // TODO: Should it be possible to create/delete ShipmentEquipment instances (e.g. if you need to change  container)?
@@ -696,7 +696,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         private final UUID locationID;
         private final ShipmentLocationType locationType;
 
-        static FakeShipmentLocationId of(ShipmentLocation location) {
+        static FakeShipmentLocationId of(ShipmentLocationTO location) {
             return new FakeShipmentLocationId(location.getLocationID(), location.getLocationType());
         }
     }
