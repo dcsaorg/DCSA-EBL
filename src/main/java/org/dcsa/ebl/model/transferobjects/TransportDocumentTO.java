@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.ebl.model.Charge;
+import org.dcsa.ebl.model.Clause;
 import org.dcsa.ebl.model.TransportDocument;
 import org.springframework.data.annotation.Transient;
 
@@ -24,4 +25,8 @@ public class TransportDocumentTO extends TransportDocument {
     @Valid
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<Charge> charges;
+
+    @Transient
+    @Valid
+    private List<Clause> clauses;
 }

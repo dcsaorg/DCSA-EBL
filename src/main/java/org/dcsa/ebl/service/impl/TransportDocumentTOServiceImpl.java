@@ -5,14 +5,12 @@ import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.Charge;
+import org.dcsa.ebl.model.Clause;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
-import org.dcsa.ebl.service.ChargeService;
-import org.dcsa.ebl.service.ShippingInstructionTOService;
-import org.dcsa.ebl.service.TransportDocumentService;
-import org.dcsa.ebl.service.TransportDocumentTOService;
+import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -28,6 +26,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final TransportDocumentService transportDocumentService;
     private final ShippingInstructionTOService shippingInstructionTOService;
     private final ChargeService chargeService;
+    private final ClauseService clauseService;
 
     @Override
     public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
@@ -51,7 +50,8 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                 transportDocumentTO.setShippingInstruction(shippingInstruction)
                                         )
                                         .thenReturn(transportDocumentTO),
-                                createCharges(transportDocumentTO)
+                                createCharges(transportDocumentTO),
+                                createClauses(transportDocumentTO)
                         )
                         .then(Mono.just(transportDocumentTO));
                     });
@@ -59,16 +59,31 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     }
 
     private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO) {
-        UUID transportDocumentID = transportDocumentTO.getId();
         List<Charge> charges = transportDocumentTO.getCharges();
         if (charges == null || charges.isEmpty()) {
             transportDocumentTO.setCharges(Collections.emptyList());
             return Flux.empty();
         } else {
             // Insert TransportDocumentID on all Charges
-            charges.stream().forEach(charge -> charge.setTransportDocumentID(transportDocumentID));
+            charges.stream().forEach(charge -> charge.setTransportDocumentID(transportDocumentTO.getId()));
             // Save all Charges in one bulk
             return chargeService.createAll(charges);
+        }
+    }
+
+    private Flux<Clause> createClauses(TransportDocumentTO transportDocumentTO) {
+        List<Clause> clauses = transportDocumentTO.getClauses();
+        if (clauses == null || clauses.isEmpty()) {
+            transportDocumentTO.setClauses(Collections.emptyList());
+            return Flux.empty();
+        } else {
+            // Save all Clauses in one Bulk
+            return clauseService.createAll(clauses)
+                    .concatMap(clause ->
+                            // Make sure many-many relations are created
+                            clauseService.createTransportDocumentClauseRelation(clause.getId(), transportDocumentTO.getId())
+                                    .thenReturn(clause)
+                    );
         }
     }
 
@@ -105,7 +120,10 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                 includeCharges ?
                     chargeService.findAllByTransportDocumentID(transportDocumentID)
                             .collectList()
-                            .doOnNext(transportDocumentTO::setCharges) : Flux.empty()
+                            .doOnNext(transportDocumentTO::setCharges) : Flux.empty(),
+                clauseService.findAllByTransportDocumentID(transportDocumentID)
+                            .collectList()
+                            .doOnNext(transportDocumentTO::setClauses)
         ).then(Mono.just(transportDocumentTO));
     }
 
