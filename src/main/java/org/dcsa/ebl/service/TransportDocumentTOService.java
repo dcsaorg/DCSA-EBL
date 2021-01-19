@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 public interface TransportDocumentTOService {
+    Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO);
     Mono<TransportDocumentTO> findById(UUID uuid, boolean includeCharges);
     Flux<TransportDocument> findAllExtended(final ExtendedRequest<TransportDocument> extendedRequest);
 }

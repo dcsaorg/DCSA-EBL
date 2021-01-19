@@ -8,6 +8,7 @@ import org.dcsa.ebl.service.ChargeService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -23,6 +24,16 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
     @Override
     public Class<Charge> getModelClass() {
         return Charge.class;
+    }
+
+    @Override
+    public Flux<Charge> createAll(List<Charge> charges) {
+        return Flux.fromIterable(charges)
+                .concatMap(this::preCreateHook)
+                .concatMap(this::preSaveHook)
+                // TODO: Change to Util class
+                .buffer(100)
+                .concatMap(chargeRepository::saveAll);
     }
 
     @Override

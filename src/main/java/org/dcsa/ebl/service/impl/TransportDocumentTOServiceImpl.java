@@ -1,8 +1,10 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.model.Charge;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
@@ -16,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -24,6 +28,49 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final TransportDocumentService transportDocumentService;
     private final ShippingInstructionTOService shippingInstructionTOService;
     private final ChargeService chargeService;
+
+    @Override
+    public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
+        TransportDocument transportDocument = MappingUtil.instanceFrom(
+                transportDocumentTO,
+                TransportDocument::new,
+                AbstractTransportDocument.class
+        );
+        if (transportDocumentTO.getShippingInstruction() != null) {
+            return Mono.error(new CreateException("ShippingInstruction object cannot be included when creating a TransportDocument"));
+        } else {
+            return transportDocumentService.create(transportDocument)
+                    .flatMap(td -> {
+                        transportDocumentTO.setId(td.getId());
+                        return Flux.concat(
+                                shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
+                                        .switchIfEmpty(
+                                                Mono.error(new GetException("ShippingInstruction linked to from TransportDocument does not exist"))
+                                        )
+                                        .doOnNext(shippingInstruction ->
+                                                transportDocumentTO.setShippingInstruction(shippingInstruction)
+                                        )
+                                        .thenReturn(transportDocumentTO),
+                                createCharges(transportDocumentTO)
+                        )
+                        .then(Mono.just(transportDocumentTO));
+                    });
+        }
+    }
+
+    private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO) {
+        UUID transportDocumentID = transportDocumentTO.getId();
+        List<Charge> charges = transportDocumentTO.getCharges();
+        if (charges == null || charges.isEmpty()) {
+            transportDocumentTO.setCharges(Collections.emptyList());
+            return Flux.empty();
+        } else {
+            // Insert TransportDocumentID on all Charges
+            charges.stream().forEach(charge -> charge.setTransportDocumentID(transportDocumentID));
+            // Save all Charges in one bulk
+            return chargeService.createAll(charges);
+        }
+    }
 
     @Transactional
     @Override

@@ -9,7 +9,6 @@ import org.dcsa.ebl.model.TransportDocument;
 import org.springframework.data.annotation.Transient;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
@@ -17,12 +16,10 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class TransportDocumentTO extends TransportDocument {
 
-    @NotNull
     @Transient
     @Valid
     private ShippingInstructionTO shippingInstruction;
 
-    @NotNull
     @Transient
     @Valid
     @JsonInclude(JsonInclude.Include.NON_NULL)
