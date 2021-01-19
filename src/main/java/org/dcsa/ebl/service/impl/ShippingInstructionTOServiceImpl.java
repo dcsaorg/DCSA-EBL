@@ -62,16 +62,28 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ObjectMapper objectMapper;
 
 
-    private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO, List<UUID> shipmentIDs) {
-        if (shipmentIDs.size() != 1) {
-            /* Assumption comes because we need to pull a booking reference from the shipment and that gives the 1:1 */
-            return Mono.error(new UnsupportedOperationException("Expected Cargo items would lead to exactly" +
-                    " one shipment, got " + shipmentIDs.size()));
-        }
+    private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO,
+                                                                     List<UUID> shipmentIDs,
+                                                                     List<Tuple2<CargoItem, CargoItemTO>> cargoItemTuples
+    ) {
         return Flux.concat(
-                shipmentService.findById(shipmentIDs.get(0))
-                    .doOnNext(shipment ->
-                            shippingInstructionTO.setCarrierBookingReference(shipment.getCarrierBookingReference())),
+                shipmentService.findAllById(shipmentIDs)
+                    .collectMap(Shipment::getId, Shipment::getCarrierBookingReference)
+                    .flatMapMany(shipmentId2BookingReference ->
+                        Flux.fromIterable(cargoItemTuples)
+                                .flatMap(tuple -> {
+                                    CargoItem cargoItem = tuple.getT1();
+                                    CargoItemTO cargoItemTO = tuple.getT2();
+                                    String bookingReference = shipmentId2BookingReference.get(cargoItem.getShipmentID());
+                                    if (bookingReference == null) {
+                                        return Mono.error(new IllegalStateException("CargoItem " + cargoItem.getId()
+                                                + " references Shipment " + cargoItem.getShipmentID()
+                                                + " but we did not get its booking reference!?"));
+                                    }
+                                    cargoItemTO.setCarrierBookingReference(bookingReference);
+                                    return Mono.empty();
+                                })
+                ),
                 shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
                     .map(shipmentLocation -> MappingUtil.instanceFrom(shipmentLocation, ShipmentLocationTO::new, AbstractShipmentLocation.class))
                     // We can have duplicates after mapping to ShipmentLocationTO.
@@ -141,7 +153,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     List<CargoItemTO> cargoItemTOs = tuples.stream().map(Tuple2::getT2).collect(Collectors.toList());
                     List<UUID> shipmentIds = tuples.stream().map(Tuple2::getT1).map(CargoItem::getShipmentID)
                             .distinct().collect(Collectors.toList());
-                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds)
+                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds, tuples)
                             .then(Mono.just(cargoItemTOs));
                 })
                 .doOnNext(shippingInstructionTO::setCargoItems)
@@ -159,85 +171,105 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.just(shippingInstructionTO));
     }
 
-    private Flux<CargoLineItem> processCargoItems(UUID shippingInstructionID,
-                                                  UUID shipmentID,
+    private Mono<Tuple2<Flux<CargoLineItem>, List<UUID>>> processCargoItems(UUID shippingInstructionID,
                                                   List<CargoItemTO> cargoItemTOs,
                                                   Map<String, UUID> equipmentReference2ID,
                                                   boolean creationFlow) {
         Map<UUID, String> usedEquipmentReferences = new HashMap<>();
         Function<String, RuntimeException> exceptionType = creationFlow ? CreateException::new : UpdateException::new;
         return Flux.fromIterable(cargoItemTOs)
-                .flatMap(cargoItemTO -> {
-                    CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
-                    String equipmentReference = cargoItemTO.getEquipmentReference();
-                    List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
-                    UUID shipmentEquipmentID;
+                .map(CargoItemTO::getCarrierBookingReference)
+                .buffer(SQL_LIST_BUFFER_SIZE)
+                .concatMap(shipmentService::findByCarrierBookingReferenceIn)
+                .collectMap(Shipment::getCarrierBookingReference, Shipment::getId)
+                .flatMap(bookingReference2Shipment -> {
+                    List<UUID> shipmentIDFlux = new ArrayList<>(bookingReference2Shipment.values());
+                    Flux<CargoLineItem> cargoLineItemFlux = Flux.fromIterable(cargoItemTOs)
+                            .flatMap(cargoItemTO -> {
+                                CargoItem cargoItem = MappingUtil.instanceFrom(cargoItemTO, CargoItem::new, AbstractCargoItem.class);
+                                String equipmentReference = cargoItemTO.getEquipmentReference();
+                                List<CargoLineItem> cargoLineItems = cargoItemTO.getCargoLineItems();
+                                String bookingReference = cargoItemTO.getCarrierBookingReference();
+                                UUID shipmentEquipmentID;
+                                UUID shipmentID;
 
-                    if (creationFlow) {
-                        shipmentEquipmentID = equipmentReference2ID.get(equipmentReference);
-                        if (cargoItem.getId() != null) {
-                            return Mono.error(exceptionType.apply("The id of CargoItem is auto-generated: please omit it"));
-                        }
-                        if (shipmentEquipmentID == null) {
-                            return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
-                        }
-                    } else {
-                        UUID idFromEquipmentReference = equipmentReference2ID.get(equipmentReference);
-                        shipmentEquipmentID = cargoItem.getShipmentEquipmentID();
-                        if (equipmentReference != null && idFromEquipmentReference == null) {
-                            return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
-                        }
-                        if (shipmentEquipmentID == null) {
-                            // Could be a newly crated equipment
-                            shipmentEquipmentID = idFromEquipmentReference;
-                        } else if (equipmentReference != null && !shipmentEquipmentID.equals(idFromEquipmentReference)) {
-                            return Mono.error(exceptionType.apply("Conflicting shipment equipment ID - explicit id is "
-                                    + shipmentEquipmentID + " and ID via equipmentReference (" + equipmentReference
-                                    + ") is: " + idFromEquipmentReference));
-                        }
-                        if (shipmentEquipmentID == null) {
-                            return Mono.error(exceptionType.apply("CargoItem must have either a shipmentEquipmentID"
-                                    + " or a valid equipmentReference"));
-                        }
-                    }
-
-                    usedEquipmentReferences.put(shipmentEquipmentID, equipmentReference);
-                    cargoItem.setShipmentID(shipmentID);
-                    cargoItem.setShippingInstructionID(shippingInstructionID);
-                    cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
-                    // Update the TO variant to match
-                    // Clear the EquipmentReference on exit because it is "input-only"
-                    cargoItemTO.setEquipmentReference(null);
-                    cargoItemTO.setShipmentEquipmentID(shipmentEquipmentID);
-                    if (cargoLineItems == null || cargoLineItems.isEmpty()) {
-                        return Mono.error(exceptionType.apply("CargoItem with reference " + equipmentReference +
-                                ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
-                        ));
-                    }
-                    return Mono.just(cargoItem)
-                            .flatMap(cargoItemInner -> {
-                                if (cargoItem.getId() == null) {
-                                    return cargoItemService.create(cargoItemInner);
+                                if (creationFlow) {
+                                    shipmentEquipmentID = equipmentReference2ID.get(equipmentReference);
+                                    if (cargoItem.getId() != null) {
+                                        return Mono.error(exceptionType.apply("The id of CargoItem is auto-generated: please omit it"));
+                                    }
+                                    if (shipmentEquipmentID == null) {
+                                        return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
+                                    }
+                                } else {
+                                    UUID idFromEquipmentReference = equipmentReference2ID.get(equipmentReference);
+                                    shipmentEquipmentID = cargoItem.getShipmentEquipmentID();
+                                    if (equipmentReference != null && idFromEquipmentReference == null) {
+                                        return Mono.error(exceptionType.apply("Invalid equipment reference: " + equipmentReference));
+                                    }
+                                    if (shipmentEquipmentID == null) {
+                                        // Could be a newly crated equipment
+                                        shipmentEquipmentID = idFromEquipmentReference;
+                                    } else if (equipmentReference != null && !shipmentEquipmentID.equals(idFromEquipmentReference)) {
+                                        return Mono.error(exceptionType.apply("Conflicting shipment equipment ID - explicit id is "
+                                                + shipmentEquipmentID + " and ID via equipmentReference (" + equipmentReference
+                                                + ") is: " + idFromEquipmentReference));
+                                    }
+                                    if (shipmentEquipmentID == null) {
+                                        return Mono.error(exceptionType.apply("CargoItem must have either a shipmentEquipmentID"
+                                                + " or a valid equipmentReference"));
+                                    }
                                 }
-                                return cargoItemService.update(cargoItemInner);
+
+                                shipmentID = bookingReference2Shipment.get(bookingReference);
+                                if (shipmentID == null) {
+                                    return Mono.error(exceptionType.apply("Invalid booking reference: "
+                                            + bookingReference));
+                                }
+
+                                usedEquipmentReferences.put(shipmentEquipmentID, equipmentReference);
+                                cargoItem.setShipmentID(shipmentID);
+                                cargoItem.setShippingInstructionID(shippingInstructionID);
+                                cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
+                                // Update the TO variant to match
+                                // Clear the EquipmentReference on exit because it is "input-only"
+                                cargoItemTO.setEquipmentReference(null);
+                                cargoItemTO.setShipmentEquipmentID(shipmentEquipmentID);
+                                if (cargoLineItems == null || cargoLineItems.isEmpty()) {
+                                    return Mono.error(exceptionType.apply("CargoItem with reference " + equipmentReference +
+                                            ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
+                                    ));
+                                }
+                                return Mono.just(cargoItem)
+                                        .flatMap(cargoItemInner -> {
+                                            if (cargoItem.getId() == null) {
+                                                return cargoItemService.create(cargoItemInner);
+                                            }
+                                            return cargoItemService.update(cargoItemInner);
+                                        })
+                                        .doOnNext(savedCargoItem -> {
+                                            UUID cargoItemId = savedCargoItem.getId();
+                                            cargoItemTO.setId(cargoItemId);
+                                            cargoLineItems.forEach(cli -> cli.setCargoItemID(cargoItemId));
+                                        }).thenMany(Flux.fromIterable(cargoLineItems));
                             })
-                            .doOnNext(savedCargoItem -> {
-                                        UUID cargoItemId = savedCargoItem.getId();
-                                        cargoItemTO.setId(cargoItemId);
-                                        cargoLineItems.forEach(cli -> cli.setCargoItemID(cargoItemId));
-                            }).thenMany(Flux.fromIterable(cargoLineItems));
-                })
-                .doOnComplete(() -> {
-                    for (UUID shipmentEquipmentID: equipmentReference2ID.values()) {
-                        if (!usedEquipmentReferences.containsKey(shipmentEquipmentID)) {
-                            String equipmentReference = usedEquipmentReferences.get(shipmentEquipmentID);
-                            if (equipmentReference == null) {
-                                equipmentReference = "N/A";
-                            }
-                            throw exceptionType.apply("Missing Cargo Items for equipment with ID "
-                                    + shipmentEquipmentID + ", equipmentReference: " + equipmentReference);
-                        }
-                    }
+                            .doOnComplete(() -> {
+                                for (UUID shipmentEquipmentID: equipmentReference2ID.values()) {
+                                    if (!usedEquipmentReferences.containsKey(shipmentEquipmentID)) {
+                                        String equipmentReference = usedEquipmentReferences.get(shipmentEquipmentID);
+                                        if (equipmentReference == null) {
+                                            equipmentReference = "N/A";
+                                        }
+                                        throw exceptionType.apply("Missing Cargo Items for equipment with ID "
+                                                + shipmentEquipmentID + ", equipmentReference: " + equipmentReference);
+                                    }
+                                }
+                            });
+
+                    return Mono.zip(
+                        Mono.just(cargoLineItemFlux),
+                        Mono.just(shipmentIDFlux)
+                    );
                 });
     }
 
@@ -377,28 +409,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Mono<Void> processShipmentLocations(UUID shipmentID, Iterable<ShipmentLocationTO> shipmentLocations) {
-        return Flux.fromIterable(shipmentLocations)
-                .flatMap(shipmentLocation -> {
-                    UUID locationId = shipmentLocation.getLocationID();
-                    ShipmentLocationType shipmentLocationType = shipmentLocation.getLocationType();
-
-                    // TODO: 1+N performance wise.  Ideally we would pull all of them in one go (should be doable
-                    //  but not trivial with the current tooling provided by r2dbc).
-                    return shipmentLocationService.findByShipmentIDAndLocationTypeAndLocationID(shipmentID,
-                            shipmentLocationType,
-                            locationId
-                    ).switchIfEmpty(Mono.error(
-                            new CreateException("Invalid shipmentLocation: Could not find any location with"
-                                    + " locationID " + locationId + ", shipmentLocationType " + shipmentLocationType
-                                    + " and shipmentID " + shipmentID + " related to this shipping instruction"
-                            )
-                    )).flatMap(originalShipmentLocation -> {
-                        originalShipmentLocation.setDisplayedName(shipmentLocation.getDisplayedName());
-                        return shipmentLocationService.update(originalShipmentLocation);
-                    });
-                })
-                .then();
+    private Mono<Void> processShipmentLocations(List<UUID> shipmentIDs, Iterable<ShipmentLocationTO> shipmentLocations) {
+        return shipmentLocationService.updateAllRelatedFromTO(
+                shipmentIDs,
+                shipmentLocations,
+                (shipmentLocation, shipmentLocationTO) -> {
+                    shipmentLocation.setDisplayedName(shipmentLocationTO.getDisplayedName());
+                    return Mono.just(shipmentLocation);
+                });
     }
 
     @Transactional
@@ -409,17 +427,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 ShippingInstruction::new,
                 AbstractShippingInstruction.class
         );
-        String bookingReference = shippingInstructionTO.getCarrierBookingReference();
-
-        return Mono.zip(
-                shipmentService.findByCarrierBookingReference(bookingReference)
-                        .switchIfEmpty(Mono.error(new CreateException("Invalid booking reference: " + bookingReference))),
-                shippingInstructionService.create(shippingInstruction)
-        ).flatMapMany(tuple -> {
-            Shipment shipment = tuple.getT1();
-            ShippingInstruction savedShippingInstruction = tuple.getT2();
+        return shippingInstructionService.create(shippingInstruction)
+                .flatMapMany(savedShippingInstruction -> {
             UUID shippingInstructionID = savedShippingInstruction.getId();
-            UUID shipmentID = shipment.getId();
             shippingInstructionTO.setId(savedShippingInstruction.getId());
             return updateEquipment(shippingInstructionTO.getShipmentEquipments(), false)
                     .flatMapMany(equipmentTuple ->
@@ -428,13 +438,20 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     .concatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, true)),
                                 processCargoItems(
                                         shippingInstructionID,
-                                        shipmentID,
                                         shippingInstructionTO.getCargoItems(),
                                         equipmentTuple.getT1(),
                                         true
-                                )
-                                        .buffer(SQL_LIST_BUFFER_SIZE)
-                                        .concatMap(cargoLineItemService::createAll),
+                                ).flatMapMany(tuple -> {
+                                    Flux<CargoLineItem> cargoLineItemFlux = tuple.getT1();
+                                    List<UUID> shipmentIDs = tuple.getT2();
+                                    return Flux.concat(
+                                        cargoLineItemFlux
+                                                .buffer(SQL_LIST_BUFFER_SIZE)
+                                                .concatMap(cargoLineItemService::createAll),
+                                            processShipmentLocations(shipmentIDs, shippingInstructionTO.getShipmentLocations())
+                                    );
+                                }),
+
                                 mapReferences(
                                         shippingInstructionID,
                                         shippingInstructionTO.getReferences(),
@@ -444,8 +461,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionID,
                                         shippingInstructionTO.getDocumentParties(),
                                         documentPartyService::create
-                                ),
-                                processShipmentLocations(shipmentID, shippingInstructionTO.getShipmentLocations())
+                                )
                         )
                     );
         }).then(Mono.just(shippingInstructionTO));
@@ -475,14 +491,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     @Transactional
     private Mono<ShippingInstructionTO> genericUpdate(UUID shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
         return findById(shippingInstructionId)
-                .flatMap(original -> Mono.zip(
-                        Mono.just(original),
-                        shipmentService.findByCarrierBookingReference(original.getCarrierBookingReference())
-                )).flatMap(tuple -> {
-                    ShippingInstructionTO original = tuple.getT1();
+                .flatMap(original -> {
                     ShippingInstructionTO update = mutator.apply(original);
-                    Shipment originalShipment = tuple.getT2();
-                    UUID shipmentID = originalShipment.getId();
                     Set<ConstraintViolation<ShippingInstructionTO>> violations = validator.validate(update);
                     if (!violations.isEmpty()) {
                         throw new ConstraintViolationException(violations);
@@ -546,14 +556,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     if (!shipmentLocationChangeSet.newInstances.isEmpty()) {
                         ShipmentLocationTO newInstance = shipmentLocationChangeSet.newInstances.get(0);
                         return Mono.error(new UpdateException("Cannot create ShipmentLocations"
-                                + " (shipmentID, locationID, and locationType must not be changed): New instance is: "
+                                + " (locationID, and locationType must not be changed): New instance is: "
                                 + newInstance.getLocationID() + ", " + newInstance.getLocationType()
                                 ));
                     }
                     if (!shipmentLocationChangeSet.orphanedInstances.isEmpty()) {
                         ShipmentLocationTO orphaned = shipmentLocationChangeSet.orphanedInstances.get(0);
                         return Mono.error(new UpdateException("Cannot delete ShipmentLocations"
-                                + " (shipmentID, locationID, and locationType must not be changed): Deleted instance was: "
+                                + " (locationID, and locationType must not be changed): Deleted instance was: "
                                 + orphaned.getLocationID() + ", " + orphaned.getLocationType()
                         ));
                     }
@@ -586,7 +596,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     .concatMap(cargoItemService::deleteAllByIdIn)
                     );
 
-                    Flux<CargoLineItem> handleEquipmentAndCargoItems = updateEquipment(
+                    Flux<Object> handleEquipmentAndCargoItems = updateEquipment(
                                 shipmentEquipmentTOChangeSet.updatedInstances,
                                 true
                             ).flatMapMany(equipmentTuple ->
@@ -595,19 +605,26 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .thenMany(
                                     processCargoItems(
                                             shippingInstructionId,
-                                            shipmentID,
                                             nonDeletedCargoItems,
                                             equipmentTuple.getT1(),
                                             false
                                     )
-                                )
-                                .groupBy(cargoLineItem -> knownCargoLineItems.contains(cargoLineItem.getCargoLineItemID()))
-                                .flatMap(cargoLineItemGroup ->
-                                            cargoLineItemGroup.buffer(SQL_LIST_BUFFER_SIZE)
-                                                .concatMap(Objects.requireNonNull(cargoLineItemGroup.key())
-                                                        ? cargoLineItemService::updateAll
-                                                        : cargoLineItemService::createAll)
-                                )
+                                ).flatMap(tuple -> {
+                                    Flux<CargoLineItem> cargoLineItemFlux = tuple.getT1();
+                                    List<UUID> shipmentIDs = tuple.getT2();
+
+                                    return Flux.concat(
+                                            cargoLineItemFlux
+                                                .groupBy(cargoLineItem -> knownCargoLineItems.contains(cargoLineItem.getCargoLineItemID()))
+                                                .flatMap(cargoLineItemGroup ->
+                                                    cargoLineItemGroup.buffer(SQL_LIST_BUFFER_SIZE)
+                                                            .concatMap(Objects.requireNonNull(cargoLineItemGroup.key())
+                                                                    ? cargoLineItemService::updateAll
+                                                                    : cargoLineItemService::createAll)
+                                            ),
+                                            processShipmentLocations(shipmentIDs, shipmentLocationChangeSet.updatedInstances)
+                                    );
+                                })
                     );
 
                     Flux<?> deferredUpdates = Flux.concat(
@@ -640,9 +657,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         return Mono.empty();
                                     }),
                             mapReferences(shippingInstructionId, referenceChangeSet.newInstances, referenceService::create),
-                            mapReferences(shippingInstructionId, referenceChangeSet.updatedInstances, referenceService::update),
-                            processShipmentLocations(shipmentID, shipmentLocationChangeSet.updatedInstances)
-
+                            mapReferences(shippingInstructionId, referenceChangeSet.updatedInstances, referenceService::update)
                     );
 
                     return deleteFirst

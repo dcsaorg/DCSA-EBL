@@ -13,8 +13,9 @@ public interface ShipmentLocationRepository extends ExtendedRepository<ShipmentL
 
     Flux<ShipmentLocation> findAllByShipmentIDIn(List<UUID> shipmentIDs);
 
-    Mono<ShipmentLocation> findByShipmentIDAndLocationTypeAndLocationID(UUID shipmentID,
-                                                                        ShipmentLocationType shipmentLocationType,
-                                                                        UUID locationID
+    Flux<ShipmentLocation> findByLocationTypeAndLocationIDAndShipmentIDIn(
+                                                                         ShipmentLocationType shipmentLocationType,
+                                                                         UUID locationID,
+                                                                         List<UUID> shipmentIDs
                                                                         );
 }

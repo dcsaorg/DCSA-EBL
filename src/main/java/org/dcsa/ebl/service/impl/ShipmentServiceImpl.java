@@ -6,8 +6,10 @@ import org.dcsa.ebl.model.Shipment;
 import org.dcsa.ebl.repository.ShipmentRepository;
 import org.dcsa.ebl.service.ShipmentService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,7 +28,12 @@ public class ShipmentServiceImpl extends ExtendedBaseServiceImpl<ShipmentReposit
     }
 
     @Override
-    public Mono<Shipment> findByCarrierBookingReference(String carrierBookingReference) {
-        return shipmentRepository.findByCarrierBookingReference(carrierBookingReference);
+    public Flux<Shipment> findByCarrierBookingReferenceIn(List<String> carrierBookingReference) {
+        return shipmentRepository.findByCarrierBookingReferenceIn(carrierBookingReference);
+    }
+
+    @Override
+    public Flux<Shipment> findAllById(Iterable<UUID> shipmentIDs) {
+        return shipmentRepository.findAllById(shipmentIDs);
     }
 }
