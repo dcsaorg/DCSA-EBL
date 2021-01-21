@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.ChangeSet;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
 import org.dcsa.ebl.model.base.AbstractDocumentParty;
@@ -32,12 +33,13 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
+import static org.dcsa.ebl.ChangeSet.changeListDetector;
+import static org.dcsa.ebl.ChangeSet.flatteningChangeDetector;
+import static org.dcsa.ebl.Util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -670,40 +672,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 });
     }
 
-    @Data(staticConstructor = "of")
-    private static class ChangeSet<T> {
-        final List<T> newInstances;
-        final List<T> updatedInstances;
-        final List<T> orphanedInstances;
-    }
 
     private static <T> Mono<Void> deleteAllFromChangeSet(ChangeSet<T> tChangeSet, Function<T, Mono<Void>> singleItemDeleter) {
         return Flux.fromIterable(tChangeSet.orphanedInstances)
                 .concatMap(singleItemDeleter)
                 .then();
-    }
-
-    private static <T, I> Consumer<T> fieldMustEqual(String objectName, String fieldName, Function<T, I> getter,
-                                                     I expectedValue, boolean allowNull) {
-        return t -> {
-            I value = getter.apply(t);
-            if (value == null) {
-                if (allowNull) {
-                    return;
-                }
-            } else if (expectedValue.equals(value)) {
-                return;
-            }
-            if (allowNull) {
-                throw new UpdateException("The field " + fieldName + " on " + objectName
-                        + " must either be omitted or set to " + expectedValue);
-            }
-            throw new UpdateException("The field " + fieldName + " on " + objectName + " must be " + expectedValue);
-        };
-    }
-
-    private static <T> Consumer<T> acceptAny() {
-        return (t) -> {};
     }
 
     @Data
@@ -716,50 +689,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         }
     }
 
-    private static <OM, IM, ID> ChangeSet<IM> flatteningChangeDetector(List<OM> itemsFromOriginal,
-                                                                       List<OM> itemsFromUpdate,
-                                                                       Function<OM, List<IM>> mapper,
-                                                                       Function<IM, ID> idMapper,
-                                                                       String name) {
-        Function<OM, Stream<IM>> toIMStream = om -> {
-            List<IM> imList = mapper.apply(om);
-            if (imList == null || imList.isEmpty()) {
-                return Stream.empty();
-            }
-            return imList.stream();
-        };
-        Map<ID, IM> knownIM = itemsFromOriginal.stream()
-                .flatMap(toIMStream)
-                .collect(Collectors.toMap(idMapper, Function.identity()));
-        Set<ID> usedIds = new HashSet<>(knownIM.size());
-        List<IM> updatedItems = new ArrayList<>(knownIM.size());
-        List<IM> newItems = new ArrayList<>();
-        itemsFromUpdate.stream()
-                .flatMap(toIMStream)
-                .forEach(im -> {
-                    ID id = idMapper.apply(im);
-                    if (knownIM.containsKey(id)) {
-                        if (!usedIds.add(id)) {
-                            throw new UpdateException(name + " ID " + id
-                                    + " is used twice! IDs must be used at most once");
-                        }
-                        updatedItems.add(im);
-                    } else {
-                        newItems.add(im);
-                    }
-                });
-        return ChangeSet.of(
-                newItems,
-                updatedItems,
-                knownIM.entrySet().stream()
-                        .filter(entry -> !usedIds.contains(entry.getKey()))
-                        .map(Map.Entry::getValue)
-                        .collect(Collectors.toList())
-        );
-    }
-
     private static ChangeSet<Seal> sealChangeDetector(List<ShipmentEquipmentTO> itemsFromOriginal,
-                                                      List<ShipmentEquipmentTO> itemsFromUpdate) {
+                                                           List<ShipmentEquipmentTO> itemsFromUpdate) {
         return flatteningChangeDetector(
                 itemsFromOriginal,
                 itemsFromUpdate,
@@ -786,38 +717,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 CargoItemTO::getCargoLineItems,
                 FakeCargoLineItemID::of,
                 "CargoLineItem"
-        );
-    }
-
-    private static <T, I> ChangeSet<T> changeListDetector(List<T> listFromOriginal, List<T> listFromUpdate, Function<T, I> idMapper, Consumer<T> validator) {
-        Map<I, T> knownIds = listFromOriginal.stream().collect(Collectors.toMap(idMapper, Function.identity()));
-        Set<I> usedIds = new HashSet<>(listFromUpdate.size());
-        List<T> newObjects = new ArrayList<>();
-        List<T> updatedObjects = new ArrayList<>(listFromUpdate.size());
-
-        for (T update : listFromUpdate) {
-            I updateId = idMapper.apply(update);
-            if (updateId != null) {
-                if (!knownIds.containsKey(updateId)) {
-                    throw new UpdateException("Invalid id: " + updateId
-                            + ":  The id is not among the original list of ids (null the ID field if you want to"
-                            + " create a new instance)");
-                }
-                usedIds.add(updateId);
-                updatedObjects.add(update);
-            } else {
-                newObjects.add(update);
-            }
-            validator.accept(update);
-        }
-
-        return ChangeSet.of(
-                newObjects,
-                updatedObjects,
-                knownIds.entrySet().stream()
-                        .filter(entry -> !usedIds.contains(entry.getKey()))
-                        .map(Map.Entry::getValue)
-                        .collect(Collectors.toList())
         );
     }
 
