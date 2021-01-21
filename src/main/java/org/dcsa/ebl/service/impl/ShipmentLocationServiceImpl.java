@@ -117,6 +117,7 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     public Flux<ShipmentLocation> createAll(Flux<ShipmentLocation> shipmentLocations) {
         return shipmentLocations
                 .concatMap(this::preCreateHook)
+                .concatMap(this::preSaveHook)
                 .buffer(SQL_LIST_BUFFER_SIZE)
                 .concatMap(shipmentLocationRepository::saveAll);
     }
