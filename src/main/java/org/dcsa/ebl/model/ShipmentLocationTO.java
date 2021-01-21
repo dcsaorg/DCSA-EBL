@@ -8,4 +8,5 @@ import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 @EqualsAndHashCode(callSuper = true)
 public class ShipmentLocationTO extends AbstractShipmentLocation {
 
+    private Location location;
 }
