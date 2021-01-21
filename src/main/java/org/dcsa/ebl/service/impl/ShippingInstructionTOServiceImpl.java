@@ -33,6 +33,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -53,6 +54,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
+    private final LocationService locationService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
@@ -62,7 +64,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private final Validator validator;
     private final ObjectMapper objectMapper;
-
 
     private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO,
                                                                      List<UUID> shipmentIDs,
@@ -86,11 +87,32 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     return Mono.empty();
                                 })
                 ),
+                // TODO: Ideally, we would use a JOIN to pull the Location at the same time due to the
+                // 1:1 relation between ShipmentLocation and Location
                 shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
-                    .map(shipmentLocation -> MappingUtil.instanceFrom(shipmentLocation, ShipmentLocationTO::new, AbstractShipmentLocation.class))
-                    // We can have duplicates after mapping to ShipmentLocationTO.
-                    // Remove them as the consumer cannot use the duplicates for anything.
-                    .distinct()
+                    .flatMap(shipmentLocation -> Mono.zip(
+                            Mono.just(shipmentLocation.getLocationID()),
+                            Mono.just(MappingUtil.instanceFrom(
+                                    shipmentLocation,
+                                    ShipmentLocationTO::new,
+                                    AbstractShipmentLocation.class
+                            ))
+                    // The same Location can (in theory) be used as different location types.
+                    // Also, we have not de-duplicated yet.
+                    )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
+                    .flatMapMany(locationId2ShipmentLocationTOs ->
+                        setObjectOnAllMatchingInstances(
+                                locationService.findAllById(locationId2ShipmentLocationTOs.keySet()),
+                                locationId2ShipmentLocationTOs,
+                                Location::getId,
+                                ShipmentLocationTO::getLocation,
+                                ShipmentLocationTO::setLocation,
+                                "Location",
+                                "ShipmentLocationTo"
+                        )
+                    // De-duplicate shipment locations - after converting them to TO objects, we might now have
+                    // duplicates and the client cannot use those duplicates for anything.
+                    ).distinct()
                     .collectList()
                     .doOnNext(shippingInstructionTO::setShipmentLocations),
                 shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
@@ -160,9 +182,28 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 })
                 .doOnNext(shippingInstructionTO::setCargoItems)
                 .count(),
+           // TODO: Ideally we would use a JOIN to pull Party together with DocumentParty due to the 1:1 relation
+           // but for now this will do.
            documentPartyService.findAllByShippingInstructionID(id)
-                .map(documentParty ->
-                        MappingUtil.instanceFrom(documentParty, DocumentPartyTO::new, AbstractDocumentParty.class))
+                .flatMap(documentParty -> Mono.zip(
+                               Mono.just(documentParty.getPartyID()),
+                               Mono.just(MappingUtil.instanceFrom(
+                                       documentParty,
+                                       DocumentPartyTO::new,
+                                       AbstractDocumentParty.class
+                       ))
+                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
+                .flatMapMany(partyID2DocumentPartyTOs ->
+                        setObjectOnAllMatchingInstances(
+                                partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
+                                partyID2DocumentPartyTOs,
+                                Party::getId,
+                                DocumentPartyTO::getParty,
+                                DocumentPartyTO::setParty,
+                                "Party",
+                                "DocumentPartyTO"
+                        )
+                )
                 .collectList()
                 .doOnNext(shippingInstructionTO::setDocumentParties),
            referenceService.findAllByShippingInstructionID(id)
@@ -718,6 +759,41 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 FakeCargoLineItemID::of,
                 "CargoLineItem"
         );
+    }
+
+
+    // This is a work around for missing 1:1 support via r2dbc.
+    private <IID, TO, IO> Flux<TO> setObjectOnAllMatchingInstances(Flux<IO> ioObjectFlux,
+                                                                   Map<IID, ? extends Iterable<TO>> id2TOMap,
+                                                                   Function<IO, IID> idGetter,
+                                                                   Function<TO, IO> to2ioGetter,
+                                                                   BiConsumer<TO, IO> ioSetter,
+                                                                   String innerObjectTypeName,
+                                                                   String toObjectTypeName
+    ) {
+        return ioObjectFlux.flatMap(ioObject -> {
+            Iterable<TO> list = id2TOMap.get(idGetter.apply(ioObject));
+            if (list == null) {
+                // We listed all known IDs, so this "should not happen" unless the code above
+                // for generating the map changed.
+                return Mono.error(new AssertionError("We pulled a " + innerObjectTypeName
+                        + " by ID that we did not request!?"));
+            }
+            for (TO shipmentLocationTO : list) {
+                if (to2ioGetter.apply(shipmentLocationTO) != null) {
+                    return Mono.error(new AssertionError(toObjectTypeName + " already had a "
+                            + innerObjectTypeName + "!?"));
+                }
+                ioSetter.accept(shipmentLocationTO, ioObject);
+            }
+            return Mono.empty();
+        }).thenMany(Flux.fromIterable(id2TOMap.values()))
+        .flatMap(Flux::fromIterable)
+        .doOnNext(toObject -> {
+            if (to2ioGetter.apply(toObject) == null) {
+                throw new AssertionError("Found " +  toObjectTypeName + " without " + innerObjectTypeName + "!?");
+            }
+        });
     }
 
     public Flux<ShippingInstructionTO> findAllExtended(final ExtendedRequest<ShippingInstruction> extendedRequest) {
