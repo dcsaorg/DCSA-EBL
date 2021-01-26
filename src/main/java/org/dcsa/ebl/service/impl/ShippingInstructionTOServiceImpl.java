@@ -352,13 +352,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             return Mono.error(new CreateException("Error in ShipmentEquipment with equipmentReference "
                     + shipmentEquipment.getEquipmentReference() + ": Please include both cargoGrossWeight and cargoGrossWeightUnit"));
         }
-        if (shipmentEquipmentTO.getVerifiedGrossMass() == null) {
-            return Mono.error(new CreateException("Error in ShipmentEquipment with equipmentReference "
-                    + shipmentEquipment.getEquipmentReference() + ": Please include verifiedGrossMass"));
-        }
         shipmentEquipment.setCargoGrossWeight(shipmentEquipmentTO.getCargoGrossWeight());
         shipmentEquipment.setCargoGrossWeightUnit(shipmentEquipmentTO.getCargoGrossWeightUnit());
-        shipmentEquipment.setVerifiedGrossMass(shipmentEquipmentTO.getVerifiedGrossMass());
         return Mono.just(shipmentEquipment);
     }
 
