@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class Party implements GetId<UUID> {
 
     @Id
+    @JsonProperty("partyID")
     private UUID id;
 
     @Column("party_name")

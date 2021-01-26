@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface DocumentPartyRepository extends ExtendedRepository<DocumentParty, UUID> {
     Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID);
     Mono<DocumentParty> findByPartyIDAndPartyFunction(UUID partyID, PartyFunction partyFunction);
+    Mono<Integer> deleteByPartyIDAndPartyFunctionAndShipmentID(UUID partyID, PartyFunction partyFunction, UUID shipmentID);
 }
