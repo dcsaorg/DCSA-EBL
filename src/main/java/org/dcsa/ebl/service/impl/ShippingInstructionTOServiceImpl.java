@@ -15,6 +15,7 @@ import org.dcsa.ebl.model.base.AbstractCargoItem;
 import org.dcsa.ebl.model.base.AbstractDocumentParty;
 import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
+import org.dcsa.ebl.model.enums.PartyFunction;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.transferobjects.CargoItemTO;
 import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
@@ -428,20 +429,27 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;
                     Party party = documentPartyTO.getParty();
-                    UUID partyID = documentPartyTO.getPartyID();
+                    UUID partyID = party.getId();
+                    Mono<Party> partyMono;
 
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
                     documentParty.setShippingInstructionID(shippingInstructionID);
 
-                    if (partyID == null) {
-                        return Mono.error(new CreateException("DocumentParty is missing required partyID field"));
+                    if (partyID != null) {
+                        partyMono = partyService.findById(partyID)
+                                .flatMap(existingParty -> {
+                                    if (!existingParty.equals(party)) {
+                                        return Mono.error(new UpdateException("Party with id " + partyID
+                                                + " exists but has a different content. Remove the partyID field to"
+                                                + " create a new instance or provide an update"));
+                                    }
+                                    return Mono.just(existingParty);
+                                });
+                    } else {
+                        partyMono = partyService.create(party);
                     }
-                    if (party != null) {
-                        return Mono.error(new CreateException("DocumentParty contains a Party object but we cannot"
-                                + " create it via this call.  Please create the party separately and reference them"
-                                + " via partyID"));
-                    }
-                    return partyService.findById(partyID)
+                    return partyMono
+                            .doOnNext(resolvedParty -> documentParty.setPartyID(resolvedParty.getId()))
                             .flatMap(resolvedParty -> saveFunction.apply(documentParty));
                 })
                 .then();
@@ -543,11 +551,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             ShippingInstruction::new,
                             AbstractShippingInstruction.class
                     );
-                    ChangeSet<DocumentPartyTO> documentPartyTOChangeSet = changeListDetector(
-                            original.getDocumentParties(),
-                            update.getDocumentParties(),
-                            AbstractDocumentParty::getPartyID,
-                            acceptAny()
+                    ChangeSet<DocumentPartyTO> documentPartyTOChangeSet = ChangeSet.of(
+                            List.copyOf(update.getDocumentParties()),
+                            Collections.emptyList(),
+                            List.copyOf(original.getDocumentParties())
                     );
                     ChangeSet<Reference> referenceChangeSet = changeListDetector(
                             original.getReferences(),
@@ -620,6 +627,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
+                            deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
                             Flux.fromIterable(cargoLineItemChangeSet.orphanedInstances)
@@ -677,23 +685,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     documentPartyTOChangeSet.updatedInstances,
                                     documentPartyService::update
                             ),
-                            /*
-                                TODO: Delete orphaned DocumentParty entries
-                                 - Open question: How to handle document parties that have both shippingInstructionID
-                                   AND shipmentID at the same time?  Should that be deleted or just have its
-                                   shippingInstructionID cleared?
-                                Flux.fromIterable(documentPartyTOChangeSet.orphanedInstances)
-                                    .map(DocumentPartyTO::getPartyID)
-                                    .concatMap(documentPartyService::deleteById)
-                             */
-                            Flux.fromIterable(documentPartyTOChangeSet.orphanedInstances)
-                                    .count()
-                                    .flatMap(count -> {
-                                        if (count > 0) {
-                                            return Mono.error(new UnsupportedOperationException("Not implemented yet"));
-                                        }
-                                        return Mono.empty();
-                                    }),
                             mapReferences(shippingInstructionId, referenceChangeSet.newInstances, referenceService::create),
                             mapReferences(shippingInstructionId, referenceChangeSet.updatedInstances, referenceService::update)
                     );
@@ -708,6 +699,43 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 });
     }
 
+    private Mono<Void> deleteObsoleteDocumentPartyInstances(Iterable<DocumentPartyTO> documentPartyTOs) {
+        return Flux.fromIterable(documentPartyTOs)
+                .flatMap(documentPartyTO -> {
+                    Party party = documentPartyTO.getParty();
+                    UUID partyId = party.getId();
+                    PartyFunction partyFunction = documentPartyTO.getPartyFunction();
+                    if (partyId == null) {
+                        return Mono.error(new AssertionError("Cannot delete a DocumentPartyTO without a" +
+                                " partyID (on the Party member)"));
+                    }
+                    return Mono.zip(
+                        Mono.just(partyId),
+                        Mono.just(partyFunction),
+                        documentPartyService.deleteByPartyIDAndPartyFunctionAndShipmentID(partyId, partyFunction, null)
+                    );
+                }).flatMap(tuple -> {
+                    UUID partyID = tuple.getT1();
+                    PartyFunction partyFunction = tuple.getT2();
+                    int deletion = tuple.getT3();
+                    switch (deletion) {
+                        case 1:
+                            // Deleted as expected; nothing more to do.
+                            return Mono.empty();
+                        case 0:
+                            // No deletion, this is probably because there is a shipmentID as well.
+                            // TODO: The implementation of this is based on an assumption of how this case should be handled.
+                            // (The alternatively being deleting the DocumentParty even though it references a Shipment.
+                            return documentPartyService.findByPartyIDAndPartyFunction(partyID, partyFunction)
+                                    .doOnNext(documentParty -> documentParty.setShippingInstructionID(null))
+                                    // Not the most efficient method, but will do for now.
+                                    .flatMap(documentPartyService::update);
+                        default:
+                            return Mono.error(new AssertionError("Deleted " + deletion + " rows but expected it to be 0 or 1!?"));
+                    }
+                })
+                .then();
+    }
 
     private static <T> Mono<Void> deleteAllFromChangeSet(ChangeSet<T> tChangeSet, Function<T, Mono<Void>> singleItemDeleter) {
         return Flux.fromIterable(tChangeSet.orphanedInstances)

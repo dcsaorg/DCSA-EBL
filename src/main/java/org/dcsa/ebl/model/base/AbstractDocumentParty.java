@@ -14,9 +14,6 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class AbstractDocumentParty extends AuditBase {
 
-    @Column("party_id")
-    private UUID partyID;
-
     @Column("party_function")
     @NotNull
     private PartyFunction partyFunction;

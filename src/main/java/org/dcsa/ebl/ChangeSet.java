@@ -19,7 +19,7 @@ public final class ChangeSet<T> {
     public final List<T> updatedInstances;
     public final List<T> orphanedInstances;
 
-    static <T> ChangeSet<T> of(List<T> newInstances, List<T> updatedInstances, List<T> orphanedInstances) {
+    public static <T> ChangeSet<T> of(List<T> newInstances, List<T> updatedInstances, List<T> orphanedInstances) {
         return new ChangeSet<>(
                 Collections.unmodifiableList(newInstances),
                 Collections.unmodifiableList(updatedInstances),

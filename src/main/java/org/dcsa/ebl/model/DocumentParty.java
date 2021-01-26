@@ -20,6 +20,9 @@ public class DocumentParty extends AbstractDocumentParty implements GetId<UUID> 
     @JsonIgnore
     private UUID id;  /* TODO: Remove */
 
+    @Column("party_id")
+    private UUID partyID;
+
     @Column("shipping_instruction_id")
     private UUID shippingInstructionID;
 
