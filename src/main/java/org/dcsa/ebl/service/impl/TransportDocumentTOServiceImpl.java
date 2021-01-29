@@ -7,7 +7,10 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.Charge;
 import org.dcsa.ebl.model.Clause;
 import org.dcsa.ebl.model.TransportDocument;
+import org.dcsa.ebl.model.TransportPlan;
+import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
+import org.dcsa.ebl.model.transferobjects.ChargeTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.service.*;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +31,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final ShippingInstructionTOService shippingInstructionTOService;
     private final ChargeService chargeService;
     private final ClauseService clauseService;
+    private final LocationService locationService;
 
     @Override
     public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
@@ -51,7 +56,8 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                         )
                                         .thenReturn(transportDocumentTO),
                                 createCharges(transportDocumentTO),
-                                createClauses(transportDocumentTO)
+                                createClauses(transportDocumentTO),
+                                createTransportPlan(transportDocumentTO)
                         )
                         .then(Mono.just(transportDocumentTO));
                     });
@@ -59,13 +65,24 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     }
 
     private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO) {
-        List<Charge> charges = transportDocumentTO.getCharges();
-        if (charges == null || charges.isEmpty()) {
+        List<ChargeTO> chargeTOs = transportDocumentTO.getCharges();
+        if (chargeTOs == null || chargeTOs.isEmpty()) {
             transportDocumentTO.setCharges(Collections.emptyList());
             return Flux.empty();
         } else {
-            // Insert TransportDocumentID on all Charges
-            charges.stream().forEach(charge -> charge.setTransportDocumentID(transportDocumentTO.getId()));
+            List<Charge> charges = new ArrayList<>(chargeTOs.size());
+            chargeTOs.stream().forEach(chargeTO -> {
+                // Insert TransportDocumentID on all Charges
+                chargeTO.setTransportDocumentID(transportDocumentTO.getId());
+                // Create a Charge object for all ChargeTOs
+                Charge charge = MappingUtil.instanceFrom(
+                        chargeTO,
+                        Charge::new,
+                        AbstractCharge.class
+                );
+                charges.add(charge);
+            });
+
             // Save all Charges in one bulk
             return chargeService.createAll(charges);
         }
@@ -85,6 +102,11 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                     .thenReturn(clause)
                     );
         }
+    }
+
+    private Mono<TransportPlan> createTransportPlan(TransportDocumentTO transportDocumentTO) {
+        // TODO: ...
+        return Mono.just(new TransportPlan());
     }
 
     @Transactional
@@ -119,8 +141,17 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                     }),
                 includeCharges ?
                     chargeService.findAllByTransportDocumentID(transportDocumentID)
+                            .flatMap(charge -> {
+                                return locationService.findById(charge.getFreightPayableAt())
+                                        .map(location -> {
+                                            ChargeTO chargeTO = MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class);
+                                            chargeTO.setFreightPayableAtLocation(location);
+                                            return chargeTO;
+                                        });
+                            })
                             .collectList()
-                            .doOnNext(transportDocumentTO::setCharges) : Flux.empty(),
+                            .doOnNext(transportDocumentTO::setCharges)
+                        : Flux.empty(),
                 clauseService.findAllByTransportDocumentID(transportDocumentID)
                             .collectList()
                             .doOnNext(transportDocumentTO::setClauses)

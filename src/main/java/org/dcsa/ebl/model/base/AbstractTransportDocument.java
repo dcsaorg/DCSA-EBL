@@ -23,9 +23,6 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
     @JsonProperty("transportDocumentID")
     private UUID id;
 
-    @Column("place_of_issue")
-    private UUID placeOfIssue;
-
     @Column("date_of_issue")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfIssue;
@@ -46,7 +43,8 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
     private String termsAndConditions;
 
     @Column("issuer")
-    private UUID issuer;
+    @Size(max = 4)
+    private String issuer;
 
     @Column("shipping_instruction_id")
     private UUID shippingInstructionID;
