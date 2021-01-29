@@ -129,14 +129,21 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                 if (transportDocument.getShippingInstructionID() == null) {
                                     return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument"));
                                 } else {
-                                    return shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
-                                            .switchIfEmpty(
-                                                    Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
-                                            )
-                                            .doOnNext(
-                                                    shippingInstruction ->
-                                                            transportDocumentTO.setShippingInstruction(shippingInstruction))
-                                            .thenReturn(transportDocumentTO);
+                                    return Flux.concat(
+                                            shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
+                                                    .switchIfEmpty(
+                                                            Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
+                                                    )
+                                                    .doOnNext(
+                                                            shippingInstruction ->
+                                                                    transportDocumentTO.setShippingInstruction(shippingInstruction))
+                                                    .thenReturn(transportDocumentTO),
+                                            locationService.findById(transportDocument.getPlaceOfIssue())
+                                                    .doOnNext(
+                                                            location ->
+                                                                    transportDocumentTO.setPlaceOfIssueLocation(location)
+                                                    )
+                                    ).then(Mono.just(transportDocumentTO));
                                 }
                     }),
                 includeCharges ?
