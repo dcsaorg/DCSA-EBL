@@ -122,7 +122,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
                         shipmentEquipmentTO.setId(shipmentEquipment.getId());
                         shipmentEquipmentTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
-                        shipmentEquipmentTO.setVerifiedGrossMass(shipmentEquipment.getVerifiedGrossMass());
                         shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
                         shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit().name());
 

@@ -21,9 +21,6 @@ public abstract class AbstractShipmentEquipment {
     @Size(max = 15)
     private String equipmentReference;
 
-    @Column("verified_gross_mass")
-    private String verifiedGrossMass;
-
     @Column("cargo_gross_weight")
     private Float cargoGrossWeight;
 
