@@ -67,7 +67,7 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
 
     @Transactional
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     public Mono<ShippingInstructionTO> create(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
         return shippingInstructionTOService.create(shippingInstructionTO);
     }
