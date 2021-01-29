@@ -9,6 +9,7 @@ import org.dcsa.ebl.model.base.AbstractShipmentEquipment;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Table("shipment_equipment")
@@ -21,4 +22,7 @@ public class ShipmentEquipment extends AbstractShipmentEquipment implements GetI
     @Column("shipment_id")
     private UUID shipmentID;
 
+    @Column("equipment_reference")
+    @Size(max = 15)
+    private String equipmentReference;
 }

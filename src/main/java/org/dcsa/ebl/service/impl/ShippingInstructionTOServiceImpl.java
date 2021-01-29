@@ -11,16 +11,10 @@ import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.ChangeSet;
 import org.dcsa.ebl.model.*;
-import org.dcsa.ebl.model.base.AbstractCargoItem;
-import org.dcsa.ebl.model.base.AbstractDocumentParty;
-import org.dcsa.ebl.model.base.AbstractShipmentLocation;
-import org.dcsa.ebl.model.base.AbstractShippingInstruction;
+import org.dcsa.ebl.model.base.*;
 import org.dcsa.ebl.model.enums.PartyFunction;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
-import org.dcsa.ebl.model.transferobjects.CargoItemTO;
-import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
-import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
 import org.dcsa.ebl.service.*;
@@ -55,6 +49,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
+    private final EquipmentService equipmentService;
     private final LocationService locationService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
@@ -70,6 +65,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                                      List<UUID> shipmentIDs,
                                                                      List<Tuple2<CargoItem, CargoItemTO>> cargoItemTuples
     ) {
+        Map<UUID, List<CargoItemTO>> shipmentEquipmentID2CargoItems = cargoItemTuples.stream().collect(
+                Collectors.groupingBy(
+                        tuple -> tuple.getT1().getShipmentEquipmentID(),
+                        Collectors.mapping(Tuple2::getT2, Collectors.toList())
+                )
+        );
         return Flux.concat(
                 shipmentService.findAllById(shipmentIDs)
                     .collectMap(Shipment::getId, Shipment::getCarrierBookingReference)
@@ -119,11 +120,19 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
                     .concatMap(shipmentEquipment -> {
                         ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+                        List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
 
                         shipmentEquipmentTO.setId(shipmentEquipment.getId());
-                        shipmentEquipmentTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
                         shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
                         shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit().name());
+
+                        if (cargoItemTOs == null || cargoItemTOs.isEmpty()) {
+                            return Mono.error(new IllegalStateException("No CargoItem referenced Equipment with "
+                                    + shipmentEquipment.getEquipmentReference() + "!?"));
+                        }
+                        for (CargoItemTO cargoItemTO : cargoItemTOs) {
+                            cargoItemTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
+                        }
 
                         // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
                         //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
@@ -135,6 +144,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         //
                         // Anyway, we start here and can improve it later.
                         return Flux.concat(
+                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
+                                        .map(equipment -> MappingUtil.instanceFrom(equipment, EquipmentTO::new, AbstractEquipment.class))
+                                        .doOnNext(shipmentEquipmentTO::setEquipment),
                                 sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
                                     .collectList()
                                     .doOnNext(shipmentEquipmentTO::setSeals),
@@ -274,10 +286,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 cargoItem.setShipmentID(shipmentID);
                                 cargoItem.setShippingInstructionID(shippingInstructionID);
                                 cargoItem.setShipmentEquipmentID(shipmentEquipmentID);
-                                // Update the TO variant to match
-                                // Clear the EquipmentReference on exit because it is "input-only"
-                                cargoItemTO.setEquipmentReference(null);
-                                cargoItemTO.setShipmentEquipmentID(shipmentEquipmentID);
+
                                 if (cargoLineItems == null || cargoLineItems.isEmpty()) {
                                     return Mono.error(exceptionType.apply("CargoItem with reference " + equipmentReference +
                                             ": Must have a field called cargoLineItems that is a non-empty list of cargo line items"
@@ -357,6 +366,38 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Mono.just(shipmentEquipment);
     }
 
+    private Mono<ShipmentEquipment> findOrCreateShipmentEquipment(ShipmentEquipmentTO shipmentEquipmentTO) {
+        EquipmentTO equipmentTO = shipmentEquipmentTO.getEquipment();
+        String equipmentReference = equipmentTO.getEquipmentReference();
+        return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
+                // FIXME: Replace with a 1:1 JOIN to avoid two SQL queries where one would have done.
+                .flatMap(shipmentEquipment -> equipmentService.findById(equipmentReference)
+                        .flatMap(equipment -> {
+                            Equipment providedEquipment = MappingUtil.instanceFrom(equipment, Equipment::new, AbstractEquipment.class);
+                            if (!equipmentTO.containsOnlyID() && providedEquipment.equals(equipment)) {
+                                // TODO: Implement rules for updating an existing Equipment.
+                                return Mono.error(new UpdateException("Cannot modify Equipment (via reference): " + equipmentReference));
+                            }
+                            return Mono.just(shipmentEquipment);
+                        }))
+                .switchIfEmpty(Mono.defer(() -> {
+                    Equipment equipment;
+                    if (equipmentTO.containsOnlyID()) {
+                        return Mono.error(new CreateException("Unknown Equipment reference: " + equipmentReference));
+                    }
+                    equipment = MappingUtil.instanceFrom(equipmentTO, Equipment::new, AbstractEquipment.class);
+                    return equipmentService.createWithId(equipment)
+                            .flatMap(ignored -> {
+                                ShipmentEquipment shipmentEquipment = MappingUtil.instanceFrom(
+                                        shipmentEquipmentTO,
+                                        ShipmentEquipment::new,
+                                        AbstractShipmentEquipment.class
+                                );
+                                return shipmentEquipmentService.create(shipmentEquipment);
+                            });
+                }));
+    }
+
     private Mono<Tuple2<Map<String, UUID>, List<ShipmentEquipmentTO>>> updateEquipment(
             List<ShipmentEquipmentTO> shipmentEquipmentTOs,
             boolean nullReeferEnsuresAbsence
@@ -364,13 +405,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         Map<String, UUID> referenceToDBId = new HashMap<>();
         return Flux.fromIterable(shipmentEquipmentTOs)
                 .concatMap(shipmentEquipmentTO -> {
-                    String equipmentReference = shipmentEquipmentTO.getEquipmentReference();
+                    EquipmentTO equipmentTO = shipmentEquipmentTO.getEquipment();
+                    String equipmentReference = equipmentTO.getEquipmentReference();
 
                     // TODO Performance: 1 Query for each ShipmentEquipment and then 1 for each ActiveReeferSettings
                     // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
-                    return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
-                            .switchIfEmpty(Mono.error(new CreateException("Invalid equipment reference (create): " + equipmentReference)))
-                            .<ShipmentEquipment>flatMap(shipmentEquipment -> {
+                    return findOrCreateShipmentEquipment(shipmentEquipmentTO)
+                            .flatMap(shipmentEquipment -> {
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
                                 shipmentEquipmentTO.setId(shipmentEquipment.getId());
                                 return updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
@@ -385,7 +426,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                 .flatMap(activeReeferSettings ->
                                                         Mono.error(new UpdateException(
                                                                 "Cannot remove ActiveReeferSettings on "
-                                                                        + shipmentEquipmentTO.getEquipmentReference()
+                                                                        + equipmentReference
                                                                         + ": It is a built-in part of the equipment"
                                                         ))
                                                 ).thenReturn(shipmentEquipment);
@@ -404,7 +445,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                 // Shipment Equipment
                                                 Mono.error(new CreateException(
                                                                 "Cannot add nor modify ActiveReeferSettings on "
-                                                                        + shipmentEquipmentTO.getEquipmentReference()
+                                                                        + equipmentReference
                                                                         + ": The equipment does not have an active reefer."
                                                         ))
                                         ).flatMap(current -> {
@@ -412,7 +453,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                             if (update.getShipmentEquipmentID() != null) {
                                                 return Mono.error(new CreateException(
                                                         "Cannot modify ActiveReeferSettings on "
-                                                                + shipmentEquipmentTO.getEquipmentReference()
+                                                                + equipmentReference
                                                                 + ": Please omit shipmentEquipmentID (it is implicit)"));
                                             }
                                             return activeReeferSettingsService.update(update);
@@ -585,8 +626,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     ChangeSet<ShipmentEquipmentTO> shipmentEquipmentTOChangeSet = changeListDetector(
                             original.getShipmentEquipments(),
                             update.getShipmentEquipments(),
-                            ShipmentEquipmentTO::getId,
-                            acceptAny()
+                            shipmentEquipmentTO -> Objects.requireNonNull(shipmentEquipmentTO.getEquipment()).getEquipmentReference(),
+                            acceptAny(),
+                            true
                     );
                     ChangeSet<Seal> sealChangeSet = sealChangeDetector(
                             original.getShipmentEquipments(),
@@ -599,6 +641,16 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Set<String> knownCargoLineItems = cargoLineItemChangeSet.updatedInstances.stream()
                             .map(CargoLineItem::getCargoLineItemID)
                             .collect(Collectors.toSet());
+                    List<ShipmentEquipmentTO> shipmentEquipmentTOs;
+                    if (shipmentEquipmentTOChangeSet.newInstances.isEmpty()) {
+                        shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.updatedInstances;
+                    } else if (shipmentEquipmentTOChangeSet.updatedInstances.isEmpty()) {
+                        shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.newInstances;
+                    } else {
+                        shipmentEquipmentTOs = new ArrayList<>(shipmentEquipmentTOChangeSet.newInstances.size() + shipmentEquipmentTOChangeSet.updatedInstances.size());
+                        shipmentEquipmentTOs.addAll(shipmentEquipmentTOChangeSet.newInstances);
+                        shipmentEquipmentTOs.addAll(shipmentEquipmentTOChangeSet.updatedInstances);
+                    }
                     if (!shipmentLocationChangeSet.newInstances.isEmpty()) {
                         ShipmentLocationTO newInstance = shipmentLocationChangeSet.newInstances.get(0);
                         return Mono.error(new UpdateException("Cannot create ShipmentLocations"
@@ -613,18 +665,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 + orphaned.getLocationID() + ", " + orphaned.getLocationType()
                         ));
                     }
-                    // TODO: Should it be possible to create/delete ShipmentEquipment instances (e.g. if you need to change  container)?
+                    // TODO: Implement
                     if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
                         ShipmentEquipmentTO deletedInstance = shipmentEquipmentTOChangeSet.orphanedInstances.get(0);
                         return Mono.error(new UnsupportedOperationException("Cannot delete ShipmentEquipment.  Deleted instance had ID: "
-                                + deletedInstance.getId() + ", reference " + deletedInstance.getEquipmentReference()));
+                                + deletedInstance.getId() + ", reference " + deletedInstance.getEquipment().getEquipmentReference()));
                     }
-                    if (!shipmentEquipmentTOChangeSet.newInstances.isEmpty()) {
-                        ShipmentEquipmentTO newInstance = shipmentEquipmentTOChangeSet.newInstances.get(0);
-                        return Mono.error(new UnsupportedOperationException("Cannot create ShipmentEquipment. New instance had ID: "
-                                + newInstance.getId() + ", reference " + newInstance.getEquipmentReference()));
-                    }
-
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
@@ -644,7 +690,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     );
 
                     Flux<Object> handleEquipmentAndCargoItems = updateEquipment(
-                                shipmentEquipmentTOChangeSet.updatedInstances,
+                                shipmentEquipmentTOs,
                                 true
                             ).flatMapMany(equipmentTuple ->
                                 Flux.fromIterable(equipmentTuple.getT2())
