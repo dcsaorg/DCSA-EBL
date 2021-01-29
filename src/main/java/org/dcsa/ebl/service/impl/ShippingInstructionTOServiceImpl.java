@@ -665,12 +665,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 + orphaned.getLocationID() + ", " + orphaned.getLocationType()
                         ));
                     }
-                    // TODO: Implement
-                    if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
-                        ShipmentEquipmentTO deletedInstance = shipmentEquipmentTOChangeSet.orphanedInstances.get(0);
-                        return Mono.error(new UnsupportedOperationException("Cannot delete ShipmentEquipment.  Deleted instance had ID: "
-                                + deletedInstance.getId() + ", reference " + deletedInstance.getEquipment().getEquipmentReference()));
-                    }
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
@@ -716,7 +710,23 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                                     : cargoLineItemService::createAll)
                                             ),
                                             processShipmentLocations(shipmentIDs, shipmentLocationChangeSet.updatedInstances)
-                                    );
+                                    // count + flatMap ensures a non-empty mono while trivially deferring the .update call
+                                    // The alternative .then(Mono.defer(() -> X)) is vastly harder to read.
+                                    ).count()
+                                    .flatMap(ignored -> {
+                                        if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
+                                            List<String> orphanedReference = shipmentEquipmentTOChangeSet.orphanedInstances
+                                                    .stream()
+                                                    .map(ShipmentEquipmentTO::getEquipment)
+                                                    .map(EquipmentTO::getEquipmentReference)
+                                                    .collect(Collectors.toList());
+                                            return shipmentEquipmentService.deleteByEquipmentReferenceInAndShipmentIDIn(
+                                                    orphanedReference,
+                                                    shipmentIDs
+                                            );
+                                        }
+                                        return Mono.empty();
+                                    });
                                 })
                     );
 
