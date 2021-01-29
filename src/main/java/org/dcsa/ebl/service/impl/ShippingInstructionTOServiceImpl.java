@@ -438,7 +438,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     if (partyID != null) {
                         partyMono = partyService.findById(partyID)
                                 .flatMap(existingParty -> {
-                                    if (!existingParty.equals(party)) {
+                                    if (!party.containsOnlyID() && !existingParty.equals(party)) {
                                         return Mono.error(new UpdateException("Party with id " + partyID
                                                 + " exists but has a different content. Remove the partyID field to"
                                                 + " create a new instance or provide an update"));
