@@ -36,4 +36,9 @@ public class ShipmentEquipmentServiceImpl extends ExtendedBaseServiceImpl<Shipme
     public Mono<ShipmentEquipment> findByEquipmentReference(String equipmentReference) {
         return shipmentEquipmentRepository.findByEquipmentReference(equipmentReference);
     }
+
+    @Override
+    public Mono<Void> deleteByEquipmentReferenceInAndShipmentIDIn(List<String> equipmentReferences, List<UUID> shipmentIDs) {
+        return shipmentEquipmentRepository.deleteByEquipmentReferenceInAndShipmentIDIn(equipmentReferences, shipmentIDs);
+    }
 }
