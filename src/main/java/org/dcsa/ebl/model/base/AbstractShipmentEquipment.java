@@ -17,10 +17,6 @@ public abstract class AbstractShipmentEquipment {
     @JsonProperty("shipmentEquipmentID")
     private UUID id;
 
-    @Column("equipment_reference")
-    @Size(max = 15)
-    private String equipmentReference;
-
     @Column("cargo_gross_weight")
     private Float cargoGrossWeight;
 

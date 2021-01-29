@@ -18,7 +18,6 @@ import java.util.List;
 public class CargoItemTO extends AbstractCargoItem {
     private List<CargoLineItem> cargoLineItems;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     @Size(max = 15)
     private String equipmentReference;
 

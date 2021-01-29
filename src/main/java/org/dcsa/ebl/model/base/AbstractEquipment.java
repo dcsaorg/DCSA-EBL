@@ -1,6 +1,5 @@
 package org.dcsa.ebl.model.base;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dcsa.core.model.AuditBase;
