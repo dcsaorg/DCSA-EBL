@@ -65,4 +65,16 @@ public class Party implements GetId<UUID> {
     @Column("nmfta_code")
     @Size(max = 4)
     private String nmftaCode;
+
+    /**
+     * @return true iff this object contains a non-null ID and every other field being unset.
+     */
+    public boolean containsOnlyID() {
+        if (this.getId() != null) {
+            Party p = new Party();
+            p.setId(this.getId());
+            return this.equals(p);
+        }
+        return false;
+    }
 }

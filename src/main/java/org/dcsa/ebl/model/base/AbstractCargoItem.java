@@ -66,10 +66,4 @@ public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID>
     @Size(max = 3)
     private String packageCode;
 
-    @Column("shipment_equipment_id")
-    /* Database does not allow this to be null, but we receive requests where it is
-     * null, so we do not have a @NotNull here.
-     * Examples: POST /shipping-instructions (null on entry, not null on exit)
-     */
-    protected UUID shipmentEquipmentID;
 }
