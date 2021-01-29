@@ -1,18 +1,26 @@
 package org.dcsa.ebl.service.impl;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.ShipmentLocation;
+import org.dcsa.ebl.model.ShipmentLocationTO;
+import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
+import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.repository.ShipmentLocationRepository;
 import org.dcsa.ebl.service.ShipmentLocationService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
 
 @RequiredArgsConstructor
 @Service
@@ -53,18 +61,64 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
 
     @Override
     public Mono<ShipmentLocation> update(ShipmentLocation update) {
-        return shipmentLocationRepository.findByShipmentIDAndLocationTypeAndLocationID(update.getShipmentID(),
+        return shipmentLocationRepository.findByLocationTypeAndLocationIDAndShipmentIDIn(
                 update.getLocationType(),
-                update.getLocationID()
-        ).flatMap(current -> this.preUpdateHook(current, update))
+                update.getLocationID(),
+                Collections.singletonList(update.getShipmentID())
+        ).single()  // There must be exactly one match.
+         .onErrorMap(NoSuchElementException.class, error -> new UpdateException("Cannot create ShipmentLocation via update ("
+                 + update.getLocationType() + ", " + update.getLocationID() + ")"))
+         .flatMap(current -> this.preUpdateHook(current, update))
          .flatMap(this::save);
+    }
+
+    public Mono<Void> updateAllRelatedFromTO(
+            List<UUID> shipmentIDs,
+            Iterable<ShipmentLocationTO> shipmentLocationTOs,
+            BiFunction<ShipmentLocation, ShipmentLocationTO, Mono<ShipmentLocation>> mutator) {
+        return Flux.fromIterable(shipmentLocationTOs)
+                // FIXME: 1-N performance issue.  Slightly mitigated by shipmentIDs but it is still one
+                // query per "location ID, location Type".
+                .concatMap(shipmentLocationTO ->
+                        Mono.zip(
+                                Mono.just(shipmentLocationTO),
+                                shipmentLocationRepository.findByLocationTypeAndLocationIDAndShipmentIDIn(
+                                        shipmentLocationTO.getLocationType(),
+                                        shipmentLocationTO.getLocationID(),
+                                        shipmentIDs
+                                ).collectList()
+                        )
+                ).concatMap(tuple -> {
+                    ShipmentLocationTO shipmentLocationTO = tuple.getT1();
+                    List<ShipmentLocation> originals = tuple.getT2();
+                    if (originals.size() != shipmentIDs.size()) {
+                        return Flux.error(new IllegalStateException("Got " + originals.size()
+                                + " ShipmentLocations but expected " + shipmentIDs.size() + " for location type "
+                                + shipmentLocationTO.getLocationType() + " and location id "
+                                + shipmentLocationTO.getLocationID()));
+                    }
+
+                    return Flux.fromIterable(originals).concatMap(original -> {
+                        ShipmentLocation update = MappingUtil.instanceFrom(original, ShipmentLocation::new, ShipmentLocation.class);
+                        return Mono.zip(
+                                Mono.just(original),
+                                mutator.apply(update, shipmentLocationTO)
+                        );
+                    });
+                })
+                .concatMap(tuple -> preUpdateHook(tuple.getT1(), tuple.getT2()))
+                .concatMap(this::preSaveHook)
+                .buffer(SQL_LIST_BUFFER_SIZE)
+                .concatMap(shipmentLocationRepository::saveAll)
+                .then();
     }
 
     @Override
     public Flux<ShipmentLocation> createAll(Flux<ShipmentLocation> shipmentLocations) {
         return shipmentLocations
                 .concatMap(this::preCreateHook)
-                .buffer(70)
+                .concatMap(this::preSaveHook)
+                .buffer(SQL_LIST_BUFFER_SIZE)
                 .concatMap(shipmentLocationRepository::saveAll);
     }
 
@@ -74,7 +128,17 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     }
 
     @Override
-    public Mono<ShipmentLocation> findByShipmentIDAndLocationTypeAndLocationID(UUID shipmentID, ShipmentLocationType shipmentLocationType, UUID locationID) {
-        return shipmentLocationRepository.findByShipmentIDAndLocationTypeAndLocationID(shipmentID, shipmentLocationType, locationID);
+    public Flux<ShipmentLocation> findByLocationTypeAndLocationIDAndShipmentIDIn(ShipmentLocationType shipmentLocationType, UUID locationID, List<UUID> shipmentIDs) {
+        return shipmentLocationRepository.findByLocationTypeAndLocationIDAndShipmentIDIn(shipmentLocationType, locationID, shipmentIDs);
+    }
+
+    @Data(staticConstructor = "of")
+    private static class ByLocationIDAndType {
+        private final ShipmentLocationType shipmentLocationType;
+        private final UUID locationID;
+
+        public static ByLocationIDAndType of(ShipmentLocation location) {
+            return of(location.getLocationType(), location.getLocationID());
+        }
     }
 }

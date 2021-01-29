@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.model.DocumentParty;
+import org.dcsa.ebl.model.enums.PartyFunction;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
@@ -56,4 +57,11 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
                 .flatMap(this::save);
     }
 
+    public Mono<DocumentParty> findByPartyIDAndPartyFunction(UUID partyID, PartyFunction partyFunction) {
+        return documentPartyRepository.findByPartyIDAndPartyFunction(partyID, partyFunction);
+    }
+
+    public Mono<Integer> deleteByPartyIDAndPartyFunctionAndShipmentID(UUID partyID, PartyFunction partyFunction, UUID shipmentID) {
+        return documentPartyRepository.deleteByPartyIDAndPartyFunctionAndShipmentID(partyID, partyFunction, shipmentID);
+    }
 }

@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.Location;
 import org.dcsa.ebl.repository.LocationRepository;
 import org.dcsa.ebl.service.LocationService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -22,5 +23,10 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
     @Override
     public Class<Location> getModelClass() {
         return Location.class;
+    }
+
+
+    public Flux<Location> findAllById(Iterable<UUID> ids) {
+        return locationRepository.findAllById(ids);
     }
 }

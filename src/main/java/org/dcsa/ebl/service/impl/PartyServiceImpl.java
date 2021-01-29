@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.repository.PartyRepository;
 import org.dcsa.ebl.service.PartyService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -22,5 +23,9 @@ public class PartyServiceImpl extends ExtendedBaseServiceImpl<PartyRepository, P
     @Override
     public Class<Party> getModelClass() {
         return Party.class;
+    }
+
+    public Flux<Party> findAllById(Iterable<UUID> ids) {
+        return partyRepository.findAllById(ids);
     }
 }

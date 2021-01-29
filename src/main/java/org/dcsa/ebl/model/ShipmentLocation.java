@@ -2,8 +2,10 @@ package org.dcsa.ebl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
+import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -13,7 +15,8 @@ import java.util.UUID;
 
 @Table("shipment_location")
 @Data
-public class ShipmentLocation extends AuditBase implements GetId<UUID> {
+@EqualsAndHashCode(callSuper = true)
+public class ShipmentLocation extends AbstractShipmentLocation implements GetId<UUID> {
 
     @Id
     @JsonIgnore
@@ -21,14 +24,4 @@ public class ShipmentLocation extends AuditBase implements GetId<UUID> {
 
     @Column("shipment_id")
     private UUID shipmentID;
-
-    @Column("location_id")
-    private UUID locationID;
-
-    @Column("location_type")
-    private ShipmentLocationType locationType;
-
-    @Column("displayed_name")
-    private String displayedName;
-
 }
