@@ -449,8 +449,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         partyMono = partyService.create(party);
                     }
                     return partyMono
-                            .doOnNext(resolvedParty -> documentParty.setPartyID(resolvedParty.getId()))
-                            .flatMap(resolvedParty -> saveFunction.apply(documentParty));
+                            .doOnNext(resolvedParty -> {
+                                documentParty.setPartyID(resolvedParty.getId());
+                                documentPartyTO.setParty(resolvedParty);
+                            }).flatMap(resolvedParty -> saveFunction.apply(documentParty));
                 })
                 .then();
     }
