@@ -32,6 +32,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final ChargeService chargeService;
     private final ClauseService clauseService;
     private final LocationService locationService;
+    private final BookingService bookingService;
 
     @Override
     public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
@@ -135,9 +136,20 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                             Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
                                                     )
                                                     .doOnNext(
-                                                            shippingInstruction ->
-                                                                    transportDocumentTO.setShippingInstruction(shippingInstruction))
-                                                    .thenReturn(transportDocumentTO),
+                                                            shippingInstruction -> {
+                                                                transportDocumentTO.setShippingInstruction(shippingInstruction);
+                                                                // TODO: Find correct BookingReference...
+                                                                bookingService.findById(shippingInstruction.getCargoItems().get(0).getCarrierBookingReference())
+                                                                        .doOnNext(booking -> {
+                                                                            transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
+                                                                            transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
+                                                                            transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
+                                                                            transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
+                                                                            transportDocumentTO.setServiceContract(booking.getServiceContract());
+                                                                        });
+                                                            }
+                                                    ),
+//                                                    .thenReturn(transportDocumentTO),
                                             locationService.findById(transportDocument.getPlaceOfIssue())
                                                     .doOnNext(
                                                             location ->
