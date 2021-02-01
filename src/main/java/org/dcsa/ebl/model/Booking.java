@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
+import java.time.LocalDateTime;
 
 @Table("booking")
 @NoArgsConstructor
@@ -73,8 +75,9 @@ public class Booking extends AuditBase implements GetId<String> {
         this.shipmentTermAtDestination = shipmentTermAtDestination;
     }
 
-    @Column("booking_datetime timestamp with time zone ")
-    private String bookingDateTime;
+    @Column("booking_datetime")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    private LocalDateTime bookingDateTime;
 
     @Column("service_contract")
     @Size(max = 30)
@@ -85,7 +88,7 @@ public class Booking extends AuditBase implements GetId<String> {
     private String commodityType;
 
     @Column("cargo_gross_weight")
-    private Double cargoGrossWeight;
+    private Float cargoGrossWeight;
 
     @Column("cargo_gross_weight_unit")
     @Size(max = 3)
