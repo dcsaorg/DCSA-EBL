@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.ebl.model.Charge;
-import org.dcsa.ebl.model.Clause;
-import org.dcsa.ebl.model.TransportDocument;
-import org.dcsa.ebl.model.TransportPlan;
+import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
+import org.dcsa.ebl.model.transferobjects.CargoItemTO;
 import org.dcsa.ebl.model.transferobjects.ChargeTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
@@ -128,46 +126,69 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                         AbstractTransportDocument.class
                                 );
                                 if (transportDocument.getShippingInstructionID() == null) {
-                                    return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument"));
+                                    return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument - internal error!"));
                                 } else {
                                     return Flux.concat(
                                             shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
                                                     .switchIfEmpty(
-                                                            Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist"))
+                                                            Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist - internal error!"))
                                                     )
-                                                    .doOnNext(
+                                                    .flatMap(
                                                             shippingInstruction -> {
                                                                 transportDocumentTO.setShippingInstruction(shippingInstruction);
-                                                                // TODO: Find correct BookingReference...
-                                                                bookingService.findById(shippingInstruction.getCargoItems().get(0).getCarrierBookingReference())
-                                                                        .doOnNext(booking -> {
-                                                                            transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
-                                                                            transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
-                                                                            transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
-                                                                            transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
-                                                                            transportDocumentTO.setServiceContract(booking.getServiceContract());
-                                                                        });
+                                                                String carrierBookingReference = null;
+                                                                // TODO: Uncomment code once https://github.com/dcsaorg/DCSA-EBL/issues/46 has been implemented
+//                                                                if (shippingInstruction.getCarrierBookingReference() != null) {
+//                                                                    // Use the carrierBookingReference on the ShippingInstruction
+//                                                                    carrierBookingReference = shippingInstruction.getCarrierBookingReference();
+//                                                                } else {
+                                                                    List<CargoItemTO> cargoItems = shippingInstruction.getCargoItems();
+                                                                    if (cargoItems != null) {
+                                                                        for (CargoItemTO cargoItem : cargoItems) {
+                                                                            if (cargoItem.getCarrierBookingReference() != null) {
+                                                                                // Assume https://github.com/dcsaorg/DCSA-EBL/issues/56 is valid
+                                                                                carrierBookingReference = cargoItem.getCarrierBookingReference();
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                    }
+//                                                                }
+
+                                                                if (carrierBookingReference == null) {
+                                                                    return Mono.error(new GetException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstruction.getId() + " - internal error!"));
+                                                                } else {
+                                                                    return bookingService.findById(carrierBookingReference)
+                                                                            .flatMap(booking -> {
+                                                                                transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
+                                                                                transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
+                                                                                transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
+                                                                                transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
+                                                                                transportDocumentTO.setServiceContract(booking.getServiceContract());
+                                                                                return Mono.just(shippingInstruction);
+                                                                            })
+                                                                            .switchIfEmpty(Mono.error(new GetException("CarrierBookingReference=" + carrierBookingReference + " specified on ShippingInstruction: " + shippingInstruction.getId() + " does not exist - internal error!")));
+                                                                }
                                                             }
-                                                    ),
-//                                                    .thenReturn(transportDocumentTO),
+                                                    )
+                                                    .then(Mono.just(transportDocumentTO)),
                                             locationService.findById(transportDocument.getPlaceOfIssue())
-                                                    .doOnNext(
-                                                            location ->
-                                                                    transportDocumentTO.setPlaceOfIssueLocation(location)
+                                                    .flatMap(
+                                                            location -> {
+                                                                transportDocumentTO.setPlaceOfIssueLocation(location);
+                                                                return Mono.just(location);
+                                                            }
                                                     )
                                     ).then(Mono.just(transportDocumentTO));
                                 }
                     }),
                 includeCharges ?
                     chargeService.findAllByTransportDocumentID(transportDocumentID)
-                            .flatMap(charge -> {
-                                return locationService.findById(charge.getFreightPayableAt())
-                                        .map(location -> {
-                                            ChargeTO chargeTO = MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class);
-                                            chargeTO.setFreightPayableAtLocation(location);
-                                            return chargeTO;
-                                        });
-                            })
+                            .flatMap(charge -> locationService.findById(charge.getFreightPayableAt())
+                                    .map(location -> {
+                                        ChargeTO chargeTO = MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class);
+                                        chargeTO.setFreightPayableAtLocation(location);
+                                        return chargeTO;
+                                    }))
                             .collectList()
                             .doOnNext(transportDocumentTO::setCharges)
                         : Flux.empty(),
