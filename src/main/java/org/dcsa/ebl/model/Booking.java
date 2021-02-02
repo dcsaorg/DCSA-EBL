@@ -15,6 +15,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Table("booking")
 @NoArgsConstructor
@@ -76,8 +77,7 @@ public class Booking extends AuditBase implements GetId<String> {
     }
 
     @Column("booking_datetime")
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private LocalDateTime bookingDateTime;
+    private ZonedDateTime bookingDateTime;
 
     @Column("service_contract")
     @Size(max = 30)

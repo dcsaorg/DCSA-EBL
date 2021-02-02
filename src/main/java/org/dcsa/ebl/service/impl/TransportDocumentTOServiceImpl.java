@@ -155,7 +155,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                                 transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
                                                                                 transportDocumentTO.setServiceContract(booking.getServiceContract());
                                                                                 return Mono.just(shippingInstruction);
-                                                                            })
+                                                                            });
                                                                 }
                                                             }
                                                     )

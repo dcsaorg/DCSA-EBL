@@ -2,6 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.Charge;
 import org.dcsa.ebl.repository.ChargeRepository;
 import org.dcsa.ebl.service.ChargeService;
@@ -31,8 +32,7 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
         return Flux.fromIterable(charges)
                 .concatMap(this::preCreateHook)
                 .concatMap(this::preSaveHook)
-                // TODO: Change to Util class
-                .buffer(100)
+                .buffer(Util.SQL_LIST_BUFFER_SIZE)
                 .concatMap(chargeRepository::saveAll);
     }
 
