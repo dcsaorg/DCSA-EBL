@@ -156,7 +156,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                                 transportDocumentTO.setServiceContract(booking.getServiceContract());
                                                                                 return Mono.just(shippingInstruction);
                                                                             })
-                                                                            .switchIfEmpty(Mono.error(new GetException("CarrierBookingReference=" + carrierBookingReference + " specified on ShippingInstruction: " + shippingInstruction.getId() + " does not exist - internal error!")));
                                                                 }
                                                             }
                                                     )
