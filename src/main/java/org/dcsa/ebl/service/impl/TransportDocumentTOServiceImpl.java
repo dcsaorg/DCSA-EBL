@@ -124,9 +124,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                 } else {
                                     return Flux.concat(
                                             shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
-                                                    .switchIfEmpty(
-                                                            Mono.error(new GetException("ShippingInstruction linked tp from TransportDocument does not exist - internal error!"))
-                                                    )
                                                     .flatMap(
                                                             shippingInstruction -> {
                                                                 transportDocumentTO.setShippingInstruction(shippingInstruction);
