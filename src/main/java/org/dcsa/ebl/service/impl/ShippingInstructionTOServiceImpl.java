@@ -690,7 +690,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
-                            deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
+                            documentPartyService.deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
                             Flux.fromIterable(cargoLineItemChangeSet.orphanedInstances)
@@ -777,44 +777,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .thenReturn(update)
                             .doOnNext(ShippingInstructionTO::hoistCarrierBookingReferenceIfPossible);
                 });
-    }
-
-    private Mono<Void> deleteObsoleteDocumentPartyInstances(Iterable<DocumentPartyTO> documentPartyTOs) {
-        return Flux.fromIterable(documentPartyTOs)
-                .flatMap(documentPartyTO -> {
-                    Party party = documentPartyTO.getParty();
-                    UUID partyId = party.getId();
-                    PartyFunction partyFunction = documentPartyTO.getPartyFunction();
-                    if (partyId == null) {
-                        return Mono.error(new AssertionError("Cannot delete a DocumentPartyTO without a" +
-                                " partyID (on the Party member)"));
-                    }
-                    return Mono.zip(
-                        Mono.just(partyId),
-                        Mono.just(partyFunction),
-                        documentPartyService.deleteByPartyIDAndPartyFunctionAndShipmentID(partyId, partyFunction, null)
-                    );
-                }).flatMap(tuple -> {
-                    UUID partyID = tuple.getT1();
-                    PartyFunction partyFunction = tuple.getT2();
-                    int deletion = tuple.getT3();
-                    switch (deletion) {
-                        case 1:
-                            // Deleted as expected; nothing more to do.
-                            return Mono.empty();
-                        case 0:
-                            // No deletion, this is probably because there is a shipmentID as well.
-                            // TODO: The implementation of this is based on an assumption of how this case should be handled.
-                            // (The alternatively being deleting the DocumentParty even though it references a Shipment.
-                            return documentPartyService.findByPartyIDAndPartyFunction(partyID, partyFunction)
-                                    .doOnNext(documentParty -> documentParty.setShippingInstructionID(null))
-                                    // Not the most efficient method, but will do for now.
-                                    .flatMap(documentPartyService::update);
-                        default:
-                            return Mono.error(new AssertionError("Deleted " + deletion + " rows but expected it to be 0 or 1!?"));
-                    }
-                })
-                .then();
     }
 
     private static <T> Mono<Void> deleteAllFromChangeSet(ChangeSet<T> tChangeSet, Function<T, Mono<Void>> singleItemDeleter) {
