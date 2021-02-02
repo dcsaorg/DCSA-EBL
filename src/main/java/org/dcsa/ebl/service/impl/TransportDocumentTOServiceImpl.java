@@ -137,11 +137,10 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                             shippingInstruction -> {
                                                                 transportDocumentTO.setShippingInstruction(shippingInstruction);
                                                                 String carrierBookingReference = null;
-                                                                // TODO: Uncomment code once https://github.com/dcsaorg/DCSA-EBL/issues/46 has been implemented
-//                                                                if (shippingInstruction.getCarrierBookingReference() != null) {
-//                                                                    // Use the carrierBookingReference on the ShippingInstruction
-//                                                                    carrierBookingReference = shippingInstruction.getCarrierBookingReference();
-//                                                                } else {
+                                                                if (shippingInstruction.getCarrierBookingReference() != null) {
+                                                                    // Use the carrierBookingReference on the ShippingInstruction
+                                                                    carrierBookingReference = shippingInstruction.getCarrierBookingReference();
+                                                                } else {
                                                                     List<CargoItemTO> cargoItems = shippingInstruction.getCargoItems();
                                                                     if (cargoItems != null) {
                                                                         for (CargoItemTO cargoItem : cargoItems) {
@@ -152,7 +151,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                             }
                                                                         }
                                                                     }
-//                                                                }
+                                                                }
 
                                                                 if (carrierBookingReference == null) {
                                                                     return Mono.error(new GetException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstruction.getId() + " - internal error!"));
