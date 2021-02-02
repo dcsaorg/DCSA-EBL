@@ -47,9 +47,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                         transportDocumentTO.setId(td.getId());
                         return Flux.concat(
                                 shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
-                                        .switchIfEmpty(
-                                                Mono.error(new GetException("ShippingInstruction linked to from TransportDocument does not exist"))
-                                        )
                                         .doOnNext(shippingInstruction ->
                                                 transportDocumentTO.setShippingInstruction(shippingInstruction)
                                         )
