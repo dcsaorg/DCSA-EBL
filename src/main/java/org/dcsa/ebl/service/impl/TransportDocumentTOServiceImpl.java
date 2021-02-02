@@ -115,9 +115,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 
         return Flux.concat(
                 transportDocumentService.findById(transportDocumentID)
-                    .switchIfEmpty(
-                            Mono.error(new GetException("No TransportDocument for id: " + transportDocumentID))
-                    )
                     .flatMap(
                             transportDocument -> {
                                 MappingUtil.copyFields(
