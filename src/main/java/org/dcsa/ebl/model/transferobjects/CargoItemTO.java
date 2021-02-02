@@ -6,9 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.ebl.model.CargoLineItem;
 import org.dcsa.ebl.model.base.AbstractCargoItem;
-import org.springframework.data.annotation.Transient;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
 
@@ -21,8 +19,7 @@ public class CargoItemTO extends AbstractCargoItem {
     @Size(max = 15)
     private String equipmentReference;
 
-    @NotNull
-    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String carrierBookingReference;
 
 }

@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface ShipmentEquipmentRepository extends ExtendedRepository<ShipmentEquipment, UUID> {
     Flux<ShipmentEquipment> findAllByShipmentIDIn(List<UUID> shipmentIDs);
     Mono<ShipmentEquipment> findByEquipmentReference(String equipmentReference);
+    Mono<Void> deleteByEquipmentReferenceInAndShipmentIDIn(List<String> equipmentReferences, List<UUID> shipmentIDs);
 }

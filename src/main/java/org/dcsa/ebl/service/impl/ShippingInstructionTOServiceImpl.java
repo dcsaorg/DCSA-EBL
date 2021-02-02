@@ -192,7 +192,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds, tuples)
                             .then(Mono.just(cargoItemTOs));
                 })
-                .doOnNext(shippingInstructionTO::setCargoItems)
+                .doOnNext(cargoItemTOs -> {
+                    shippingInstructionTO.setCargoItems(cargoItemTOs);
+                    shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
+                })
                 .count(),
            // TODO: Ideally we would use a JOIN to pull Party together with DocumentParty due to the 1:1 relation
            // but for now this will do.
@@ -515,6 +518,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 ShippingInstruction::new,
                 AbstractShippingInstruction.class
         );
+        try {
+            shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+        } catch (IllegalStateException e) {
+            return Mono.error(new CreateException("Detected carrierBookingReference on the ShippingInstruction AND on"
+                    + " the CargoItems.  Please place them *either* on the ShippingInstruction (if they are all"
+                    + " identical) OR place them entirely on the CargoItem level (if you need distinct values)."
+            ));
+        }
+
         return shippingInstructionService.create(shippingInstruction)
                 .flatMapMany(savedShippingInstruction -> {
             UUID shippingInstructionID = savedShippingInstruction.getId();
@@ -588,6 +600,16 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     if (!original.getId().equals(update.getId())) {
                         throw new UpdateException("Cannot change the ID of the ShippingInstruction");
                     }
+                    try {
+                        original.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+                        update.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+                    } catch (IllegalStateException e) {
+                        return Mono.error(new UpdateException("Detected carrierBookingReference on the ShippingInstruction AND on"
+                                + " the CargoItems.  Please place them *either* on the ShippingInstruction (if they are all"
+                                + " identical) OR place them entirely on the CargoItem level (if you need distinct values)."
+                        ));
+                    }
+
                     ShippingInstruction updatedModel = MappingUtil.instanceFrom(
                             update,
                             ShippingInstruction::new,
@@ -665,12 +687,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 + orphaned.getLocationID() + ", " + orphaned.getLocationType()
                         ));
                     }
-                    // TODO: Implement
-                    if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
-                        ShipmentEquipmentTO deletedInstance = shipmentEquipmentTOChangeSet.orphanedInstances.get(0);
-                        return Mono.error(new UnsupportedOperationException("Cannot delete ShipmentEquipment.  Deleted instance had ID: "
-                                + deletedInstance.getId() + ", reference " + deletedInstance.getEquipment().getEquipmentReference()));
-                    }
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
@@ -716,7 +732,23 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                                                     : cargoLineItemService::createAll)
                                             ),
                                             processShipmentLocations(shipmentIDs, shipmentLocationChangeSet.updatedInstances)
-                                    );
+                                    // count + flatMap ensures a non-empty mono while trivially deferring the .update call
+                                    // The alternative .then(Mono.defer(() -> X)) is vastly harder to read.
+                                    ).count()
+                                    .flatMap(ignored -> {
+                                        if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
+                                            List<String> orphanedReference = shipmentEquipmentTOChangeSet.orphanedInstances
+                                                    .stream()
+                                                    .map(ShipmentEquipmentTO::getEquipment)
+                                                    .map(EquipmentTO::getEquipmentReference)
+                                                    .collect(Collectors.toList());
+                                            return shipmentEquipmentService.deleteByEquipmentReferenceInAndShipmentIDIn(
+                                                    orphanedReference,
+                                                    shipmentIDs
+                                            );
+                                        }
+                                        return Mono.empty();
+                                    });
                                 })
                     );
 
@@ -742,7 +774,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             // The alternative .then(Mono.defer(() -> X)) is vastly harder to read.
                             .count()
                             .flatMap(ignored -> shippingInstructionService.update(updatedModel))
-                            .thenReturn(update);
+                            .thenReturn(update)
+                            .doOnNext(ShippingInstructionTO::hoistCarrierBookingReferenceIfPossible);
                 });
     }
 
