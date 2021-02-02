@@ -16,6 +16,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -84,14 +85,14 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     }
 
     @DeleteMapping
-    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseStatus( HttpStatus.FORBIDDEN )
     public Mono<Void> delete(@RequestBody ShippingInstructionTO shippingInstructionTO) {
-        return Mono.error(new DeleteException("Not possible to delete a ShippingInstruction"));
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
     @DeleteMapping( path ="{shippingInstructionID}" )
-    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseStatus( HttpStatus.FORBIDDEN )
     public Mono<Void> deleteById(@PathVariable UUID shippingInstructionID) {
-        return Mono.error(new DeleteException("Not possible to delete a ShippingInstruction"));
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 }

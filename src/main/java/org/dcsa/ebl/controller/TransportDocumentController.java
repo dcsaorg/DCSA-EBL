@@ -2,9 +2,7 @@ package org.dcsa.ebl.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.GetException;
-import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.model.TransportDocument;
@@ -15,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -65,8 +64,9 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     }
 
     @PutMapping( path = "{transportDocumentID}")
+    @ResponseStatus( HttpStatus.FORBIDDEN )
     public Mono<TransportDocumentTO> update(@PathVariable UUID transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
-        return Mono.error(new UpdateException("Not possible to update a TransportDocument"));
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
     @PostMapping
@@ -76,14 +76,14 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     }
 
     @DeleteMapping
-    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseStatus( HttpStatus.FORBIDDEN )
     public Mono<Void> delete(@RequestBody TransportDocumentTO transportDocumentTO) {
-        return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
     @DeleteMapping( path ="{transportDocumentID}" )
-    @ResponseStatus( HttpStatus.NO_CONTENT )
+    @ResponseStatus( HttpStatus.FORBIDDEN )
     public Mono<Void> deleteById(@PathVariable UUID transportDocumentID) {
-        return Mono.error(new DeleteException("Not possible to delete a TransportDocument"));
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 }

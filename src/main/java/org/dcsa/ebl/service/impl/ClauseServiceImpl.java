@@ -2,6 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.Clause;
 import org.dcsa.ebl.repository.ClauseRepository;
 import org.dcsa.ebl.service.ClauseService;
@@ -32,8 +33,7 @@ public class ClauseServiceImpl extends ExtendedBaseServiceImpl<ClauseRepository,
         return Flux.fromIterable(Clauses)
                 .concatMap(this::preCreateHook)
                 .concatMap(this::preSaveHook)
-                // TODO: Change to Util class
-                .buffer(100)
+                .buffer(Util.SQL_LIST_BUFFER_SIZE)
                 .concatMap(clauseRepository::saveAll);
     }
 
