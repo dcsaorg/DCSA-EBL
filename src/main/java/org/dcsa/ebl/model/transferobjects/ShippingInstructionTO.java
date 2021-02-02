@@ -55,7 +55,7 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
      * this ShippingInstruction and cleared from the CargoItems.
      *
      * This is useful on output to "prettify" the resulting ShippingInstruction to avoid unnecessary
-     * "per CargoItem" booking references.  The method is indempotent.
+     * "per CargoItem" booking references.  The method is idempotent.
      *
      * This is more or less the logical opposite of {@link #pushCarrierBookingReferenceIntoCargoItemsIfNecessary()}.
      *
@@ -106,7 +106,7 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
      * Pushes the carrierBookingReference to cargoItems and clears it if it is not null
      *
      * This is useful on input to "normalize" the ShippingInstruction so the code can always
-     * assume that the booking reference will appear on the cargoItems.  The method is indempotent.
+     * assume that the booking reference will appear on the cargoItems.  The method is idempotent.
      *
      * This is more or less the logical opposite of {@link #hoistCarrierBookingReferenceIfPossible()}.
      *
@@ -128,5 +128,4 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
         }
     }
 }
-
 
