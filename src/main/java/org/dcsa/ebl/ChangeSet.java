@@ -31,7 +31,7 @@ public final class ChangeSet<T> {
         return changeListDetector(listFromOriginal, listFromUpdate, idMapper, validator, false);
     }
 
-    public static <T, I> ChangeSet<T> changeListDetector(List<T> listFromOriginal, List<T> listFromUpdate, Function<T, I> idMapper, Consumer<T> validator, boolean allowUnknownIDs) {
+    public static <T, I> ChangeSet<T> changeListDetector(List<T> listFromOriginal, List<T> listFromUpdate, Function<T, I> idMapper, Consumer<T> validator, boolean allowNewIDs) {
         Map<I, T> knownIds = listFromOriginal.stream().collect(Collectors.toMap(idMapper, Function.identity()));
         Set<I> usedIds = new HashSet<>(listFromUpdate.size());
         List<T> newObjects = new ArrayList<>();
@@ -40,7 +40,7 @@ public final class ChangeSet<T> {
         for (T update : listFromUpdate) {
             I updateId = idMapper.apply(update);
             if (updateId != null) {
-                if (!knownIds.containsKey(updateId) && !allowUnknownIDs) {
+                if (!knownIds.containsKey(updateId) && !allowNewIDs) {
                     throw new UpdateException("Invalid id: " + updateId
                             + ":  The id is not among the original list of ids (null the ID field if you want to"
                             + " create a new instance)");
