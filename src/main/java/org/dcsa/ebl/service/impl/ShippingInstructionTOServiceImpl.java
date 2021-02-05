@@ -15,6 +15,7 @@ import org.dcsa.ebl.model.base.*;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
+import org.dcsa.ebl.model.utils.ShippingInstructionUpdateInfo;
 import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
 import org.dcsa.ebl.repository.EquipmentRepository;
 import org.dcsa.ebl.service.*;
@@ -230,17 +231,41 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.just(shippingInstructionTO));
     }
 
-    private Mono<Tuple2<Flux<CargoLineItem>, List<UUID>>> processCargoItems(UUID shippingInstructionID,
-                                                  List<CargoItemTO> cargoItemTOs,
-                                                  Map<String, UUID> equipmentReference2ID,
-                                                  boolean creationFlow) {
-        Map<UUID, String> usedEquipmentReferences = new HashMap<>();
-        Function<String, RuntimeException> exceptionType = creationFlow ? CreateException::new : UpdateException::new;
+    private Mono<ShippingInstructionUpdateInfo> loadShipmentIDs(ShippingInstructionUpdateInfo instructionUpdateInfo) {
+        List<CargoItemTO> cargoItemTOs = instructionUpdateInfo.getShippingInstructionTO().getCargoItems();
+        HashMap<String, String> equipmentReference2CarrierBookingReference = new HashMap<>(cargoItemTOs.size());
+        for (CargoItemTO cargoItemTO : cargoItemTOs) {
+            String carrierBookingReference = cargoItemTO.getCarrierBookingReference();
+            String equipmentReference = cargoItemTO.getEquipmentReference();
+            String existing = equipmentReference2CarrierBookingReference.putIfAbsent(equipmentReference, carrierBookingReference);
+            if (existing != null && !existing.equals(carrierBookingReference)) {
+                return Mono.error(new UpdateException("EquipmentReference " + equipmentReference
+                        + " used for two distinct booking references at the same time (" + existing + ", "
+                        + carrierBookingReference + ")"));
+            }
+        }
+        instructionUpdateInfo.setEquipmentReference2CarrierBookingReference(
+                Collections.unmodifiableMap(equipmentReference2CarrierBookingReference)
+        );
         return Flux.fromIterable(cargoItemTOs)
                 .map(CargoItemTO::getCarrierBookingReference)
                 .buffer(SQL_LIST_BUFFER_SIZE)
                 .concatMap(shipmentService::findByCarrierBookingReferenceIn)
                 .collectMap(Shipment::getCarrierBookingReference, Shipment::getId)
+                .doOnNext(instructionUpdateInfo::setCarrierBookingReference2ShipmentID)
+                .thenReturn(instructionUpdateInfo);
+    }
+
+    private Mono<Tuple2<Flux<CargoLineItem>, List<UUID>>> processCargoItems(
+            ShippingInstructionUpdateInfo shippingInstructionUpdateInfo,
+            List<CargoItemTO> cargoItemTOs,
+            boolean creationFlow
+    ) {
+        Map<UUID, String> usedEquipmentReferences = new HashMap<>();
+        Function<String, RuntimeException> exceptionType = creationFlow ? CreateException::new : UpdateException::new;
+        UUID shippingInstructionID = shippingInstructionUpdateInfo.getShippingInstructionID();
+        Map<String, UUID> equipmentReference2ID = shippingInstructionUpdateInfo.getEquipmentReference2ShipmentEquipmentID();
+        return Mono.just(shippingInstructionUpdateInfo.getCarrierBookingReference2ShipmentID())
                 .flatMap(bookingReference2Shipment -> {
                     List<UUID> shipmentIDFlux = new ArrayList<>(bookingReference2Shipment.values());
                     Flux<CargoLineItem> cargoLineItemFlux = Flux.fromIterable(cargoItemTOs)
@@ -376,6 +401,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
                 // FIXME: Replace with a 1:1 JOIN to avoid two SQL queries where one would have done.
                 .flatMap(shipmentEquipment -> equipmentRepository.findById(equipmentReference)
+                        .switchIfEmpty(Mono.error(new AssertionError("We should have created this earlier if it did not exist!?")))
                         .flatMap(equipment -> {
                             Equipment providedEquipment = MappingUtil.instanceFrom(equipment, Equipment::new, AbstractEquipment.class);
                             if (!equipmentTO.containsOnlyID() && providedEquipment.equals(equipment)) {
@@ -390,7 +416,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             ShipmentEquipment::new,
                             AbstractShipmentEquipment.class
                     );
-                    assert shipmentID != null;
                     shipmentEquipment.setShipmentID(shipmentID);
                     shipmentEquipment.setEquipmentReference(equipmentReference);
                     return shipmentEquipmentService.create(shipmentEquipment);
@@ -427,6 +452,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     }
 
     private Mono<Tuple2<Map<String, UUID>, List<ShipmentEquipmentTO>>> updateShipmentEquipment(
+            ShippingInstructionUpdateInfo shippingInstructionUpdateInfo,
             List<ShipmentEquipmentTO> shipmentEquipmentTOs,
             boolean nullReeferEnsuresAbsence
     ) {
@@ -435,10 +461,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .concatMap(shipmentEquipmentTO -> {
                     EquipmentTO equipmentTO = shipmentEquipmentTO.getEquipment();
                     String equipmentReference = equipmentTO.getEquipmentReference();
+                    UUID shipmentID = shippingInstructionUpdateInfo.getShipmentIDForEquipmentReference(equipmentReference);
 
                     // TODO Performance: 1 Query for each ShipmentEquipment and then 1 for each ActiveReeferSettings
                     // This probably be reduced to one big "LEFT JOIN ... WHERE table.equipmentReference IN (LIST)".
-                    return findOrCreateShipmentEquipment(null, shipmentEquipmentTO)
+                    return findOrCreateShipmentEquipment(shipmentID, shipmentEquipmentTO)
                             .flatMap(shipmentEquipment -> {
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
                                 shipmentEquipmentTO.setId(shipmentEquipment.getId());
@@ -488,6 +515,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         });
                             });
                 })
+                .doOnNext(ignored -> shippingInstructionUpdateInfo.setEquipmentReference2ShipmentEquipmentID(Collections.unmodifiableMap(referenceToDBId)))
                 .then(Mono.zip(Mono.just(referenceToDBId), Mono.just(shipmentEquipmentTOs)));
     }
 
@@ -558,15 +586,20 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .flatMapMany(savedShippingInstruction -> {
             UUID shippingInstructionID = savedShippingInstruction.getId();
             shippingInstructionTO.setId(savedShippingInstruction.getId());
-            return updateShipmentEquipment(shippingInstructionTO.getShipmentEquipments(), false)
-                    .flatMapMany(equipmentTuple ->
+            ShippingInstructionUpdateInfo shippingInstructionUpdateInfo = new ShippingInstructionUpdateInfo(shippingInstructionID, shippingInstructionTO);
+
+            return loadShipmentIDs(shippingInstructionUpdateInfo)
+                    .flatMap(ignored -> updateShipmentEquipment(
+                            shippingInstructionUpdateInfo,
+                            shippingInstructionTO.getShipmentEquipments(),
+                            false
+                    )).flatMapMany(equipmentTuple ->
                         Flux.concat(
                                 Flux.fromIterable(equipmentTuple.getT2())
                                     .concatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, true)),
                                 processCargoItems(
-                                        shippingInstructionID,
+                                        shippingInstructionUpdateInfo,
                                         shippingInstructionTO.getCargoItems(),
-                                        equipmentTuple.getT1(),
                                         true
                                 ).flatMapMany(tuple -> {
                                     Flux<CargoLineItem> cargoLineItemFlux = tuple.getT1();
@@ -636,7 +669,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 + " identical) OR place them entirely on the CargoItem level (if you need distinct values)."
                         ));
                     }
-
+                    ShippingInstructionUpdateInfo shippingInstructionUpdateInfo = new ShippingInstructionUpdateInfo(shippingInstructionId, update);
                     ShippingInstruction updatedModel = MappingUtil.instanceFrom(
                             update,
                             ShippingInstruction::new,
@@ -733,20 +766,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     );
 
                     Flux<Object> handleEquipmentAndCargoItems =
-                            updateOrCreateEquipment(shipmentEquipmentTOs)
+                            loadShipmentIDs(shippingInstructionUpdateInfo)
+                            .thenReturn(shipmentEquipmentTOs)
+                            .flatMap(this::updateOrCreateEquipment)
                             .thenReturn(shipmentEquipmentTOs)
                             .flatMap(ignored ->
-                                updateShipmentEquipment(
-                                    shipmentEquipmentTOs,
-                                    true
+                                    updateShipmentEquipment(
+                                            shippingInstructionUpdateInfo,
+                                            shipmentEquipmentTOs,
+                                            true
                             )).flatMapMany(equipmentTuple ->
                                 Flux.fromIterable(equipmentTuple.getT2())
                                 .flatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, false))
                                 .thenMany(
                                     processCargoItems(
-                                            shippingInstructionId,
+                                            shippingInstructionUpdateInfo,
                                             nonDeletedCargoItems,
-                                            equipmentTuple.getT1(),
                                             false
                                     )
                                 ).flatMap(tuple -> {
