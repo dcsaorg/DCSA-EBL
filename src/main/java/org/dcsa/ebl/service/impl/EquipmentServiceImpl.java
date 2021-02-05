@@ -26,8 +26,6 @@ public class EquipmentServiceImpl extends ExtendedBaseServiceImpl<EquipmentRepos
 
     @Override
     public Mono<Equipment> createWithId(Equipment equipment) {
-        // .create does not work because it assumes it should use an UPDATE as the object
-        // has an ID.
-        return Mono.error(new UnsupportedOperationException("Not implemented yet"));
+        return equipmentRepository.insert(equipment);
     }
 }
