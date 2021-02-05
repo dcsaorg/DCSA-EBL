@@ -1,13 +1,10 @@
 package org.dcsa.ebl.service.impl;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.ShipmentLocation;
 import org.dcsa.ebl.model.ShipmentLocationTO;
-import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.repository.ShipmentLocationRepository;
@@ -16,9 +13,11 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
 
@@ -130,15 +129,5 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     @Override
     public Flux<ShipmentLocation> findByLocationTypeAndLocationIDAndShipmentIDIn(ShipmentLocationType shipmentLocationType, UUID locationID, List<UUID> shipmentIDs) {
         return shipmentLocationRepository.findByLocationTypeAndLocationIDAndShipmentIDIn(shipmentLocationType, locationID, shipmentIDs);
-    }
-
-    @Data(staticConstructor = "of")
-    private static class ByLocationIDAndType {
-        private final ShipmentLocationType shipmentLocationType;
-        private final UUID locationID;
-
-        public static ByLocationIDAndType of(ShipmentLocation location) {
-            return of(location.getLocationType(), location.getLocationID());
-        }
     }
 }
