@@ -45,7 +45,11 @@ public final class ChangeSet<T> {
                             + ":  The id is not among the original list of ids (null the ID field if you want to"
                             + " create a new instance)");
                 }
-                usedIds.add(updateId);
+                if (!usedIds.add(updateId)) {
+                    throw new UpdateException("Duplicate id: " + updateId
+                            + ": The entity ID was used more than once in a list where it was expected to be used"
+                            + " at most once.");
+                }
                 updatedObjects.add(update);
             } else {
                 newObjects.add(update);

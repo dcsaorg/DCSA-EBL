@@ -2,6 +2,8 @@ package org.dcsa.ebl;
 
 import org.dcsa.core.exception.UpdateException;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -17,6 +19,20 @@ public class Util {
      * performance issues.
      */
     public static final int SQL_LIST_BUFFER_SIZE = 70;
+
+    public static <T, I> void checkForDuplicates(Iterable<T> objects, Function<T, I> idMapper, String name) {
+        Set<I> usedIds = new HashSet<>();
+        for (T t : objects) {
+            I id = idMapper.apply(t);
+            if (id == null) {
+                continue;
+            }
+            if (!usedIds.add(id)) {
+                throw new UpdateException("Duplicate ID " + id + " (" + name + "):  The ID must occur at most once.");
+            }
+        }
+
+    }
 
     public static <T> Consumer<T> acceptAny() {
         return (t) -> {};
