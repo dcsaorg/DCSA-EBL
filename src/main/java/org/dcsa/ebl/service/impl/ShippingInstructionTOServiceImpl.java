@@ -122,7 +122,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
                         List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
 
-                        shipmentEquipmentTO.setId(shipmentEquipment.getId());
                         shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
                         shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit().name());
 
@@ -363,8 +362,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Flux<Seal> processSeals(ShipmentEquipmentTO shipmentEquipmentTO, boolean mustBeCreate) {
-        UUID shipmentEquipmentID = shipmentEquipmentTO.getId();
+    private Flux<Seal> processSeals(ShippingInstructionUpdateInfo shippingInstructionUpdateInfo,
+                                    ShipmentEquipmentTO shipmentEquipmentTO,
+                                    boolean mustBeCreate
+    ) {
+        String equipmentReference = shipmentEquipmentTO.getEquipment().getEquipmentReference();
+        UUID shipmentEquipmentID = shippingInstructionUpdateInfo.getShipmentEquipmentIDFor(equipmentReference);
         List<Seal> seals = shipmentEquipmentTO.getSeals();
         if (seals == null || seals.isEmpty()) {
             return Flux.empty();
@@ -426,7 +429,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     return findOrCreateShipmentEquipment(shipmentID, shipmentEquipmentTO)
                             .flatMap(shipmentEquipment -> {
                                 referenceToDBId.put(equipmentReference, shipmentEquipment.getId());
-                                shipmentEquipmentTO.setId(shipmentEquipment.getId());
                                 return updateShipmentEquipmentFields(shipmentEquipment, shipmentEquipmentTO);
                             })
                             .flatMap(shipmentEquipmentService::update)
@@ -554,7 +556,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     )).flatMapMany(equipmentTuple ->
                         Flux.concat(
                                 Flux.fromIterable(equipmentTuple.getT2())
-                                    .concatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, true)),
+                                    .concatMap(shipmentEquipmentTO ->
+                                            processSeals(shippingInstructionUpdateInfo, shipmentEquipmentTO, true)),
                                 processCargoItems(
                                         shippingInstructionUpdateInfo,
                                         shippingInstructionTO.getCargoItems(),
@@ -735,7 +738,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                             true
                             )).flatMapMany(equipmentTuple ->
                                 Flux.fromIterable(equipmentTuple.getT2())
-                                .flatMap(shipmentEquipmentTO -> processSeals(shipmentEquipmentTO, false))
+                                .flatMap(shipmentEquipmentTO ->
+                                        processSeals(shippingInstructionUpdateInfo, shipmentEquipmentTO, false))
                                 .thenMany(
                                     processCargoItems(
                                             shippingInstructionUpdateInfo,

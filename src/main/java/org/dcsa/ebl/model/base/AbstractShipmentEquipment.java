@@ -12,11 +12,6 @@ import java.util.UUID;
 @Data
 public abstract class AbstractShipmentEquipment {
 
-    @Id
-    @Column("id")
-    @JsonProperty("shipmentEquipmentID")
-    private UUID id;
-
     @Column("cargo_gross_weight")
     private Float cargoGrossWeight;
 
