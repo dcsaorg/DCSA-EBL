@@ -585,7 +585,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 )
                         )
                     );
-        }).then(Mono.just(shippingInstructionTO));
+        }).then(Mono.just(shippingInstructionTO))
+        // Conclude with a lookup from scratch.  It may seem wasteful it is the
+        // Simplest way to get this correct as we can get additional information
+        // that were not a part of the POST (e.g. ShipmentLocations via the
+        // Shipment).  See #63 and #64 as an example of issues fixed by this
+        // approach
+        .map(ShippingInstructionTO::getId)
+        .flatMap(this::findById);
     }
 
     @Transactional
