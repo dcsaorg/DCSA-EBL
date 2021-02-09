@@ -29,6 +29,9 @@ public abstract class AbstractEquipment extends AuditBase {
     @Size(max = 3)
     private WeightUnit weightUnit;
 
+    @Column("is_shipper_owned")
+    private Boolean isShipperOwned;
+
     public void setWeightUnit(String weightUnit) {
         this.weightUnit = WeightUnit.valueOf(weightUnit);
     }

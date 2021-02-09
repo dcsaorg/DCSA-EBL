@@ -17,7 +17,6 @@ import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.model.utils.ShippingInstructionUpdateInfo;
 import org.dcsa.ebl.repository.ActiveReeferSettingsRepository;
-import org.dcsa.ebl.repository.EquipmentRepository;
 import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +49,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
-    private final EquipmentRepository equipmentRepository;
     private final EquipmentService equipmentService;
     private final LocationService locationService;
     private final PartyService partyService;
@@ -399,17 +397,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         EquipmentTO equipmentTO = shipmentEquipmentTO.getEquipment();
         String equipmentReference = equipmentTO.getEquipmentReference();
         return shipmentEquipmentService.findByEquipmentReference(equipmentReference)
-                // FIXME: Replace with a 1:1 JOIN to avoid two SQL queries where one would have done.
-                .flatMap(shipmentEquipment -> equipmentRepository.findById(equipmentReference)
-                        .switchIfEmpty(Mono.error(new AssertionError("We should have created this earlier if it did not exist!?")))
-                        .flatMap(equipment -> {
-                            Equipment providedEquipment = MappingUtil.instanceFrom(equipment, Equipment::new, AbstractEquipment.class);
-                            if (!equipmentTO.containsOnlyID() && providedEquipment.equals(equipment)) {
-                                // TODO: Implement rules for updating an existing Equipment.
-                                return Mono.error(new UpdateException("Cannot modify Equipment (via reference): " + equipmentReference));
-                            }
-                            return Mono.just(shipmentEquipment);
-                        }))
                 .switchIfEmpty(Mono.defer(() -> {
                     ShipmentEquipment shipmentEquipment = MappingUtil.instanceFrom(
                             shipmentEquipmentTO,
@@ -420,35 +407,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     shipmentEquipment.setEquipmentReference(equipmentReference);
                     return shipmentEquipmentService.create(shipmentEquipment);
                 }));
-    }
-
-    private Mono<Void> updateOrCreateEquipment(Iterable<ShipmentEquipmentTO> equipments) {
-        return Flux.fromIterable(equipments)
-                .flatMap(shipmentEquipmentTO -> {
-                    EquipmentTO equipmentTO = shipmentEquipmentTO.getEquipment();
-                    String equipmentReference = equipmentTO.getEquipmentReference();
-                    return equipmentRepository.findById(equipmentReference)
-                            .flatMap(resolvedEquipment -> {
-                                Equipment providedEquipment = MappingUtil.instanceFrom(equipmentTO, Equipment::new, AbstractEquipment.class);
-                                if (!equipmentTO.containsOnlyID() && providedEquipment.equals(resolvedEquipment)) {
-                                    // TODO: Implement rules for updating an existing Equipment.
-                                    return Mono.error(new UpdateException("Cannot modify Equipment (via reference): " + equipmentReference));
-                                }
-                                return Mono.just(resolvedEquipment);
-                            }).switchIfEmpty(Mono.defer(() -> {
-                                Equipment equipment;
-                                if (equipmentTO.containsOnlyID()) {
-                                    return Mono.error(new CreateException("Unknown Equipment reference: " + equipmentReference));
-                                }
-                                equipment = MappingUtil.instanceFrom(equipmentTO, Equipment::new, AbstractEquipment.class);
-                                return equipmentService.createWithId(equipment);
-                            })).zipWith(Mono.just(shipmentEquipmentTO));
-                }).doOnNext(tuple -> {
-                    Equipment equipment = tuple.getT1();
-                    ShipmentEquipmentTO shipmentEquipmentTO = tuple.getT2();
-                    EquipmentTO newEquipmentTO = MappingUtil.instanceFrom(equipment, EquipmentTO::new, AbstractEquipment.class);
-                    shipmentEquipmentTO.setEquipment(newEquipmentTO);
-                }).then();
     }
 
     private Mono<Tuple2<Map<String, UUID>, List<ShipmentEquipmentTO>>> updateShipmentEquipment(
@@ -580,7 +538,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             ));
         }
 
-        return updateOrCreateEquipment(shippingInstructionTO.getShipmentEquipments())
+        return equipmentService.ensureEquipmentExistAndMatchesRequest(shippingInstructionTO.getShipmentEquipments())
                 .thenReturn(shippingInstruction)
                 .flatMap(shippingInstructionService::create)
                 .flatMapMany(savedShippingInstruction -> {
@@ -768,7 +726,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Flux<Object> handleEquipmentAndCargoItems =
                             loadShipmentIDs(shippingInstructionUpdateInfo)
                             .thenReturn(shipmentEquipmentTOs)
-                            .flatMap(this::updateOrCreateEquipment)
+                            .flatMap(equipmentService::ensureEquipmentExistAndMatchesRequest)
                             .thenReturn(shipmentEquipmentTOs)
                             .flatMap(ignored ->
                                     updateShipmentEquipment(
