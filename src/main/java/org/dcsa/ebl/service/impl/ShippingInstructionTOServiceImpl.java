@@ -637,6 +637,19 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 + " identical) OR place them entirely on the CargoItem level (if you need distinct values)."
                         ));
                     }
+
+                    checkForDuplicates(update.getCargoItems(), CargoItemTO::getId, "cargoItems[*].cargoItemID");
+                    for (CargoItemTO cargoItemTO : update.getCargoItems()) {
+                        UUID id = cargoItemTO.getId();
+                        String name = id != null ? "found in cargoItem with id " + id.toString() : "found in cargoItem without an id";
+                        checkForDuplicates(cargoItemTO.getCargoLineItems(), CargoLineItem::getId, name);
+                    }
+                    checkForDuplicates(
+                            update.getShipmentEquipments(),
+                            se -> se.getEquipment().getEquipmentReference(),
+                            "shipmentLocations[*].equipment.equipmentReference"
+                    );
+
                     ShippingInstructionUpdateInfo shippingInstructionUpdateInfo = new ShippingInstructionUpdateInfo(shippingInstructionId, update);
                     ShippingInstruction updatedModel = MappingUtil.instanceFrom(
                             update,
