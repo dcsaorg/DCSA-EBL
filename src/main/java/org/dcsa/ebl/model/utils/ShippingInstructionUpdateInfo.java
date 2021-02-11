@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NonNull;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,6 +18,13 @@ public class ShippingInstructionUpdateInfo {
     private Map<String, String> equipmentReference2CarrierBookingReference;
     private Map<String, UUID> carrierBookingReference2ShipmentID;
     private Map<String, UUID> equipmentReference2ShipmentEquipmentID;
+
+    public List<UUID> getAllShipmentIDs() {
+        if (carrierBookingReference2ShipmentID == null) {
+            throw new IllegalStateException("Called too early");
+        }
+        return new ArrayList<>(carrierBookingReference2ShipmentID.values());
+    }
 
     public UUID getShipmentIDForCarrierBookingReference(@NonNull String carrierBookingReference) {
         if (carrierBookingReference2ShipmentID == null) {
