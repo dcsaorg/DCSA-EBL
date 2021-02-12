@@ -19,6 +19,20 @@ public final class ChangeSet<T> {
     public final List<T> updatedInstances;
     public final List<T> orphanedInstances;
 
+    public List<T> getAllNewAndUpdatedInstances() {
+        List<T> result;
+        if (newInstances.isEmpty()) {
+            result = updatedInstances;
+        } else if (updatedInstances.isEmpty()) {
+            result = newInstances;
+        } else {
+            result = new ArrayList<>(newInstances.size() + updatedInstances.size());
+            result.addAll(newInstances);
+            result.addAll(updatedInstances);
+        }
+        return result;
+    }
+
     public static <T> ChangeSet<T> of(List<T> newInstances, List<T> updatedInstances, List<T> orphanedInstances) {
         return new ChangeSet<>(
                 Collections.unmodifiableList(newInstances),
