@@ -61,6 +61,35 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final Validator validator;
     private final ObjectMapper objectMapper;
 
+    private Flux<ShipmentLocationTO> findAllShipmentLocationTOs(List<UUID> shipmentIDs) {
+        // TODO: Ideally, we would use a JOIN to pull the Location at the same time due to the
+        // 1:1 relation between ShipmentLocation and Location
+        return shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
+                .flatMap(shipmentLocation -> Mono.zip(
+                        Mono.just(shipmentLocation.getLocationID()),
+                        Mono.just(MappingUtil.instanceFrom(
+                                shipmentLocation,
+                                ShipmentLocationTO::new,
+                                AbstractShipmentLocation.class
+                        ))
+                        // The same Location can (in theory) be used as different location types.
+                        // Also, we have not de-duplicated yet.
+                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
+                .flatMapMany(locationId2ShipmentLocationTOs ->
+                                setObjectOnAllMatchingInstances(
+                                        locationService.findAllById(locationId2ShipmentLocationTOs.keySet()),
+                                        locationId2ShipmentLocationTOs,
+                                        Location::getId,
+                                        ShipmentLocationTO::getLocation,
+                                        ShipmentLocationTO::setLocation,
+                                        "Location",
+                                        "ShipmentLocationTo"
+                                )
+                        // De-duplicate shipment locations - after converting them to TO objects, we might now have
+                        // duplicates and the client cannot use those duplicates for anything.
+                ).distinct();
+    }
+
     private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO,
                                                                      List<UUID> shipmentIDs,
                                                                      List<Tuple2<CargoItem, CargoItemTO>> cargoItemTuples
@@ -89,32 +118,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     return Mono.empty();
                                 })
                 ),
-                // TODO: Ideally, we would use a JOIN to pull the Location at the same time due to the
-                // 1:1 relation between ShipmentLocation and Location
-                shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
-                    .flatMap(shipmentLocation -> Mono.zip(
-                            Mono.just(shipmentLocation.getLocationID()),
-                            Mono.just(MappingUtil.instanceFrom(
-                                    shipmentLocation,
-                                    ShipmentLocationTO::new,
-                                    AbstractShipmentLocation.class
-                            ))
-                    // The same Location can (in theory) be used as different location types.
-                    // Also, we have not de-duplicated yet.
-                    )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
-                    .flatMapMany(locationId2ShipmentLocationTOs ->
-                        setObjectOnAllMatchingInstances(
-                                locationService.findAllById(locationId2ShipmentLocationTOs.keySet()),
-                                locationId2ShipmentLocationTOs,
-                                Location::getId,
-                                ShipmentLocationTO::getLocation,
-                                ShipmentLocationTO::setLocation,
-                                "Location",
-                                "ShipmentLocationTo"
-                        )
-                    // De-duplicate shipment locations - after converting them to TO objects, we might now have
-                    // duplicates and the client cannot use those duplicates for anything.
-                    ).distinct()
+                findAllShipmentLocationTOs(shipmentIDs)
                     .collectList()
                     .doOnNext(shippingInstructionTO::setShipmentLocations),
                 shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
