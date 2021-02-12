@@ -686,30 +686,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             cargoItemTOChangeSet.newInstances.stream(),
                             cargoItemTOChangeSet.updatedInstances.stream()
                     ).collect(Collectors.toList());
-                    List<ShipmentEquipmentTO> shipmentEquipmentTOs;
-                    if (shipmentEquipmentTOChangeSet.newInstances.isEmpty()) {
-                        shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.updatedInstances;
-                    } else if (shipmentEquipmentTOChangeSet.updatedInstances.isEmpty()) {
-                        shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.newInstances;
-                    } else {
-                        shipmentEquipmentTOs = new ArrayList<>(shipmentEquipmentTOChangeSet.newInstances.size() + shipmentEquipmentTOChangeSet.updatedInstances.size());
-                        shipmentEquipmentTOs.addAll(shipmentEquipmentTOChangeSet.newInstances);
-                        shipmentEquipmentTOs.addAll(shipmentEquipmentTOChangeSet.updatedInstances);
-                    }
-                    if (!shipmentLocationChangeSet.newInstances.isEmpty()) {
-                        ShipmentLocationTO newInstance = shipmentLocationChangeSet.newInstances.get(0);
-                        return Mono.error(new UpdateException("Cannot create ShipmentLocations"
-                                + " (locationID, and locationType must not be changed): New instance is: "
-                                + newInstance.getLocationID() + ", " + newInstance.getLocationType()
-                                ));
-                    }
-                    if (!shipmentLocationChangeSet.orphanedInstances.isEmpty()) {
-                        ShipmentLocationTO orphaned = shipmentLocationChangeSet.orphanedInstances.get(0);
-                        return Mono.error(new UpdateException("Cannot delete ShipmentLocations"
-                                + " (locationID, and locationType must not be changed): Deleted instance was: "
-                                + orphaned.getLocationID() + ", " + orphaned.getLocationType()
-                        ));
-                    }
+                    List<ShipmentEquipmentTO> shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.getAllNewAndUpdatedInstances();
+
                     Flux<?> deleteFirst = Flux.concat(
                             deleteAllFromChangeSet(sealChangeSet, sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
