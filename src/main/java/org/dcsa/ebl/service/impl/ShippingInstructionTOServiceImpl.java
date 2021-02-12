@@ -48,6 +48,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
+    private final LocationService locationService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
@@ -56,6 +57,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private final Validator validator;
     private final ObjectMapper objectMapper;
+
+    private Mono<Void> processFreightPayableAt(ShippingInstructionTO shippingInstructionTO, ShippingInstruction shippingInstruction) {
+        return Mono.justOrEmpty(shippingInstructionTO.getFreightPayableAt())
+                .flatMap(locationService::resolveLocation)
+                .doOnNext(shippingInstructionTO::setFreightPayableAt)
+                .map(Location::getId)
+                .doOnNext(shippingInstruction::setFreightPayableAt)
+                .then();
+    }
 
     private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO,
                                                                      List<UUID> shipmentIDs,
@@ -139,6 +149,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     AbstractShippingInstruction.class
                             )
                     ),
+            locationService.findPaymentLocationByShippingInstructionID(id)
+                .doOnNext(shippingInstructionTO::setFreightPayableAt),
             cargoItemService.findAllByShippingInstructionID(id)
                 .concatMap(cargoItem -> {
                     CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
@@ -481,6 +493,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         }
 
         return equipmentService.ensureEquipmentExistAndMatchesRequest(shippingInstructionTO.getShipmentEquipments())
+                .then(processFreightPayableAt(shippingInstructionTO, shippingInstruction))
                 .thenReturn(shippingInstruction)
                 .flatMap(shippingInstructionService::create)
                 .flatMapMany(savedShippingInstruction -> {
@@ -692,6 +705,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
                     Flux<?> deferredUpdates = Flux.concat(
                             handleEquipmentAndCargoItems,
+                            processFreightPayableAt(update, updatedModel),
                             mapParties(
                                     shippingInstructionId,
                                     documentPartyTOChangeSet.newInstances,
