@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
@@ -12,7 +11,6 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.ChangeSet;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.*;
-import org.dcsa.ebl.model.enums.ShipmentLocationType;
 import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.model.utils.ShippingInstructionUpdateInfo;
@@ -50,45 +48,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
-    private final LocationService locationService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
     private final ShipmentEquipmentService shipmentEquipmentService;
-    private final ShipmentLocationService shipmentLocationService;
     private final ShipmentService shipmentService;
 
     private final Validator validator;
     private final ObjectMapper objectMapper;
-
-    private Flux<ShipmentLocationTO> findAllShipmentLocationTOs(List<UUID> shipmentIDs) {
-        // TODO: Ideally, we would use a JOIN to pull the Location at the same time due to the
-        // 1:1 relation between ShipmentLocation and Location
-        return shipmentLocationService.findAllByShipmentIDIn(shipmentIDs)
-                .flatMap(shipmentLocation -> Mono.zip(
-                        Mono.just(shipmentLocation.getLocationID()),
-                        Mono.just(MappingUtil.instanceFrom(
-                                shipmentLocation,
-                                ShipmentLocationTO::new,
-                                AbstractShipmentLocation.class
-                        ))
-                        // The same Location can (in theory) be used as different location types.
-                        // Also, we have not de-duplicated yet.
-                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
-                .flatMapMany(locationId2ShipmentLocationTOs ->
-                                setObjectOnAllMatchingInstances(
-                                        locationService.findAllById(locationId2ShipmentLocationTOs.keySet()),
-                                        locationId2ShipmentLocationTOs,
-                                        Location::getId,
-                                        ShipmentLocationTO::getLocation,
-                                        ShipmentLocationTO::setLocation,
-                                        "Location",
-                                        "ShipmentLocationTo"
-                                )
-                        // De-duplicate shipment locations - after converting them to TO objects, we might now have
-                        // duplicates and the client cannot use those duplicates for anything.
-                ).distinct();
-    }
 
     private Mono<ShippingInstructionTO> extractShipmentRelatedFields(ShippingInstructionTO shippingInstructionTO,
                                                                      List<UUID> shipmentIDs,
@@ -118,9 +85,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     return Mono.empty();
                                 })
                 ),
-                findAllShipmentLocationTOs(shipmentIDs)
-                    .collectList()
-                    .doOnNext(shippingInstructionTO::setShipmentLocations),
                 shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
                     .concatMap(shipmentEquipment -> {
                         ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
@@ -499,16 +463,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Mono<Void> processShipmentLocations(List<UUID> shipmentIDs, Iterable<ShipmentLocationTO> shipmentLocations) {
-        return shipmentLocationService.updateAllRelatedFromTO(
-                shipmentIDs,
-                shipmentLocations,
-                (shipmentLocation, shipmentLocationTO) -> {
-                    shipmentLocation.setDisplayedName(shipmentLocationTO.getDisplayedName());
-                    return Mono.just(shipmentLocation);
-                });
-    }
-
     @Transactional
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
@@ -548,10 +502,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionUpdateInfo,
                                         shippingInstructionTO.getCargoItems(),
                                         true
-                                ),
-                                processShipmentLocations(
-                                        shippingInstructionUpdateInfo.getAllShipmentIDs(),
-                                        shippingInstructionTO.getShipmentLocations()
                                 ),
 
                                 mapReferences(
@@ -649,14 +599,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             fieldMustEqual("Reference", "shippingInstructionID",
                                     Reference::getShippingInstructionID, shippingInstructionId, true)
                     );
-                    ChangeSet<ShipmentLocationTO> shipmentLocationChangeSet = changeListDetector(
-                            original.getShipmentLocations(),
-                            update.getShipmentLocations(),
-                            // With our chosen ID, then the only "change" you can make is the display - anything else
-                            // results in create/delete.
-                            FakeShipmentLocationId::of,
-                            acceptAny()
-                    );
                     ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
                             original.getCargoItems(),
                             update.getCargoItems(),
@@ -729,29 +671,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                             nonDeletedCargoItems,
                                             false
                                     )
-                                ).flatMap(cargoLineItemFlux -> {
-                                    List<UUID> shipmentIDs = shippingInstructionUpdateInfo.getAllShipmentIDs();
-
-                                    return Flux.concat(processShipmentLocations(
-                                            shipmentIDs,
-                                            shipmentLocationChangeSet.updatedInstances
-                                            // count + flatMap ensures a non-empty mono while trivially deferring the .update call
-                                            // The alternative .then(Mono.defer(() -> X)) is vastly harder to read.
-                                    )).then()
-                                    .flatMap(ignored -> {
-                                        if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
-                                            List<String> orphanedReference = shipmentEquipmentTOChangeSet.orphanedInstances
-                                                    .stream()
-                                                    .map(ShipmentEquipmentTO::getEquipment)
-                                                    .map(EquipmentTO::getEquipmentReference)
-                                                    .collect(Collectors.toList());
-                                            return shipmentEquipmentService.deleteByEquipmentReferenceInAndShipmentIDIn(
-                                                    orphanedReference,
-                                                    shipmentIDs
-                                            );
-                                        }
-                                        return Mono.empty();
-                                    });
+                                // count + flatMap ensures a non-empty mono while trivially deferring the .update call
+                                // The alternative .then(Mono.defer(() -> X)) is vastly harder to read.
+                                ).count()
+                                .flatMap(ignored -> {
+                                    if (!shipmentEquipmentTOChangeSet.orphanedInstances.isEmpty()) {
+                                        List<String> orphanedReference = shipmentEquipmentTOChangeSet.orphanedInstances
+                                                .stream()
+                                                .map(ShipmentEquipmentTO::getEquipment)
+                                                .map(EquipmentTO::getEquipmentReference)
+                                                .collect(Collectors.toList());
+                                        return shipmentEquipmentService.deleteByEquipmentReferenceInAndShipmentIDIn(
+                                                orphanedReference,
+                                                shippingInstructionUpdateInfo.getAllShipmentIDs()
+                                        );
+                                    }
+                                    return Mono.empty();
                                 })
                     );
 
@@ -786,16 +721,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Flux.fromIterable(tChangeSet.orphanedInstances)
                 .concatMap(singleItemDeleter)
                 .then();
-    }
-
-    @Data
-    private static class FakeShipmentLocationId {
-        private final UUID locationID;
-        private final ShipmentLocationType locationType;
-
-        static FakeShipmentLocationId of(ShipmentLocationTO location) {
-            return new FakeShipmentLocationId(location.getLocationID(), location.getLocationType());
-        }
     }
 
     private static ChangeSet<Seal> sealChangeDetector(List<ShipmentEquipmentTO> itemsFromOriginal,

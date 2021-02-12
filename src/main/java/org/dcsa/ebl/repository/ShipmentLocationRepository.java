@@ -2,20 +2,9 @@ package org.dcsa.ebl.repository;
 
 import org.dcsa.core.repository.ExtendedRepository;
 import org.dcsa.ebl.model.ShipmentLocation;
-import org.dcsa.ebl.model.enums.ShipmentLocationType;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.UUID;
 
-public interface ShipmentLocationRepository extends ExtendedRepository<ShipmentLocation, UUID> {
+public interface ShipmentLocationRepository extends ExtendedRepository<ShipmentLocation, UUID>, InsertAddonRepository<ShipmentLocation> {
 
-    Flux<ShipmentLocation> findAllByShipmentIDIn(List<UUID> shipmentIDs);
-
-    Flux<ShipmentLocation> findByLocationTypeAndLocationIDAndShipmentIDIn(
-                                                                         ShipmentLocationType shipmentLocationType,
-                                                                         UUID locationID,
-                                                                         List<UUID> shipmentIDs
-                                                                        );
 }
