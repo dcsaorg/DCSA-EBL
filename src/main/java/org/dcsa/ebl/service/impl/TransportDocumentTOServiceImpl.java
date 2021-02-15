@@ -31,6 +31,8 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final ClauseService clauseService;
     private final LocationService locationService;
     private final BookingService bookingService;
+    private final ShipmentService shipmentService;
+    private final ShipmentTransportService shipmentTransportService;
 
     @Override
     public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
@@ -147,15 +149,26 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                 if (carrierBookingReference == null) {
                                                                     return Mono.error(new GetException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstruction.getId() + " - internal error!"));
                                                                 } else {
-                                                                    return bookingService.findById(carrierBookingReference)
-                                                                            .flatMap(booking -> {
-                                                                                transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
-                                                                                transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
-                                                                                transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
-                                                                                transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
-                                                                                transportDocumentTO.setServiceContract(booking.getServiceContract());
-                                                                                return Mono.just(shippingInstruction);
-                                                                            });
+//                                                                    return Flux.concat(
+                                                                            return bookingService.findById(carrierBookingReference)
+                                                                                    .flatMap(booking -> {
+                                                                                        transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
+                                                                                        transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
+                                                                                        transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
+                                                                                        transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
+                                                                                        transportDocumentTO.setServiceContract(booking.getServiceContract());
+                                                                                        return Mono.just(booking);
+                                                                                    })
+//                                                                            ,shipmentService.findByCarrierBookingReference(carrierBookingReference)
+//                                                                                    .next()
+//                                                                                    .flatMap(shipment -> {
+//                                                                                        shipmentTransportService.findByShipmentIDOrderBySequenceNumber(shipment.getId())
+//                                                                                                .next()
+//                                                                                                .flatMap(shipmentTransport -> xxx)
+//                                                                                    })
+//                                                                    )
+//                                                                    .count()
+                                                                    .thenReturn(shippingInstruction);
                                                                 }
                                                             }
                                                     )
