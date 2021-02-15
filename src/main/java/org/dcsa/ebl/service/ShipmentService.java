@@ -9,5 +9,6 @@ import java.util.UUID;
 
 public interface ShipmentService extends ExtendedBaseService<Shipment, UUID> {
     Flux<Shipment> findByCarrierBookingReferenceIn(List<String> carrierBookingReference);
+    Flux<Shipment> findByCarrierBookingReference(String carrierBookingReference);
     Flux<Shipment> findAllById(Iterable<UUID> shipmentIDs);
 }
