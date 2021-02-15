@@ -31,6 +31,7 @@ public class Location implements GetId<UUID> {
     @Size(max = 11)
     private String longitude;
 
+    @JsonProperty("UNLocationCode")
     @Column("un_location_code")
     @Size(max = 5)
     private String unLocationCode;
