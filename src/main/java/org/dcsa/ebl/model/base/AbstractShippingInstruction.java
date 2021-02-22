@@ -31,9 +31,6 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
     @Column("is_electronic")
     private Boolean isElectronic;
 
-    @Column("is_part_load")
-    private Boolean isPartLoad;
-
     @Column("is_shipped_onboard_type")
     @NotNull
     private Boolean isShippedOnBoardType;
