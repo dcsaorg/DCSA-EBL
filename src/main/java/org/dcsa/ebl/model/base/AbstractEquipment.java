@@ -1,9 +1,11 @@
 package org.dcsa.ebl.model.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dcsa.core.model.AuditBase;
+import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.WeightUnit;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -12,12 +14,18 @@ import javax.validation.constraints.Size;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public abstract class AbstractEquipment extends AuditBase {
+public abstract class AbstractEquipment extends AuditBase implements GetId<String> {
 
     @Id
     @Column("equipment_reference")
     @Size(max = 15)
     private String equipmentReference;
+
+    @JsonIgnore
+    @Override
+    public String getId() {
+        return this.getEquipmentReference();
+    }
 
     @JsonProperty("ISOEquipmentCode")
     @Column("iso_equipment_code")

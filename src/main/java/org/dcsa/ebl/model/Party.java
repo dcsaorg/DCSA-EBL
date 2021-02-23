@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
+import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
+import org.dcsa.ebl.model.transferobjects.SetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -14,7 +16,7 @@ import java.util.UUID;
 @Table("party")
 @Data
 @NoArgsConstructor
-public class Party implements GetId<UUID> {
+public class Party implements ModelReferencingTO<Party, UUID>, SetId<UUID>, GetId<UUID> {
 
     @Id
     @JsonProperty("partyID")
@@ -66,15 +68,16 @@ public class Party implements GetId<UUID> {
     @Size(max = 4)
     private String nmftaCode;
 
-    /**
-     * @return true iff this object contains a non-null ID and every other field being unset.
-     */
-    public boolean containsOnlyID() {
+    public boolean isSolelyReferenceToModel() {
         if (this.getId() != null) {
             Party p = new Party();
             p.setId(this.getId());
             return this.equals(p);
         }
         return false;
+    }
+
+    public boolean isEqualsToModel(Party other) {
+        return equals(other);
     }
 }
