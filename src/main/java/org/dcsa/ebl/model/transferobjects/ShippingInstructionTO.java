@@ -5,15 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.dcsa.ebl.model.Location;
 import org.dcsa.ebl.model.Reference;
-import org.dcsa.ebl.model.ShipmentLocationTO;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.springframework.data.annotation.Transient;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -40,13 +39,11 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
     @Valid
     private List<DocumentPartyTO> documentParties;
 
-    @NotNull
-    @Transient
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<ShipmentLocationTO> shipmentLocations;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String carrierBookingReference;
+
+    @NotNull
+    private Location freightPayableAt;
 
     /**
      * Pull the carrierBookingReference from cargo items into the ShippingInstruction if possible

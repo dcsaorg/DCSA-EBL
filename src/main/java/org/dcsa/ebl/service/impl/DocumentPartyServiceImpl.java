@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.model.DocumentParty;
+import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.model.enums.PartyFunction;
+import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
@@ -63,5 +65,43 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
 
     public Mono<Integer> deleteByPartyIDAndPartyFunctionAndShipmentID(UUID partyID, PartyFunction partyFunction, UUID shipmentID) {
         return documentPartyRepository.deleteByPartyIDAndPartyFunctionAndShipmentID(partyID, partyFunction, shipmentID);
+    }
+
+    public Mono<Void> deleteObsoleteDocumentPartyInstances(Iterable<DocumentPartyTO> documentPartyTOs) {
+        return Flux.fromIterable(documentPartyTOs)
+                .flatMap(documentPartyTO -> {
+                    Party party = documentPartyTO.getParty();
+                    UUID partyId = party.getId();
+                    PartyFunction partyFunction = documentPartyTO.getPartyFunction();
+                    if (partyId == null) {
+                        return Mono.error(new AssertionError("Cannot delete a DocumentPartyTO without a" +
+                                " partyID (on the Party member)"));
+                    }
+                    return Mono.zip(
+                            Mono.just(partyId),
+                            Mono.just(partyFunction),
+                            deleteByPartyIDAndPartyFunctionAndShipmentID(partyId, partyFunction, null)
+                    );
+                }).flatMap(tuple -> {
+                    UUID partyID = tuple.getT1();
+                    PartyFunction partyFunction = tuple.getT2();
+                    int deletion = tuple.getT3();
+                    switch (deletion) {
+                        case 1:
+                            // Deleted as expected; nothing more to do.
+                            return Mono.empty();
+                        case 0:
+                            // No deletion, this is probably because there is a shipmentID as well.
+                            // TODO: The implementation of this is based on an assumption of how this case should be handled.
+                            // (The alternatively being deleting the DocumentParty even though it references a Shipment.
+                            return findByPartyIDAndPartyFunction(partyID, partyFunction)
+                                    .doOnNext(documentParty -> documentParty.setShippingInstructionID(null))
+                                    // Not the most efficient method, but will do for now.
+                                    .flatMap(this::update);
+                        default:
+                            return Mono.error(new AssertionError("Deleted " + deletion + " rows but expected it to be 0 or 1!?"));
+                    }
+                })
+                .then();
     }
 }

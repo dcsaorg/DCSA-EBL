@@ -17,7 +17,7 @@ import java.util.UUID;
 public class Seal extends AuditBase implements GetId<UUID> {
 
     @Id
-    @JsonProperty("sealID")
+    @JsonIgnore
     private UUID id;
 
     @JsonIgnore

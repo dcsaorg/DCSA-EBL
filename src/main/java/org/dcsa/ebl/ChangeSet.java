@@ -19,6 +19,20 @@ public final class ChangeSet<T> {
     public final List<T> updatedInstances;
     public final List<T> orphanedInstances;
 
+    public List<T> getAllNewAndUpdatedInstances() {
+        List<T> result;
+        if (newInstances.isEmpty()) {
+            result = updatedInstances;
+        } else if (updatedInstances.isEmpty()) {
+            result = newInstances;
+        } else {
+            result = new ArrayList<>(newInstances.size() + updatedInstances.size());
+            result.addAll(newInstances);
+            result.addAll(updatedInstances);
+        }
+        return result;
+    }
+
     public static <T> ChangeSet<T> of(List<T> newInstances, List<T> updatedInstances, List<T> orphanedInstances) {
         return new ChangeSet<>(
                 Collections.unmodifiableList(newInstances),
@@ -31,7 +45,7 @@ public final class ChangeSet<T> {
         return changeListDetector(listFromOriginal, listFromUpdate, idMapper, validator, false);
     }
 
-    public static <T, I> ChangeSet<T> changeListDetector(List<T> listFromOriginal, List<T> listFromUpdate, Function<T, I> idMapper, Consumer<T> validator, boolean allowUnknownIDs) {
+    public static <T, I> ChangeSet<T> changeListDetector(List<T> listFromOriginal, List<T> listFromUpdate, Function<T, I> idMapper, Consumer<T> validator, boolean allowNewIDs) {
         Map<I, T> knownIds = listFromOriginal.stream().collect(Collectors.toMap(idMapper, Function.identity()));
         Set<I> usedIds = new HashSet<>(listFromUpdate.size());
         List<T> newObjects = new ArrayList<>();
@@ -40,12 +54,16 @@ public final class ChangeSet<T> {
         for (T update : listFromUpdate) {
             I updateId = idMapper.apply(update);
             if (updateId != null) {
-                if (!knownIds.containsKey(updateId) && !allowUnknownIDs) {
+                if (!knownIds.containsKey(updateId) && !allowNewIDs) {
                     throw new UpdateException("Invalid id: " + updateId
                             + ":  The id is not among the original list of ids (null the ID field if you want to"
                             + " create a new instance)");
                 }
-                usedIds.add(updateId);
+                if (!usedIds.add(updateId)) {
+                    throw new UpdateException("Duplicate id: " + updateId
+                            + ": The entity ID was used more than once in a list where it was expected to be used"
+                            + " at most once.");
+                }
                 updatedObjects.add(update);
             } else {
                 newObjects.add(update);

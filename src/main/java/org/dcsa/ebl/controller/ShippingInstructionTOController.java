@@ -7,6 +7,7 @@ import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.extendedrequest.ShippingInstructionExtendedRequest;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
@@ -46,7 +47,7 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
 
     @GetMapping
     public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        ExtendedRequest<ShippingInstruction> extendedRequest = new ExtendedRequest<>(extendedParameters,
+        ExtendedRequest<ShippingInstruction> extendedRequest = new ShippingInstructionExtendedRequest<>(extendedParameters,
                 ShippingInstruction.class);
 
         try {

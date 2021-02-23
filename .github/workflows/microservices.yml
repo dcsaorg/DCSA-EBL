@@ -29,13 +29,14 @@ jobs:
     - name: Build Electronic Bill of Lading API
       run: cd DCSA-EBL && mvn package -DskipTests -X #Need to skip the tests as they depend on a running DB
 
-    - name: cd DCSA-EBL && Set up and run the database
+    - name: Checkout IM
       uses: actions/checkout@v2
       with:
         repository: dcsaorg/DCSA-Information-Model
         ref: master
         path: DCSA-Information-Model
-    - name: Run the EBL microservice
+
+    - name: Run the EBL microservice plus database
       run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V
 
     - name: Checkout dcsaorg/DCSA-API-Validator
@@ -46,8 +47,14 @@ jobs:
         token: ${{ secrets.REPO_ACCESS_PAT }}
         path: DCSA-API-Validator
 
-      # Assert that the database is ready to load the test data.
-    - run: echo "SELECT 1;" | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f - 2>/dev/null || sleep 5
+    - name: "Check database is up"
+      run: echo "SELECT 1;" | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f - 2>/dev/null || sleep 5
+
+    - name: "Dump database logs"
+      run: docker logs dcsa_db
+
+    - name: "Verify database is running"
+      run: echo "SELECT 1;" | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f -
 
     - name: Load DCSA EBL test data
       run: cat DCSA-Information-Model/datamodel/testdata.d/*.sql | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f -
