@@ -16,9 +16,12 @@ import java.util.function.Consumer;
 public class EquipmentTO extends AbstractEquipment implements ModelReferencingTO<Equipment, String> {
 
     public boolean isSolelyReferenceToModel() {
-        if (this.getEquipmentReference() != null) {
+        // Cannot rely on Util.containsOnlyID as it does not implement SetId
+        // by design
+        String equipmentReference = this.getEquipmentReference();
+        if (equipmentReference != null) {
             EquipmentTO p = new EquipmentTO();
-            p.setEquipmentReference(this.getEquipmentReference());
+            p.setEquipmentReference(equipmentReference);
             return this.equals(p);
         }
         return false;

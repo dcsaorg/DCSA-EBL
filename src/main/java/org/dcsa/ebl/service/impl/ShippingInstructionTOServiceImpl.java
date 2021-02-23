@@ -61,9 +61,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private Mono<Void> processFreightPayableAt(ShippingInstructionTO shippingInstructionTO, ShippingInstruction shippingInstruction) {
         return Mono.justOrEmpty(shippingInstructionTO.getFreightPayableAt())
-                .flatMap(locationService::resolveLocation)
+                .flatMap(locationService::ensureResolvable)
                 .doOnNext(shippingInstructionTO::setFreightPayableAt)
-                .map(Location::getId)
+                .map(LocationTO::getId)
                 .doOnNext(shippingInstruction::setFreightPayableAt)
                 .then();
     }

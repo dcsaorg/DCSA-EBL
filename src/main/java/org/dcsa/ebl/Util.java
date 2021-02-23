@@ -2,6 +2,7 @@ package org.dcsa.ebl;
 
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.model.GetId;
+import org.dcsa.ebl.model.transferobjects.EquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
 import reactor.core.publisher.Mono;
@@ -11,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Util {
 
@@ -83,6 +85,19 @@ public class Util {
                         }
                     });
         }
+    }
+
+    public static <T extends SetId<I>, I> boolean containsOnlyID(T model, Supplier<T> constructor) {
+        I id = model.getId();
+        if (id != null) {
+            T t = constructor.get();
+            if (t.getClass() != model.getClass()) {
+                throw new IllegalArgumentException("Logic error: this method assumes that the class is the same");
+            }
+            t.setId(id);
+            return model.equals(t);
+        }
+        return false;
     }
 
     private Util() {}
