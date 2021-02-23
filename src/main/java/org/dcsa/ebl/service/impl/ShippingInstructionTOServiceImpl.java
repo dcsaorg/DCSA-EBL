@@ -637,10 +637,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             acceptAny(),
                             true
                     );
-                    ChangeSet<Seal> sealChangeSet = sealChangeDetector(
-                            original.getShipmentEquipments(),
-                            update.getShipmentEquipments()
-                    );
                     List<CargoItemTO> nonDeletedCargoItems = Stream.concat(
                             cargoItemTOChangeSet.newInstances.stream(),
                             cargoItemTOChangeSet.updatedInstances.stream()
@@ -648,7 +644,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     List<ShipmentEquipmentTO> shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.getAllNewAndUpdatedInstances();
 
                     Flux<?> deleteFirst = Flux.concat(
-                            deleteAllFromChangeSet(sealChangeSet, sealService::delete),
+                            Flux.fromIterable(original.getShipmentEquipments())
+                                .concatMapIterable(ShipmentEquipmentTO::getSeals)
+                                .doOnNext(seal -> Objects.requireNonNull(seal.getId()))
+                                .concatMap(sealService::delete),
                             deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
                             documentPartyService.deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
@@ -735,17 +734,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Flux.fromIterable(tChangeSet.orphanedInstances)
                 .concatMap(singleItemDeleter)
                 .then();
-    }
-
-    private static ChangeSet<Seal> sealChangeDetector(List<ShipmentEquipmentTO> itemsFromOriginal,
-                                                           List<ShipmentEquipmentTO> itemsFromUpdate) {
-        return flatteningChangeDetector(
-                itemsFromOriginal,
-                itemsFromUpdate,
-                ShipmentEquipmentTO::getSeals,
-                Seal::getId,
-                "Seal"
-        );
     }
 
     // This is a work around for missing 1:1 support via r2dbc.
