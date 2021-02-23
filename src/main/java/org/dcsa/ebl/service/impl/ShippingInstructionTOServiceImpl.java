@@ -9,6 +9,7 @@ import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.ChangeSet;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.*;
 import org.dcsa.ebl.model.transferobjects.*;
@@ -447,25 +448,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;
                     Party party = documentPartyTO.getParty();
-                    UUID partyID = party.getId();
                     Mono<Party> partyMono;
 
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
                     documentParty.setShippingInstructionID(shippingInstructionID);
 
-                    if (partyID != null) {
-                        partyMono = partyService.findById(partyID)
-                                .flatMap(existingParty -> {
-                                    if (!party.containsOnlyID() && !existingParty.equals(party)) {
-                                        return Mono.error(new UpdateException("Party with id " + partyID
-                                                + " exists but has a different content. Remove the partyID field to"
-                                                + " create a new instance or provide an update"));
-                                    }
-                                    return Mono.just(existingParty);
-                                });
-                    } else {
-                        partyMono = partyService.create(party);
-                    }
+                    partyMono = Util.resolveModelReference(party, partyService::findById, partyService::create, "Party");
+
                     return partyMono
                             .doOnNext(resolvedParty -> {
                                 documentParty.setPartyID(resolvedParty.getId());
