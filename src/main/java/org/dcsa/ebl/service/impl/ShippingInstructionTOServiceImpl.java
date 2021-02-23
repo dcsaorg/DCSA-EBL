@@ -605,13 +605,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             Collections.emptyList(),
                             List.copyOf(original.getDocumentParties())
                     );
-                    ChangeSet<Reference> referenceChangeSet = changeListDetector(
-                            original.getReferences(),
-                            update.getReferences(),
-                            Reference::getId,
-                            fieldMustEqual("Reference", "shippingInstructionID",
-                                    Reference::getShippingInstructionID, shippingInstructionId, true)
-                    );
                     ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
                             original.getCargoItems(),
                             update.getCargoItems(),
@@ -648,7 +641,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .concatMapIterable(ShipmentEquipmentTO::getSeals)
                                 .doOnNext(seal -> Objects.requireNonNull(seal.getId()))
                                 .concatMap(sealService::delete),
-                            deleteAllFromChangeSet(referenceChangeSet, referenceService::delete),
+                            Flux.fromIterable(original.getReferences())
+                                .concatMap(referenceService::delete),
                             documentPartyService.deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
@@ -715,8 +709,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                     documentPartyTOChangeSet.updatedInstances,
                                     documentPartyService::update
                             ),
-                            mapReferences(shippingInstructionId, referenceChangeSet.newInstances, referenceService::create),
-                            mapReferences(shippingInstructionId, referenceChangeSet.updatedInstances, referenceService::update)
+                            mapReferences(shippingInstructionId, update.getReferences(), referenceService::create)
                     );
 
                     return deleteFirst
@@ -728,12 +721,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .thenReturn(update)
                             .doOnNext(ShippingInstructionTO::hoistCarrierBookingReferenceIfPossible);
                 });
-    }
-
-    private static <T> Mono<Void> deleteAllFromChangeSet(ChangeSet<T> tChangeSet, Function<T, Mono<Void>> singleItemDeleter) {
-        return Flux.fromIterable(tChangeSet.orphanedInstances)
-                .concatMap(singleItemDeleter)
-                .then();
     }
 
     // This is a work around for missing 1:1 support via r2dbc.
