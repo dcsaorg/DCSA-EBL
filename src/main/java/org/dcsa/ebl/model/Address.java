@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.transferobjects.LocationTO;
 import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
 import org.springframework.data.annotation.Id;
@@ -15,37 +14,23 @@ import org.springframework.data.relational.core.mapping.Table;
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
-@Table("party")
+@Table("address")
 @Data
 @NoArgsConstructor
-public class Party implements ModelReferencingTO<Party, UUID>, SetId<UUID>, GetId<UUID> {
+public class Address implements ModelReferencingTO<Address, UUID>, SetId<UUID>, GetId<UUID> {
 
     @Id
-    @JsonProperty("partyID")
+    @JsonProperty("id")
     private UUID id;
 
-    @Column("party_name")
     @Size(max = 100)
-    private String partyName;
+    private String name;
 
-    @Column("tax_reference_1")
-    @Size(max = 20)
-    private String taxReference1;
-
-    @Column("tax_reference_2")
-    @Size(max = 20)
-    private String taxReference2;
-
-    @Column("public_key")
-    @Size(max = 500)
-    private String publicKey;
-
-    @Column("street_name")
     @Size(max = 100)
-    private String streetName;
+    private String street;
 
-    @Column("street_number")
     @Size(max = 50)
+    @Column("street_number")
     private String streetNumber;
 
     @Size(max = 50)
@@ -55,28 +40,23 @@ public class Party implements ModelReferencingTO<Party, UUID>, SetId<UUID>, GetI
     @Size(max = 10)
     private String postalCode;
 
-    @Column("city_name")
     @Size(max = 65)
-    private String cityName;
+    private String city;
 
     @Column("state_region")
-    @Size(max = 65)
+    @Size(max = 75)
     private String stateRegion;
 
     @Size(max = 75)
     private String country;
 
-    @Column("nmfta_code")
-    @Size(max = 4)
-    private String nmftaCode;
-
-
     @Override
     public boolean isSolelyReferenceToModel() {
-        return Util.containsOnlyID(this, Party::new);
+        return Util.containsOnlyID(this, Address::new);
     }
 
-    public boolean isEqualsToModel(Party other) {
-        return equals(other);
+    @Override
+    public boolean isEqualsToModel(Address address) {
+        return equals(address);
     }
 }
