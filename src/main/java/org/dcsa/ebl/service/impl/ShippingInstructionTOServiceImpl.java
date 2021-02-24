@@ -761,4 +761,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return shippingInstructionService.findAllExtended(extendedRequest)
                 .map(shippingInstruction -> MappingUtil.instanceFrom(shippingInstruction, ShippingInstructionTO::new, AbstractShippingInstruction.class));
     }
+
+    @Override
+    public String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO) {
+        if (shippingInstructionTO.getCarrierBookingReference() != null) {
+            // Use the carrierBookingReference on the ShippingInstruction
+            return shippingInstructionTO.getCarrierBookingReference();
+        } else {
+            List<CargoItemTO> cargoItems = shippingInstructionTO.getCargoItems();
+            if (cargoItems != null) {
+                for (CargoItemTO cargoItem : cargoItems) {
+                    if (cargoItem.getCarrierBookingReference() != null) {
+                        return cargoItem.getCarrierBookingReference();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 }
