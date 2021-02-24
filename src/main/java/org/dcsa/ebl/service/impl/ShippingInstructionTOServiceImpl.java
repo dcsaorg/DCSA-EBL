@@ -9,7 +9,6 @@ import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.ChangeSet;
-import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.*;
 import org.dcsa.ebl.model.transferobjects.*;
@@ -27,7 +26,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +43,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     /* We need the repository because the service gives an error if the object does not exist */
     private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
     private final ActiveReeferSettingsService activeReeferSettingsService;
+    private final AddressService addressService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
     private final DocumentPartyService documentPartyService;
@@ -190,14 +189,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                        ))
                 )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
                 .flatMapMany(partyID2DocumentPartyTOs ->
-                        setObjectOnAllMatchingInstances(
+                        setPartyOnAllMatchingInstances(
                                 partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
-                                partyID2DocumentPartyTOs,
-                                Party::getId,
-                                DocumentPartyTO::getParty,
-                                DocumentPartyTO::setParty,
-                                "Party",
-                                "DocumentPartyTO"
+                                partyID2DocumentPartyTOs
                         )
                 )
                 .collectList()
@@ -447,15 +441,12 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return Flux.fromIterable(documentPartyTOs)
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;
-                    Party party = documentPartyTO.getParty();
-                    Mono<Party> partyMono;
+                    PartyTO partyTO = documentPartyTO.getParty();
 
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
                     documentParty.setShippingInstructionID(shippingInstructionID);
 
-                    partyMono = Util.resolveModelReference(party, partyService::findById, partyService::create, "Party");
-
-                    return partyMono
+                    return partyService.ensureResolvable(partyTO)
                             .doOnNext(resolvedParty -> {
                                 documentParty.setPartyID(resolvedParty.getId());
                                 documentPartyTO.setParty(resolvedParty);
@@ -713,35 +704,42 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     }
 
     // This is a work around for missing 1:1 support via r2dbc.
-    private <IID, TO, IO> Flux<TO> setObjectOnAllMatchingInstances(Flux<IO> ioObjectFlux,
-                                                                   Map<IID, ? extends Iterable<TO>> id2TOMap,
-                                                                   Function<IO, IID> idGetter,
-                                                                   Function<TO, IO> to2ioGetter,
-                                                                   BiConsumer<TO, IO> ioSetter,
-                                                                   String innerObjectTypeName,
-                                                                   String toObjectTypeName
+    private Flux<DocumentPartyTO> setPartyOnAllMatchingInstances(Flux<Party> partyFlux,
+                                                                 Map<UUID, ? extends Iterable<DocumentPartyTO>> id2TOMap
     ) {
-        return ioObjectFlux.flatMap(ioObject -> {
-            Iterable<TO> list = id2TOMap.get(idGetter.apply(ioObject));
+        return partyFlux
+                .concatMap(party -> {
+            Iterable<DocumentPartyTO> list = id2TOMap.get(party.getId());
+            Mono<Address> addressMono;
+            UUID addressID = party.getAddressID();
             if (list == null) {
                 // We listed all known IDs, so this "should not happen" unless the code above
                 // for generating the map changed.
-                return Mono.error(new AssertionError("We pulled a " + innerObjectTypeName
-                        + " by ID that we did not request!?"));
+                throw new IllegalArgumentException("We pulled a Party by ID that we did not request!?");
             }
-            for (TO shipmentLocationTO : list) {
-                if (to2ioGetter.apply(shipmentLocationTO) != null) {
-                    return Mono.error(new AssertionError(toObjectTypeName + " already had a "
-                            + innerObjectTypeName + "!?"));
-                }
-                ioSetter.accept(shipmentLocationTO, ioObject);
+            if (addressID != null) {
+                addressMono = addressService.findById(addressID);
+            } else {
+                addressMono = Mono.empty();
             }
-            return Mono.empty();
+            return Flux.fromIterable(list)
+                    .concatMap(documentPartyTO -> {
+                        if (documentPartyTO.getParty() != null) {
+                            throw new IllegalArgumentException("DocumentPartyTo already had a Party!?");
+                        }
+                        if (addressID != null) {
+                            return addressMono
+                                    .map(party::toPartyTO)
+                                    .doOnNext(documentPartyTO::setParty);
+                        }
+                        documentPartyTO.setParty(party.toPartyTO(null));
+                        return Mono.empty();
+                    });
         }).thenMany(Flux.fromIterable(id2TOMap.values()))
         .flatMap(Flux::fromIterable)
-        .doOnNext(toObject -> {
-            if (to2ioGetter.apply(toObject) == null) {
-                throw new AssertionError("Found " +  toObjectTypeName + " without " + innerObjectTypeName + "!?");
+        .doOnNext(documentPartyTO -> {
+            if (documentPartyTO.getParty() == null) {
+                throw new IllegalArgumentException("Found DocumentPartyTO without a Party!?");
             }
         });
     }
