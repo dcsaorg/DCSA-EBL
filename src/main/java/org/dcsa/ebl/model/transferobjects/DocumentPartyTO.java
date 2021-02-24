@@ -12,5 +12,5 @@ import javax.validation.constraints.NotNull;
 public class DocumentPartyTO extends AbstractDocumentParty {
 
     @NotNull
-    private Party party;
+    private PartyTO party;
 }

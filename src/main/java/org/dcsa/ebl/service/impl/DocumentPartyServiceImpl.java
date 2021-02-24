@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.model.DocumentParty;
-import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.model.enums.PartyFunction;
 import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
+import org.dcsa.ebl.model.transferobjects.PartyTO;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
@@ -70,8 +70,8 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     public Mono<Void> deleteObsoleteDocumentPartyInstances(Iterable<DocumentPartyTO> documentPartyTOs) {
         return Flux.fromIterable(documentPartyTOs)
                 .flatMap(documentPartyTO -> {
-                    Party party = documentPartyTO.getParty();
-                    UUID partyId = party.getId();
+                    PartyTO partyTO = documentPartyTO.getParty();
+                    UUID partyId = partyTO.getId();
                     PartyFunction partyFunction = documentPartyTO.getPartyFunction();
                     if (partyId == null) {
                         return Mono.error(new AssertionError("Cannot delete a DocumentPartyTO without a" +
