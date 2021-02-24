@@ -174,12 +174,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                     )
                                                     .then(Mono.just(transportDocumentTO)),
                                             locationService.findById(transportDocument.getPlaceOfIssue())
-                                                    .flatMap(
-                                                            location -> {
-                                                                transportDocumentTO.setPlaceOfIssueLocation(location);
-                                                                return Mono.just(location);
-                                                            }
-                                                    )
+                                                    .doOnNext(location -> transportDocumentTO.setPlaceOfIssueLocation(location))
                                     ).then(Mono.just(transportDocumentTO));
                                 }
                     }),
