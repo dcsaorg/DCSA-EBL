@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
@@ -65,24 +66,24 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO) {
         List<ChargeTO> chargeTOs = transportDocumentTO.getCharges();
         if (chargeTOs == null || chargeTOs.isEmpty()) {
+            // In case a new TransportDocument is created it is intentional to send an empty
+            // array if no charges are inlcuded...
             transportDocumentTO.setCharges(Collections.emptyList());
             return Flux.empty();
         } else {
-            List<Charge> charges = new ArrayList<>(chargeTOs.size());
-            chargeTOs.stream().forEach(chargeTO -> {
-                // Insert TransportDocumentID on all Charges
-                chargeTO.setTransportDocumentID(transportDocumentTO.getId());
-                // Create a Charge object for all ChargeTOs
-                Charge charge = MappingUtil.instanceFrom(
-                        chargeTO,
-                        Charge::new,
-                        AbstractCharge.class
-                );
-                charges.add(charge);
-            });
-
-            // Save all Charges in one bulk
-            return chargeService.createAll(charges);
+            return Flux.fromIterable(chargeTOs)
+                    .map(chargeTO -> {
+                        // Insert TransportDocumentID on all Charges
+                        chargeTO.setTransportDocumentID(transportDocumentTO.getId());
+                        // Create a Charge object for all ChargeTOs
+                        return MappingUtil.instanceFrom(
+                                chargeTO,
+                                Charge::new,
+                                AbstractCharge.class
+                        );
+                    })
+                    .buffer(Util.SQL_LIST_BUFFER_SIZE)
+                    .concatMap(chargeService::createAll);
         }
     }
 
@@ -122,32 +123,16 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                         AbstractTransportDocument.class
                                 );
                                 if (transportDocument.getShippingInstructionID() == null) {
-                                    return Mono.error(new GetException("No ShippingInstruction connected to this TransportDocument - internal error!"));
+                                    return Mono.error(new IllegalStateException("No ShippingInstruction connected to this TransportDocument - internal error!"));
                                 } else {
                                     return Flux.concat(
                                             shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
                                                     .flatMap(
-                                                            shippingInstruction -> {
-                                                                transportDocumentTO.setShippingInstruction(shippingInstruction);
-                                                                String carrierBookingReference = null;
-                                                                if (shippingInstruction.getCarrierBookingReference() != null) {
-                                                                    // Use the carrierBookingReference on the ShippingInstruction
-                                                                    carrierBookingReference = shippingInstruction.getCarrierBookingReference();
-                                                                } else {
-                                                                    List<CargoItemTO> cargoItems = shippingInstruction.getCargoItems();
-                                                                    if (cargoItems != null) {
-                                                                        for (CargoItemTO cargoItem : cargoItems) {
-                                                                            if (cargoItem.getCarrierBookingReference() != null) {
-                                                                                // Assume https://github.com/dcsaorg/DCSA-EBL/issues/56 is valid
-                                                                                carrierBookingReference = cargoItem.getCarrierBookingReference();
-                                                                                break;
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-
+                                                            shippingInstructionTO -> {
+                                                                transportDocumentTO.setShippingInstruction(shippingInstructionTO);
+                                                                String carrierBookingReference = shippingInstructionTOService.getCarrierBookingReference(shippingInstructionTO);
                                                                 if (carrierBookingReference == null) {
-                                                                    return Mono.error(new GetException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstruction.getId() + " - internal error!"));
+                                                                    return Mono.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getId() + " - internal error!"));
                                                                 } else {
 //                                                                    return Flux.concat(
                                                                             return bookingService.findById(carrierBookingReference)
@@ -168,14 +153,14 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 //                                                                                    })
 //                                                                    )
 //                                                                    .count()
-                                                                    .thenReturn(shippingInstruction);
+                                                                    .then();
                                                                 }
                                                             }
                                                     )
-                                                    .then(Mono.just(transportDocumentTO)),
+                                                    .then(),
                                             locationService.findById(transportDocument.getPlaceOfIssue())
                                                     .doOnNext(location -> transportDocumentTO.setPlaceOfIssueLocation(location))
-                                    ).then(Mono.just(transportDocumentTO));
+                                    ).then();
                                 }
                     }),
                 includeCharges ?

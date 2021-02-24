@@ -18,4 +18,5 @@ public interface ShippingInstructionTOService {
     // Use of ShippingInstruction is deliberate because we do not support filtering on any other fields then
     // those provided in ShippingInstruction.class
     Flux<ShippingInstructionTO> findAllExtended(final ExtendedRequest<ShippingInstruction> extendedRequest);
+    String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO);
 }
