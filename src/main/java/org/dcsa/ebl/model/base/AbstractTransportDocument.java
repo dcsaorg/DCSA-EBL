@@ -1,6 +1,7 @@
 package org.dcsa.ebl.model.base;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -47,6 +48,7 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
     private String issuer;
 
     @Column("shipping_instruction_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID shippingInstructionID;
 
     @Column("declared_value_currency")

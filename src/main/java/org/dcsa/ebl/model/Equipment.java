@@ -1,6 +1,5 @@
 package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.data.relational.core.mapping.Table;
 @NoArgsConstructor
 public class Equipment extends AbstractEquipment implements GetId<String> {
 
-    @JsonIgnore
     @Override
     public String getId() {
         return this.getEquipmentReference();

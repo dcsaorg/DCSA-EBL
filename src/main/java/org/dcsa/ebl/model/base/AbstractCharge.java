@@ -4,10 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
 import java.util.UUID;
@@ -15,10 +12,7 @@ import java.util.UUID;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public abstract class AbstractCharge extends AuditBase implements GetId<UUID> {
-    @Id
-    private UUID id;
-
+public abstract class AbstractCharge extends AuditBase {
     @Column("transport_document_id")
     private UUID transportDocumentID;
 
@@ -43,9 +37,6 @@ public abstract class AbstractCharge extends AuditBase implements GetId<UUID> {
     @Column("calculation_basis")
     @Size(max = 50)
     private String calculationBasis;
-
-    @Column("is_charge_displayed")
-    private Boolean isChargeDisplayed;
 
     @Column("unit_price")
     private Float unitPrice;

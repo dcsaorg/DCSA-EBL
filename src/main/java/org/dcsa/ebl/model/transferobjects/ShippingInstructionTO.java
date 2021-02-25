@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.dcsa.ebl.model.Location;
 import org.dcsa.ebl.model.Reference;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
-import org.springframework.data.annotation.Transient;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -20,22 +19,18 @@ import java.util.List;
 public class ShippingInstructionTO extends AbstractShippingInstruction {
 
     @NotNull
-    @Transient
     @Valid
     private List<CargoItemTO> cargoItems;
 
     @NotNull
-    @Transient
     @Valid
     private List<ShipmentEquipmentTO> shipmentEquipments;
 
     @NotNull
-    @Transient
     @Valid
     private List<Reference> references;
 
     @NotNull
-    @Transient
     @Valid
     private List<DocumentPartyTO> documentParties;
 
