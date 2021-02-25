@@ -1,6 +1,5 @@
 package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,7 +16,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class CargoItem extends AbstractCargoItem {
 
-    @JsonIgnore
     @Column("shipment_id")
     @NotNull
     private UUID shipmentID;
