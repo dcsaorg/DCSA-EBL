@@ -8,5 +8,6 @@ public enum PartyFunction {
     N1,
     N2,
     SFA,
-    CFA;
+    CFA,
+    CNO;
 }

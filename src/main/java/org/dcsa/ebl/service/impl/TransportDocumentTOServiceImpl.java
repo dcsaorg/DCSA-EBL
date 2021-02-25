@@ -2,13 +2,14 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
-import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.*;
+import org.dcsa.ebl.model.Charge;
+import org.dcsa.ebl.model.Clause;
+import org.dcsa.ebl.model.TransportDocument;
+import org.dcsa.ebl.model.TransportPlan;
 import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
-import org.dcsa.ebl.model.transferobjects.CargoItemTO;
 import org.dcsa.ebl.model.transferobjects.ChargeTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
@@ -18,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
