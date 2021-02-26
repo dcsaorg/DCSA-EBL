@@ -17,7 +17,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Location extends AbstractLocation implements SetId<UUID>, GetId<UUID> {
+public class Location extends AbstractLocation implements SetId<UUID> {
 
     private UUID addressID;
 

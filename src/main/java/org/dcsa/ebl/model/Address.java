@@ -17,7 +17,7 @@ import java.util.UUID;
 @Table("address")
 @Data
 @NoArgsConstructor
-public class Address implements ModelReferencingTO<Address, UUID>, SetId<UUID>, GetId<UUID> {
+public class Address implements ModelReferencingTO<Address, UUID>, SetId<UUID> {
 
     @Id
     @JsonProperty("id")
