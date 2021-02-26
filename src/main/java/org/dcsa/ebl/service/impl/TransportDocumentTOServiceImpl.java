@@ -50,9 +50,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                         transportDocumentTO.setId(td.getId());
                         return Flux.concat(
                                 shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
-                                        .doOnNext(shippingInstruction ->
-                                                transportDocumentTO.setShippingInstruction(shippingInstruction)
-                                        )
+                                        .doOnNext(transportDocumentTO::setShippingInstruction)
                                         .thenReturn(transportDocumentTO),
                                 createCharges(transportDocumentTO),
                                 createClauses(transportDocumentTO),
@@ -159,18 +157,13 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                     )
                                                     .then(),
                                             locationService.findById(transportDocument.getPlaceOfIssue())
-                                                    .doOnNext(location -> transportDocumentTO.setPlaceOfIssueLocation(location))
+                                                    .doOnNext(transportDocumentTO::setPlaceOfIssueLocation)
                                     ).then();
                                 }
                     }),
                 includeCharges ?
                     chargeService.findAllByTransportDocumentID(transportDocumentID)
-                            .flatMap(charge -> locationService.findById(charge.getFreightPayableAt())
-                                    .map(location -> {
-                                        ChargeTO chargeTO = MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class);
-                                        chargeTO.setFreightPayableAtLocation(location);
-                                        return chargeTO;
-                                    }))
+                            .map(charge -> MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class))
                             .collectList()
                             .doOnNext(transportDocumentTO::setCharges)
                         : Flux.empty(),
