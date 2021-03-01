@@ -28,4 +28,7 @@ public class DocumentParty extends AbstractDocumentParty implements GetId<UUID> 
 
     @Column("shipment_id")
     private UUID shipmentID;
+
+    @Column("party_contact_details_id")
+    private UUID partyContactDetailsID;
 }
