@@ -48,6 +48,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
     private final LocationService locationService;
+    private final PartyContactDetailsService partyContactDetailsService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
@@ -176,7 +177,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
                 })
                 .count(),
-           // TODO: Ideally we would use a JOIN to pull Party together with DocumentParty due to the 1:1 relation
+           // TODO: Ideally we would use a JOIN to pull Party/PartyContactDetails together with DocumentParty due to the 1:1 relation
            // but for now this will do.
            documentPartyService.findAllByShippingInstructionID(id)
                 .flatMap(documentParty -> Mono.zip(
@@ -185,7 +186,13 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                        documentParty,
                                        DocumentPartyTO::new,
                                        AbstractDocumentParty.class
-                       ))
+                               )).flatMap(documentPartyTO ->
+                                   // FIXME: N+1 performance
+                                   Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
+                                           .flatMap(partyContactDetailsService::findById)
+                                           .doOnNext(documentPartyTO::setPartyContactDetails)
+                                           .thenReturn(documentPartyTO)
+                               )
                 )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
                 .flatMapMany(partyID2DocumentPartyTOs ->
                         setPartyOnAllMatchingInstances(
@@ -444,7 +451,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
                     documentParty.setShippingInstructionID(shippingInstructionID);
 
-                    return partyService.ensureResolvable(partyTO)
+                    return Mono.justOrEmpty(documentPartyTO.getPartyContactDetails())
+                            .flatMap(partyContactDetailsService::create)
+                            .doOnNext(partyContactDetails -> documentParty.setPartyContactDetailsID(partyContactDetails.getId()))
+                            .then(partyService.ensureResolvable(partyTO))
                             .doOnNext(resolvedParty -> {
                                 documentParty.setPartyID(resolvedParty.getId());
                                 documentPartyTO.setParty(resolvedParty);
