@@ -1,22 +1,16 @@
 package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.base.AbstractLocation;
 import org.dcsa.ebl.model.base.AbstractParty;
-import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
 import org.dcsa.ebl.model.transferobjects.PartyTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
 import org.dcsa.ebl.model.utils.MappingUtil;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.Size;
 import java.util.Objects;
 import java.util.UUID;
 

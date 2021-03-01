@@ -3,22 +3,29 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.DocumentParty;
 import org.dcsa.ebl.model.enums.PartyFunction;
 import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
 import org.dcsa.ebl.model.transferobjects.PartyTO;
+import org.dcsa.ebl.model.utils.MappingUtil;
+import org.dcsa.ebl.repository.DisplayedAddressRepository;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
+import org.dcsa.ebl.repository.PartyContactDetailsRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPartyRepository, DocumentParty, UUID> implements DocumentPartyService {
     private final DocumentPartyRepository documentPartyRepository;
+    private final PartyContactDetailsRepository partyContactDetailsRepository;
+    private final DisplayedAddressRepository displayedAddressRepository;
 
     @Override
     public DocumentPartyRepository getRepository() {
@@ -54,54 +61,44 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
 
     @Override
     public Mono<DocumentParty> update(final DocumentParty update) {
-        return documentPartyRepository.findByPartyIDAndPartyFunction(update.getPartyID(), update.getPartyFunction())
+        return documentPartyRepository.findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentID(
+                update.getPartyID(),
+                update.getPartyFunction(),
+                update.getShippingInstructionID(),
+                update.getShipmentID()
+        )
                 .flatMap(current -> this.preUpdateHook(current, update))
                 .flatMap(this::save);
     }
 
-    public Mono<DocumentParty> findByPartyIDAndPartyFunction(UUID partyID, PartyFunction partyFunction) {
-        return documentPartyRepository.findByPartyIDAndPartyFunction(partyID, partyFunction);
-    }
-
-    public Mono<Integer> deleteByPartyIDAndPartyFunctionAndShipmentID(UUID partyID, PartyFunction partyFunction, UUID shipmentID) {
-        return documentPartyRepository.deleteByPartyIDAndPartyFunctionAndShipmentID(partyID, partyFunction, shipmentID);
-    }
-
-    public Mono<Void> deleteObsoleteDocumentPartyInstances(Iterable<DocumentPartyTO> documentPartyTOs) {
-        return Flux.fromIterable(documentPartyTOs)
-                .flatMap(documentPartyTO -> {
-                    PartyTO partyTO = documentPartyTO.getParty();
-                    UUID partyId = partyTO.getId();
-                    PartyFunction partyFunction = documentPartyTO.getPartyFunction();
-                    if (partyId == null) {
-                        return Mono.error(new AssertionError("Cannot delete a DocumentPartyTO without a" +
-                                " partyID (on the Party member)"));
+    public Mono<Void> deleteObsoleteDocumentPartyInstances(UUID shippingInstructionID) {
+        return displayedAddressRepository.deleteByShippingInstructionIDAndShipmentIDIsNotNull(shippingInstructionID)
+                .then(displayedAddressRepository.clearShippingInstructionIDWhereShipmentIDIsNotNull(shippingInstructionID))
+                .thenMany(documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID))
+                .groupBy(documentParty -> documentParty.getShipmentID() != null)
+                .concatMap(documentPartyGroupedFlux -> {
+                    if (documentPartyGroupedFlux.key()) {
+                        // Has a shipment ID, clear the shipping instruction ID but leave the entry
+                        return documentPartyGroupedFlux.flatMap(original -> {
+                            DocumentParty update = MappingUtil.instanceFrom(original, DocumentParty::new, DocumentParty.class);
+                            update.setShippingInstructionID(null);
+                            return this.preUpdateHook(original, update);
+                        })
+                                .concatMap(this::preSaveHook)
+                                .buffer(Util.SQL_LIST_BUFFER_SIZE)
+                                .concatMap(documentPartyRepository::saveAll);
                     }
-                    return Mono.zip(
-                            Mono.just(partyId),
-                            Mono.just(partyFunction),
-                            deleteByPartyIDAndPartyFunctionAndShipmentID(partyId, partyFunction, null)
-                    );
-                }).flatMap(tuple -> {
-                    UUID partyID = tuple.getT1();
-                    PartyFunction partyFunction = tuple.getT2();
-                    int deletion = tuple.getT3();
-                    switch (deletion) {
-                        case 1:
-                            // Deleted as expected; nothing more to do.
-                            return Mono.empty();
-                        case 0:
-                            // No deletion, this is probably because there is a shipmentID as well.
-                            // TODO: The implementation of this is based on an assumption of how this case should be handled.
-                            // (The alternatively being deleting the DocumentParty even though it references a Shipment.
-                            return findByPartyIDAndPartyFunction(partyID, partyFunction)
-                                    .doOnNext(documentParty -> documentParty.setShippingInstructionID(null))
-                                    // Not the most efficient method, but will do for now.
-                                    .flatMap(this::update);
-                        default:
-                            return Mono.error(new AssertionError("Deleted " + deletion + " rows but expected it to be 0 or 1!?"));
-                    }
+                    // No shipment ID, delete them
+                    return documentPartyGroupedFlux
+                            .concatMap(documentParty ->
+                                    Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
+                                            .flatMap(partyContactDetailsRepository::deleteById)
+                                            .thenReturn(documentParty)
+                            ).buffer(Util.SQL_LIST_BUFFER_SIZE)
+                            .concatMap(documentPartyRepository::deleteAll);
+
                 })
                 .then();
     }
+
 }

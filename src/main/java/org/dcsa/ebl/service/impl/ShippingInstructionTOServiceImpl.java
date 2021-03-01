@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.dcsa.ebl.ChangeSet.changeListDetector;
-import static org.dcsa.ebl.ChangeSet.flatteningChangeDetector;
 import static org.dcsa.ebl.Util.*;
 
 @RequiredArgsConstructor
@@ -436,8 +435,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.zip(Mono.just(referenceToDBId), Mono.just(shipmentEquipmentTOs)));
     }
 
-    private Mono<Void> mapParties(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs,
-                                  Function<DocumentParty, Mono<DocumentParty>> saveFunction) {
+    private Mono<Void> mapParties(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs) {
         return Flux.fromIterable(documentPartyTOs)
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;
@@ -450,7 +448,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             .doOnNext(resolvedParty -> {
                                 documentParty.setPartyID(resolvedParty.getId());
                                 documentPartyTO.setParty(resolvedParty);
-                            }).flatMap(resolvedParty -> saveFunction.apply(documentParty));
+                            }).flatMap(ignored -> documentPartyService.create(documentParty));
                 })
                 .then();
     }
@@ -504,8 +502,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 ),
                                 mapParties(
                                         shippingInstructionID,
-                                        shippingInstructionTO.getDocumentParties(),
-                                        documentPartyService::create
+                                        shippingInstructionTO.getDocumentParties()
                                 )
                         )
                     );
@@ -580,11 +577,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             ShippingInstruction::new,
                             AbstractShippingInstruction.class
                     );
-                    ChangeSet<DocumentPartyTO> documentPartyTOChangeSet = ChangeSet.of(
-                            List.copyOf(update.getDocumentParties()),
-                            Collections.emptyList(),
-                            List.copyOf(original.getDocumentParties())
-                    );
                     ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
                             original.getCargoItems(),
                             update.getCargoItems(),
@@ -623,7 +615,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .concatMap(sealService::delete),
                             Flux.fromIterable(original.getReferences())
                                 .concatMap(referenceService::delete),
-                            documentPartyService.deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
+                            documentPartyService.deleteObsoleteDocumentPartyInstances(shippingInstructionId),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
                             orphanedCargoLineItemTOs
@@ -681,13 +673,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             processFreightPayableAt(update, updatedModel),
                             mapParties(
                                     shippingInstructionId,
-                                    documentPartyTOChangeSet.newInstances,
-                                    documentPartyService::create
-                            ),
-                            mapParties(
-                                    shippingInstructionId,
-                                    documentPartyTOChangeSet.updatedInstances,
-                                    documentPartyService::update
+                                    update.getDocumentParties()
                             ),
                             mapReferences(shippingInstructionId, update.getReferences(), referenceService::create)
                     );

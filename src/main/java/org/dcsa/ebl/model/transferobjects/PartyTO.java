@@ -20,8 +20,6 @@ public class PartyTO extends AbstractParty implements ModelReferencingTO<Party, 
 
     private Address address;
 
-    private UUID addressID;
-
     @Override
     public boolean isSolelyReferenceToModel() {
         return Util.containsOnlyID(this, PartyTO::new);

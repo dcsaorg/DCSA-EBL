@@ -26,14 +26,6 @@ public class AbstractDocumentParty extends AuditBase {
         this.partyFunction = partyFunction;
     }
 
-    @Column("displayed_address")
-    @Size(max = 250)
-    private String displayedAddress;
-
-    @Column("party_contact_details")
-    @Size(max = 250)
-    private String partyContactDetails;
-
     @Column("should_be_notified")
     private Boolean shouldBeNotified;
 }
