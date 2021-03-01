@@ -5,26 +5,22 @@ import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.DocumentParty;
-import org.dcsa.ebl.model.enums.PartyFunction;
-import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
-import org.dcsa.ebl.model.transferobjects.PartyTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.repository.DisplayedAddressRepository;
 import org.dcsa.ebl.repository.DocumentPartyRepository;
-import org.dcsa.ebl.repository.PartyContactDetailsRepository;
 import org.dcsa.ebl.service.DocumentPartyService;
+import org.dcsa.ebl.service.PartyContactDetailsService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPartyRepository, DocumentParty, UUID> implements DocumentPartyService {
     private final DocumentPartyRepository documentPartyRepository;
-    private final PartyContactDetailsRepository partyContactDetailsRepository;
+    private final PartyContactDetailsService partyContactDetailsService;
     private final DisplayedAddressRepository displayedAddressRepository;
 
     @Override
@@ -90,12 +86,14 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
                     }
                     // No shipment ID, delete them
                     return documentPartyGroupedFlux
-                            .concatMap(documentParty ->
-                                    Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
-                                            .flatMap(partyContactDetailsRepository::deleteById)
-                                            .thenReturn(documentParty)
-                            ).buffer(Util.SQL_LIST_BUFFER_SIZE)
-                            .concatMap(documentPartyRepository::deleteAll);
+                            .buffer(Util.SQL_LIST_BUFFER_SIZE)
+                            .concatMap(documentParties ->
+                                documentPartyRepository.deleteAll(documentParties)
+                                        .thenMany(Flux.fromIterable(documentParties))
+                                        .filter(documentParty -> documentParty.getPartyContactDetailsID() != null)
+                                        .map(DocumentParty::getPartyContactDetailsID)
+                                        .flatMap(partyContactDetailsService::deleteById)
+                            );
 
                 })
                 .then();
