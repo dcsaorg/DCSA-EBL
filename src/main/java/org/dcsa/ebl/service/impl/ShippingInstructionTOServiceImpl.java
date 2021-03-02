@@ -45,6 +45,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final AddressService addressService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
+    private final DisplayedAddressService displayedAddressService;
     private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
     private final LocationService locationService;
@@ -191,7 +192,11 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                    Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
                                            .flatMap(partyContactDetailsService::findById)
                                            .doOnNext(documentPartyTO::setPartyContactDetails)
+                                           .thenReturn(documentParty)
+                                           .flatMap(displayedAddressService::loadDisplayedAddress)
+                                           .doOnNext(documentPartyTO::setDisplayedAddress)
                                            .thenReturn(documentPartyTO)
+
                                )
                 )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
                 .flatMapMany(partyID2DocumentPartyTOs ->
@@ -442,27 +447,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.zip(Mono.just(referenceToDBId), Mono.just(shipmentEquipmentTOs)));
     }
 
-    private Mono<Void> mapParties(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs) {
-        return Flux.fromIterable(documentPartyTOs)
-                .concatMap(documentPartyTO -> {
-                    DocumentParty documentParty;
-                    PartyTO partyTO = documentPartyTO.getParty();
-
-                    documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
-                    documentParty.setShippingInstructionID(shippingInstructionID);
-
-                    return Mono.justOrEmpty(documentPartyTO.getPartyContactDetails())
-                            .flatMap(partyContactDetailsService::create)
-                            .doOnNext(partyContactDetails -> documentParty.setPartyContactDetailsID(partyContactDetails.getId()))
-                            .then(partyService.ensureResolvable(partyTO))
-                            .doOnNext(resolvedParty -> {
-                                documentParty.setPartyID(resolvedParty.getId());
-                                documentPartyTO.setParty(resolvedParty);
-                            }).flatMap(ignored -> documentPartyService.create(documentParty));
-                })
-                .then();
-    }
-
     @Transactional
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
@@ -510,7 +494,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionTO.getReferences(),
                                         referenceService::create
                                 ),
-                                mapParties(
+                                documentPartyService.ensureResolvable(
                                         shippingInstructionID,
                                         shippingInstructionTO.getDocumentParties()
                                 )
@@ -681,7 +665,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Flux<?> deferredUpdates = Flux.concat(
                             handleEquipmentAndCargoItems,
                             processFreightPayableAt(update, updatedModel),
-                            mapParties(
+                            documentPartyService.ensureResolvable(
                                     shippingInstructionId,
                                     update.getDocumentParties()
                             ),
