@@ -1,24 +1,15 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.UpdateException;
-import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.model.CargoLineItem;
 import org.dcsa.ebl.repository.CargoLineItemRepository;
 import org.dcsa.ebl.service.CargoLineItemService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.dcsa.ebl.Util.SQL_LIST_BUFFER_SIZE;
 
 @RequiredArgsConstructor
 @Service
@@ -73,7 +64,8 @@ public class CargoLineItemServiceImpl implements CargoLineItemService {
         return Mono.error(new UnsupportedOperationException("update not supported"));
     }
 
-    public Mono<Void> deleteByCargoItemIDAndCargoLineItemIDIn(UUID cargoItemID, List<String> cargoLineItemIDs) {
-        return cargoLineItemRepository.deleteByCargoItemIDAndCargoLineItemIDIn(cargoItemID, cargoLineItemIDs);
+    @Override
+    public Mono<Void> deleteByCargoItemID(UUID cargoItemID) {
+        return cargoLineItemRepository.deleteByCargoItemID(cargoItemID);
     }
 }

@@ -11,5 +11,6 @@ import java.util.UUID;
 public interface CargoLineItemRepository extends R2dbcRepository<CargoLineItem, UUID>, InsertAddonRepository<CargoLineItem> {
 
     Flux<CargoLineItem> findAllByCargoItemID(UUID cargoItemID);
+    Mono<Void> deleteByCargoItemID(UUID cargoItemID);
     Mono<Void> deleteByCargoItemIDAndCargoLineItemIDIn(UUID cargoItemID, List<String> cargoLineItemIDs);
 }

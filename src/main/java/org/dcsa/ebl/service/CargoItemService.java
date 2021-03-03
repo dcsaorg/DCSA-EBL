@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface CargoItemService extends ExtendedBaseService<CargoItem, UUID> {
 
     Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID);
-    Mono<Void> deleteAllByIdIn(List<UUID> cargoItemIDs);
+    Mono<Void> deleteAllCargoItemsOnShippingInstruction(UUID shippingInstructionID);
 }
