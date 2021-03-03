@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface CargoLineItemService extends BaseService<CargoLineItem, UUID> {
@@ -17,5 +16,5 @@ public interface CargoLineItemService extends BaseService<CargoLineItem, UUID> {
     Flux<CargoLineItem> createAll(Iterable<CargoLineItem> cargoLineItems);
 
     @Transactional
-    Mono<Void> deleteByCargoItemIDAndCargoLineItemIDIn(UUID cargoItemID, List<String> cargoLineItemIDs);
+    Mono<Void> deleteByCargoItemID(UUID cargoItemID);
 }

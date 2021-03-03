@@ -28,7 +28,6 @@ import javax.validation.Validator;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.dcsa.ebl.ChangeSet.changeListDetector;
 import static org.dcsa.ebl.Util.*;
@@ -289,7 +288,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             })
                             .flatMapMany(savedCargoItem -> {
                                 UUID cargoItemID = savedCargoItem.getId();
-                                cargoItemTO.setId(cargoItemID);
                                 return Flux.fromIterable(cargoLineItemTOs)
                                         .map(cargoLineItemTO -> {
                                             CargoLineItem cargoLineItem = MappingUtil.instanceFrom(
@@ -553,11 +551,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         ));
                     }
 
-                    checkForDuplicates(update.getCargoItems(), CargoItemTO::getId, "cargoItems[*].cargoItemID");
                     for (CargoItemTO cargoItemTO : update.getCargoItems()) {
-                        UUID id = cargoItemTO.getId();
-                        String name = id != null ? "found in cargoItem with id " + id.toString() : "found in cargoItem without an id";
-                        checkForDuplicates(cargoItemTO.getCargoLineItems(), CargoLineItemTO::getCargoLineItemID, name);
+                        checkForDuplicates(cargoItemTO.getCargoLineItems(), CargoLineItemTO::getCargoLineItemID,
+                                "cargoItems[X].cargoLineItems[*].cargoLineItemID");
                     }
                     checkForDuplicates(
                             update.getShipmentEquipments(),
@@ -571,24 +567,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             ShippingInstruction::new,
                             AbstractShippingInstruction.class
                     );
-                    ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
-                            original.getCargoItems(),
-                            update.getCargoItems(),
-                            CargoItemTO::getId,
-                            acceptAny()
-                    );
-                    // CargoLineItemTOs are handled via delete + create.  Creation happens
-                    // indirectly via the CargoItem(TO)s.
-                    Flux<Tuple2<UUID, List<CargoLineItemTO>>> orphanedCargoLineItemTOs =
-                            Flux.fromIterable(original.getCargoItems())
-                            .flatMap(cargoItemTO -> {
-                                UUID cargoItemID = cargoItemTO.getId();
-                                return Mono.zip(
-                                        Mono.just(cargoItemID),
-                                        Mono.just(cargoItemTO.getCargoLineItems())
-                                );
-                            });
-
                     ChangeSet<ShipmentEquipmentTO> shipmentEquipmentTOChangeSet = changeListDetector(
                             original.getShipmentEquipments(),
                             update.getShipmentEquipments(),
@@ -596,10 +574,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             acceptAny(),
                             true
                     );
-                    List<CargoItemTO> nonDeletedCargoItems = Stream.concat(
-                            cargoItemTOChangeSet.newInstances.stream(),
-                            cargoItemTOChangeSet.updatedInstances.stream()
-                    ).collect(Collectors.toList());
                     List<ShipmentEquipmentTO> shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.getAllNewAndUpdatedInstances();
 
                     Flux<?> deleteFirst = Flux.concat(
@@ -612,15 +586,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             documentPartyService.deleteObsoleteDocumentPartyInstances(shippingInstructionId),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
-                            orphanedCargoLineItemTOs
-                                    .flatMap(tuple ->
-                                            cargoLineItemService.deleteByCargoItemIDAndCargoLineItemIDIn(
-                                                    tuple.getT1(),
-                                                    tuple.getT2().stream().map(CargoLineItemTO::getCargoLineItemID).collect(Collectors.toList())
-                                            )
-                                    ).thenMany(Flux.fromStream(cargoItemTOChangeSet.orphanedInstances.stream().map(CargoItemTO::getId)))
-                                    .buffer(SQL_LIST_BUFFER_SIZE)
-                                    .concatMap(cargoItemService::deleteAllByIdIn)
+                            cargoItemService.deleteAllCargoItemsOnShippingInstruction(original.getId())
                     );
 
                     Flux<Object> handleEquipmentAndCargoItems =
@@ -640,7 +606,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .thenMany(
                                     processCargoItems(
                                             shippingInstructionUpdateInfo,
-                                            nonDeletedCargoItems,
+                                            update.getCargoItems(),
                                             false
                                     )
                                 // count + flatMap ensures a non-empty mono while trivially deferring the .update call
