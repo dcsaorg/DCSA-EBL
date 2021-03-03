@@ -11,6 +11,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 import java.util.UUID;
 
 @Data
@@ -36,18 +37,15 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
     private Boolean isShippedOnBoardType;
 
     @Column("transport_document_type")
+    @NotNull
     private TransportDocumentTypeCode transportDocumentType;
 
     public void setTransportDocumentType(String transportDocumentType) {
-        if (transportDocumentType != null) {
-            this.transportDocumentType = TransportDocumentTypeCode.valueOf(transportDocumentType);
-        } else {
-            this.transportDocumentType = null;
-        }
+        this.transportDocumentType = TransportDocumentTypeCode.valueOf(Objects.requireNonNull(transportDocumentType));
     }
 
     public void setTransportDocumentType(TransportDocumentTypeCode transportDocumentType) {
-        this.transportDocumentType = transportDocumentType;
+        this.transportDocumentType = Objects.requireNonNull(transportDocumentType);
     }
 
     @Column("callback_url")
