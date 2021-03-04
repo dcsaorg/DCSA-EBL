@@ -13,6 +13,5 @@ import java.util.UUID;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Clause extends AbstractClause implements GetId<UUID> {
-    @Id
-    private UUID id;
+
 }

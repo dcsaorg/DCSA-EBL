@@ -16,6 +16,9 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public abstract class AbstractClause extends AuditBase {
+    @Id
+    private UUID id;
+
     @Column("clause_content")
     private String clauseContent;
 }
