@@ -1,7 +1,13 @@
 package org.dcsa.ebl.model;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.util.List;
+
+@Data
+@EqualsAndHashCode
 public class TransportPlan {
-    String vesselName;
-    String carrierVoyageNumber;
-    String preCarried;
+    private List<ShipmentLocationTO> shipmentLocations;
+    private List<Transport> transports;
 }
