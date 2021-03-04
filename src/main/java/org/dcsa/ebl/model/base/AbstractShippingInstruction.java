@@ -49,7 +49,8 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
     }
 
     @Column("callback_url")
-    @NotNull
     private String callbackUrl;
 
+    @Column("is_charges_displayed")
+    private Boolean isChargesDisplayed = Boolean.FALSE;
 }
