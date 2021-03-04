@@ -56,7 +56,7 @@ public class EquipmentServiceImpl extends ExtendedBaseServiceImpl<EquipmentRepos
                                 return Mono.just(resolvedEquipment);
                             }).switchIfEmpty(Mono.defer(() -> {
                                 Equipment equipment;
-                                if (equipmentTO.containsOnlyID()) {
+                                if (equipmentTO.isSolelyReferenceToModel()) {
                                     return Mono.error(new CreateException("Unknown Equipment reference: " + equipmentReference));
                                 }
                                 if (!Boolean.TRUE.equals(equipmentTO.getIsShipperOwned())) {

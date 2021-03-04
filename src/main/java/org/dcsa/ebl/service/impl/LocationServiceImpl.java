@@ -1,13 +1,15 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
+import org.dcsa.ebl.model.Address;
 import org.dcsa.ebl.model.Location;
+import org.dcsa.ebl.model.transferobjects.LocationTO;
 import org.dcsa.ebl.repository.LocationRepository;
+import org.dcsa.ebl.service.AddressService;
 import org.dcsa.ebl.service.LocationService;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -16,6 +18,7 @@ import java.util.UUID;
 @Service
 public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationRepository, Location, UUID> implements LocationService {
     private final LocationRepository locationRepository;
+    private final AddressService addressService;
 
     @Override
     public LocationRepository getRepository() {
@@ -27,25 +30,36 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
         return Location.class;
     }
 
-    public Mono<Location> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID) {
-        return locationRepository.findPaymentLocationByShippingInstructionID(shippingInstructionID);
+    public Mono<LocationTO> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID) {
+
+        return locationRepository.findPaymentLocationByShippingInstructionID(shippingInstructionID)
+                .flatMap(location -> {
+                    if (location.getAddressID() != null) {
+                        return addressService.findById(location.getAddressID())
+                                .map(location::toLocationTO);
+                    }
+                    return Mono.just(location.toLocationTO(null));
+                });
     }
 
-    public Mono<Location> resolveLocation(Location location) {
-        Mono<Location> locationMono;
-        if (location.getId() != null) {
-            locationMono = findById(location.getId())
-                    .flatMap(resolvedLocation -> {
-                        if (!location.containsOnlyID() && !resolvedLocation.equals(location)) {
-                            return Mono.error(new UpdateException("Location with id " + location.getId()
-                                    + " exists but has different content. Remove the locationID field to"
-                                    + " create a new instance or provide an update"));
-                        }
-                        return Mono.just(resolvedLocation);
-                    });
+    @Override
+    public Mono<LocationTO> ensureResolvable(LocationTO locationTO) {
+        Address address = locationTO.getAddress();
+        Mono<LocationTO> locationTOMono;
+        if (address != null) {
+            locationTOMono = addressService.ensureResolvable(address)
+                    .doOnNext(locationTO::setAddress)
+                    .thenReturn(locationTO);
         } else {
-            locationMono = create(location);
+            locationTOMono = Mono.just(locationTO);
         }
-        return locationMono.doOnNext(resolvedLocation -> location.setId(resolvedLocation.getId()));
+
+        return locationTOMono
+            .flatMap(locTo -> Util.resolveModelReference(
+                locTo,
+                this::findById,
+                locTO -> this.create(locTO.toLocation()),
+                "Location"
+        )).map(location -> location.toLocationTO(locationTO.getAddress()));
     }
 }

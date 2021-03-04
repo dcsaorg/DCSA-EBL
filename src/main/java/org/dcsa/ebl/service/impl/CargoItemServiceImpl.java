@@ -3,20 +3,22 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
+import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.CargoItem;
 import org.dcsa.ebl.repository.CargoItemRepository;
 import org.dcsa.ebl.service.CargoItemService;
+import org.dcsa.ebl.service.CargoLineItemService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class CargoItemServiceImpl extends ExtendedBaseServiceImpl<CargoItemRepository, CargoItem, UUID> implements CargoItemService {
     private final CargoItemRepository cargoItemRepository;
+    private final CargoLineItemService cargoLineItemService;
 
 
     @Override
@@ -29,12 +31,20 @@ public class CargoItemServiceImpl extends ExtendedBaseServiceImpl<CargoItemRepos
         return CargoItem.class;
     }
 
+    @Override
     public Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID) {
         return cargoItemRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 
-    public Mono<Void> deleteAllByIdIn(List<UUID> cargoItemIDs) {
-        return cargoItemRepository.deleteAllByIdIn(cargoItemIDs);
+    @Override
+    public Mono<Void> deleteAllCargoItemsOnShippingInstruction(UUID shippingInstructionID) {
+        return findAllByShippingInstructionID(shippingInstructionID)
+                .flatMap(cargoItem ->
+                        cargoLineItemService.deleteByCargoItemID(cargoItem.getId())
+                        .thenReturn(cargoItem)
+                ).buffer(Util.SQL_LIST_BUFFER_SIZE)
+                .concatMap(cargoItemRepository::deleteAll)
+                .then();
     }
 
     @Override

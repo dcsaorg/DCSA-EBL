@@ -9,26 +9,32 @@ import org.dcsa.ebl.model.utils.MappingUtil;
 
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class EquipmentTO extends AbstractEquipment {
+public class EquipmentTO extends AbstractEquipment implements ModelReferencingTO<Equipment, String> {
 
-    public boolean containsOnlyID() {
-        if (this.getEquipmentReference() != null) {
+    public boolean isSolelyReferenceToModel() {
+        // Cannot rely on Util.containsOnlyID as it does not implement SetId
+        // by design
+        String equipmentReference = this.getEquipmentReference();
+        if (equipmentReference != null) {
             EquipmentTO p = new EquipmentTO();
-            p.setEquipmentReference(this.getEquipmentReference());
+            p.setEquipmentReference(equipmentReference);
             return this.equals(p);
         }
         return false;
     }
 
+    public boolean isEqualsToModel(Equipment equipment) {
+        throw new UnsupportedOperationException("Not implemented (we always use createModifiedCopyOrNull instead)");
+    }
+
     public Equipment createModifiedCopyOrNull(Equipment equipment) {
         Equipment clone ;
         boolean modified = false;
-        if (this.containsOnlyID()) {
+        if (this.isSolelyReferenceToModel()) {
             return null;
         }
         clone = MappingUtil.instanceFrom(equipment, Equipment::new, Equipment.class);

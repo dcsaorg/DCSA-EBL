@@ -1,11 +1,18 @@
 package org.dcsa.ebl;
 
 import org.dcsa.core.exception.UpdateException;
+import org.dcsa.core.model.GetId;
+import org.dcsa.ebl.model.transferobjects.EquipmentTO;
+import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
+import org.dcsa.ebl.model.transferobjects.SetId;
+import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Util {
 
@@ -55,6 +62,42 @@ public class Util {
             }
             throw new UpdateException("The field " + fieldName + " on " + objectName + " must be " + expectedValue);
         };
+    }
+
+    public static <TO extends ModelReferencingTO<M, ID>, M extends GetId<ID>, ID> Mono<M> resolveModelReference(TO instanceTO, Function<ID, Mono<M>> findByID, Function<TO, Mono<M>> create, String entityName) {
+        ID id = Objects.requireNonNull(instanceTO).getId();
+        if (id != null) {
+            return findByID.apply(id)
+                    .doOnNext(m -> {
+                        if (!instanceTO.isSolelyReferenceToModel() && !instanceTO.isEqualsToModel(m)) {
+                            throw new UpdateException(entityName + " with id " + id
+                                    + " exists but has a different content. Remove the ID field to"
+                                    + " create a new instance or provide an update");
+                        }
+                    });
+        } else {
+            return create.apply(instanceTO)
+                    .doOnNext(m -> {
+                        if (m instanceof SetId) {
+                            @SuppressWarnings({"rawtypes", "unchecked"})
+                            SetId<ID> s = ((SetId)m);
+                            s.setId(m.getId());
+                        }
+                    });
+        }
+    }
+
+    public static <T extends SetId<I>, I> boolean containsOnlyID(T model, Supplier<T> constructor) {
+        I id = model.getId();
+        if (id != null) {
+            T t = constructor.get();
+            if (t.getClass() != model.getClass()) {
+                throw new IllegalArgumentException("Logic error: this method assumes that the class is the same");
+            }
+            t.setId(id);
+            return model.equals(t);
+        }
+        return false;
     }
 
     private Util() {}

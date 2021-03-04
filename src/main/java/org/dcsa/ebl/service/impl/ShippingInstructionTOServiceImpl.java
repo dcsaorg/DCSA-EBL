@@ -26,13 +26,10 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.dcsa.ebl.ChangeSet.changeListDetector;
-import static org.dcsa.ebl.ChangeSet.flatteningChangeDetector;
 import static org.dcsa.ebl.Util.*;
 
 @RequiredArgsConstructor
@@ -44,11 +41,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     /* We need the repository because the service gives an error if the object does not exist */
     private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
     private final ActiveReeferSettingsService activeReeferSettingsService;
+    private final AddressService addressService;
     private final CargoItemService cargoItemService;
     private final CargoLineItemService cargoLineItemService;
+    private final DisplayedAddressService displayedAddressService;
     private final DocumentPartyService documentPartyService;
     private final EquipmentService equipmentService;
     private final LocationService locationService;
+    private final PartyContactDetailsService partyContactDetailsService;
     private final PartyService partyService;
     private final ReferenceService referenceService;
     private final SealService sealService;
@@ -60,9 +60,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     private Mono<Void> processFreightPayableAt(ShippingInstructionTO shippingInstructionTO, ShippingInstruction shippingInstruction) {
         return Mono.justOrEmpty(shippingInstructionTO.getFreightPayableAt())
-                .flatMap(locationService::resolveLocation)
+                .flatMap(locationService::ensureResolvable)
                 .doOnNext(shippingInstructionTO::setFreightPayableAt)
-                .map(Location::getId)
+                .map(LocationTO::getId)
                 .doOnNext(shippingInstruction::setFreightPayableAt)
                 .then();
     }
@@ -177,7 +177,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
                 })
                 .count(),
-           // TODO: Ideally we would use a JOIN to pull Party together with DocumentParty due to the 1:1 relation
+           // TODO: Ideally we would use a JOIN to pull Party/PartyContactDetails together with DocumentParty due to the 1:1 relation
            // but for now this will do.
            documentPartyService.findAllByShippingInstructionID(id)
                 .flatMap(documentParty -> Mono.zip(
@@ -186,17 +186,22 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                        documentParty,
                                        DocumentPartyTO::new,
                                        AbstractDocumentParty.class
-                       ))
+                               )).flatMap(documentPartyTO ->
+                                   // FIXME: N+1 performance
+                                   Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
+                                           .flatMap(partyContactDetailsService::findById)
+                                           .doOnNext(documentPartyTO::setPartyContactDetails)
+                                           .thenReturn(documentParty)
+                                           .flatMap(displayedAddressService::loadDisplayedAddress)
+                                           .doOnNext(documentPartyTO::setDisplayedAddress)
+                                           .thenReturn(documentPartyTO)
+
+                               )
                 )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
                 .flatMapMany(partyID2DocumentPartyTOs ->
-                        setObjectOnAllMatchingInstances(
+                        setPartyOnAllMatchingInstances(
                                 partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
-                                partyID2DocumentPartyTOs,
-                                Party::getId,
-                                DocumentPartyTO::getParty,
-                                DocumentPartyTO::setParty,
-                                "Party",
-                                "DocumentPartyTO"
+                                partyID2DocumentPartyTOs
                         )
                 )
                 .collectList()
@@ -283,7 +288,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             })
                             .flatMapMany(savedCargoItem -> {
                                 UUID cargoItemID = savedCargoItem.getId();
-                                cargoItemTO.setId(cargoItemID);
                                 return Flux.fromIterable(cargoLineItemTOs)
                                         .map(cargoLineItemTO -> {
                                             CargoLineItem cargoLineItem = MappingUtil.instanceFrom(
@@ -441,40 +445,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then(Mono.zip(Mono.just(referenceToDBId), Mono.just(shipmentEquipmentTOs)));
     }
 
-    private Mono<Void> mapParties(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs,
-                                  Function<DocumentParty, Mono<DocumentParty>> saveFunction) {
-        return Flux.fromIterable(documentPartyTOs)
-                .concatMap(documentPartyTO -> {
-                    DocumentParty documentParty;
-                    Party party = documentPartyTO.getParty();
-                    UUID partyID = party.getId();
-                    Mono<Party> partyMono;
-
-                    documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
-                    documentParty.setShippingInstructionID(shippingInstructionID);
-
-                    if (partyID != null) {
-                        partyMono = partyService.findById(partyID)
-                                .flatMap(existingParty -> {
-                                    if (!party.containsOnlyID() && !existingParty.equals(party)) {
-                                        return Mono.error(new UpdateException("Party with id " + partyID
-                                                + " exists but has a different content. Remove the partyID field to"
-                                                + " create a new instance or provide an update"));
-                                    }
-                                    return Mono.just(existingParty);
-                                });
-                    } else {
-                        partyMono = partyService.create(party);
-                    }
-                    return partyMono
-                            .doOnNext(resolvedParty -> {
-                                documentParty.setPartyID(resolvedParty.getId());
-                                documentPartyTO.setParty(resolvedParty);
-                            }).flatMap(resolvedParty -> saveFunction.apply(documentParty));
-                })
-                .then();
-    }
-
     @Transactional
     @Override
     public Mono<ShippingInstructionTO> create(ShippingInstructionTO shippingInstructionTO) {
@@ -522,10 +492,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                         shippingInstructionTO.getReferences(),
                                         referenceService::create
                                 ),
-                                mapParties(
+                                documentPartyService.ensureResolvable(
                                         shippingInstructionID,
-                                        shippingInstructionTO.getDocumentParties(),
-                                        documentPartyService::create
+                                        shippingInstructionTO.getDocumentParties()
                                 )
                         )
                     );
@@ -582,11 +551,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         ));
                     }
 
-                    checkForDuplicates(update.getCargoItems(), CargoItemTO::getId, "cargoItems[*].cargoItemID");
                     for (CargoItemTO cargoItemTO : update.getCargoItems()) {
-                        UUID id = cargoItemTO.getId();
-                        String name = id != null ? "found in cargoItem with id " + id.toString() : "found in cargoItem without an id";
-                        checkForDuplicates(cargoItemTO.getCargoLineItems(), CargoLineItemTO::getCargoLineItemID, name);
+                        checkForDuplicates(cargoItemTO.getCargoLineItems(), CargoLineItemTO::getCargoLineItemID,
+                                "cargoItems[X].cargoLineItems[*].cargoLineItemID");
                     }
                     checkForDuplicates(
                             update.getShipmentEquipments(),
@@ -600,29 +567,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             ShippingInstruction::new,
                             AbstractShippingInstruction.class
                     );
-                    ChangeSet<DocumentPartyTO> documentPartyTOChangeSet = ChangeSet.of(
-                            List.copyOf(update.getDocumentParties()),
-                            Collections.emptyList(),
-                            List.copyOf(original.getDocumentParties())
-                    );
-                    ChangeSet<CargoItemTO> cargoItemTOChangeSet = changeListDetector(
-                            original.getCargoItems(),
-                            update.getCargoItems(),
-                            CargoItemTO::getId,
-                            acceptAny()
-                    );
-                    // CargoLineItemTOs are handled via delete + create.  Creation happens
-                    // indirectly via the CargoItem(TO)s.
-                    Flux<Tuple2<UUID, List<CargoLineItemTO>>> orphanedCargoLineItemTOs =
-                            Flux.fromIterable(original.getCargoItems())
-                            .flatMap(cargoItemTO -> {
-                                UUID cargoItemID = cargoItemTO.getId();
-                                return Mono.zip(
-                                        Mono.just(cargoItemID),
-                                        Mono.just(cargoItemTO.getCargoLineItems())
-                                );
-                            });
-
                     ChangeSet<ShipmentEquipmentTO> shipmentEquipmentTOChangeSet = changeListDetector(
                             original.getShipmentEquipments(),
                             update.getShipmentEquipments(),
@@ -630,10 +574,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             acceptAny(),
                             true
                     );
-                    List<CargoItemTO> nonDeletedCargoItems = Stream.concat(
-                            cargoItemTOChangeSet.newInstances.stream(),
-                            cargoItemTOChangeSet.updatedInstances.stream()
-                    ).collect(Collectors.toList());
                     List<ShipmentEquipmentTO> shipmentEquipmentTOs = shipmentEquipmentTOChangeSet.getAllNewAndUpdatedInstances();
 
                     Flux<?> deleteFirst = Flux.concat(
@@ -643,18 +583,10 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .concatMap(sealService::delete),
                             Flux.fromIterable(original.getReferences())
                                 .concatMap(referenceService::delete),
-                            documentPartyService.deleteObsoleteDocumentPartyInstances(documentPartyTOChangeSet.orphanedInstances),
+                            documentPartyService.deleteObsoleteDocumentPartyInstances(shippingInstructionId),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
-                            orphanedCargoLineItemTOs
-                                    .flatMap(tuple ->
-                                            cargoLineItemService.deleteByCargoItemIDAndCargoLineItemIDIn(
-                                                    tuple.getT1(),
-                                                    tuple.getT2().stream().map(CargoLineItemTO::getCargoLineItemID).collect(Collectors.toList())
-                                            )
-                                    ).thenMany(Flux.fromStream(cargoItemTOChangeSet.orphanedInstances.stream().map(CargoItemTO::getId)))
-                                    .buffer(SQL_LIST_BUFFER_SIZE)
-                                    .concatMap(cargoItemService::deleteAllByIdIn)
+                            cargoItemService.deleteAllCargoItemsOnShippingInstruction(original.getId())
                     );
 
                     Flux<Object> handleEquipmentAndCargoItems =
@@ -674,7 +606,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                                 .thenMany(
                                     processCargoItems(
                                             shippingInstructionUpdateInfo,
-                                            nonDeletedCargoItems,
+                                            update.getCargoItems(),
                                             false
                                     )
                                 // count + flatMap ensures a non-empty mono while trivially deferring the .update call
@@ -699,15 +631,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     Flux<?> deferredUpdates = Flux.concat(
                             handleEquipmentAndCargoItems,
                             processFreightPayableAt(update, updatedModel),
-                            mapParties(
+                            documentPartyService.ensureResolvable(
                                     shippingInstructionId,
-                                    documentPartyTOChangeSet.newInstances,
-                                    documentPartyService::create
-                            ),
-                            mapParties(
-                                    shippingInstructionId,
-                                    documentPartyTOChangeSet.updatedInstances,
-                                    documentPartyService::update
+                                    update.getDocumentParties()
                             ),
                             mapReferences(shippingInstructionId, update.getReferences(), referenceService::create)
                     );
@@ -724,35 +650,42 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     }
 
     // This is a work around for missing 1:1 support via r2dbc.
-    private <IID, TO, IO> Flux<TO> setObjectOnAllMatchingInstances(Flux<IO> ioObjectFlux,
-                                                                   Map<IID, ? extends Iterable<TO>> id2TOMap,
-                                                                   Function<IO, IID> idGetter,
-                                                                   Function<TO, IO> to2ioGetter,
-                                                                   BiConsumer<TO, IO> ioSetter,
-                                                                   String innerObjectTypeName,
-                                                                   String toObjectTypeName
+    private Flux<DocumentPartyTO> setPartyOnAllMatchingInstances(Flux<Party> partyFlux,
+                                                                 Map<UUID, ? extends Iterable<DocumentPartyTO>> id2TOMap
     ) {
-        return ioObjectFlux.flatMap(ioObject -> {
-            Iterable<TO> list = id2TOMap.get(idGetter.apply(ioObject));
+        return partyFlux
+                .concatMap(party -> {
+            Iterable<DocumentPartyTO> list = id2TOMap.get(party.getId());
+            Mono<Address> addressMono;
+            UUID addressID = party.getAddressID();
             if (list == null) {
                 // We listed all known IDs, so this "should not happen" unless the code above
                 // for generating the map changed.
-                return Mono.error(new AssertionError("We pulled a " + innerObjectTypeName
-                        + " by ID that we did not request!?"));
+                throw new IllegalArgumentException("We pulled a Party by ID that we did not request!?");
             }
-            for (TO shipmentLocationTO : list) {
-                if (to2ioGetter.apply(shipmentLocationTO) != null) {
-                    return Mono.error(new AssertionError(toObjectTypeName + " already had a "
-                            + innerObjectTypeName + "!?"));
-                }
-                ioSetter.accept(shipmentLocationTO, ioObject);
+            if (addressID != null) {
+                addressMono = addressService.findById(addressID);
+            } else {
+                addressMono = Mono.empty();
             }
-            return Mono.empty();
+            return Flux.fromIterable(list)
+                    .concatMap(documentPartyTO -> {
+                        if (documentPartyTO.getParty() != null) {
+                            throw new IllegalArgumentException("DocumentPartyTo already had a Party!?");
+                        }
+                        if (addressID != null) {
+                            return addressMono
+                                    .map(party::toPartyTO)
+                                    .doOnNext(documentPartyTO::setParty);
+                        }
+                        documentPartyTO.setParty(party.toPartyTO(null));
+                        return Mono.empty();
+                    });
         }).thenMany(Flux.fromIterable(id2TOMap.values()))
         .flatMap(Flux::fromIterable)
-        .doOnNext(toObject -> {
-            if (to2ioGetter.apply(toObject) == null) {
-                throw new AssertionError("Found " +  toObjectTypeName + " without " + innerObjectTypeName + "!?");
+        .doOnNext(documentPartyTO -> {
+            if (documentPartyTO.getParty() == null) {
+                throw new IllegalArgumentException("Found DocumentPartyTO without a Party!?");
             }
         });
     }

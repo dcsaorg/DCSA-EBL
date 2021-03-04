@@ -5,23 +5,18 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.VolumeUnit;
 import org.dcsa.ebl.model.enums.WeightUnit;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public abstract class AbstractCargoItem extends AuditBase implements GetId<UUID> {
-    @JsonProperty("cargoItemID")
-    @Id
-    private UUID id;
+public abstract class AbstractCargoItem extends AuditBase {
+
 
     @Column("description_of_goods")
     @NotNull

@@ -1,51 +1,34 @@
 package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
+import org.dcsa.ebl.model.base.AbstractLocation;
+import org.dcsa.ebl.model.transferobjects.LocationTO;
+import org.dcsa.ebl.model.transferobjects.SetId;
+import org.dcsa.ebl.model.utils.MappingUtil;
 import org.springframework.data.relational.core.mapping.Table;
 
-import javax.validation.constraints.Size;
+import java.util.Objects;
 import java.util.UUID;
 
 @Table("location")
 @Data
 @NoArgsConstructor
-public class Location implements GetId<UUID> {
-    @Id
-    @JsonProperty("locationID")
-    private UUID id;
+@EqualsAndHashCode(callSuper = true)
+public class Location extends AbstractLocation implements SetId<UUID> {
 
-    @Size(max = 100)
-    private String locationName;
+    private UUID addressID;
 
-    @Size(max = 250)
-    private String address;
-
-    @Size(max = 10)
-    private String latitude;
-
-    @Size(max = 11)
-    private String longitude;
-
-    @JsonProperty("UNLocationCode")
-    @Column("un_location_code")
-    @Size(max = 5)
-    private String unLocationCode;
-
-
-    /**
-     * @return true iff this object contains a non-null ID and every other field being unset.
-     */
-    public boolean containsOnlyID() {
-        if (this.getId() != null) {
-            Location location = new Location();
-            location.setId(this.getId());
-            return this.equals(location);
+    public LocationTO toLocationTO(Address address) {
+        LocationTO locationTO;
+        UUID providedAddressID = address != null ? address.getId() : null;
+        if (!Objects.equals(addressID, providedAddressID)) {
+            throw new IllegalArgumentException("address does not match addressID");
         }
-        return false;
+        locationTO = MappingUtil.instanceFrom(this, LocationTO::new, AbstractLocation.class);
+        locationTO.setAddress(address);
+        return locationTO;
     }
 }
