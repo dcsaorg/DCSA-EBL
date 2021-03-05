@@ -48,9 +48,6 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
         this.transportDocumentType = Objects.requireNonNull(transportDocumentType);
     }
 
-    @Column("callback_url")
-    private String callbackUrl;
-
     @Column("is_charges_displayed")
-    private Boolean isChargesDisplayed = Boolean.FALSE;
+    private Boolean isChargesDisplayed;
 }
