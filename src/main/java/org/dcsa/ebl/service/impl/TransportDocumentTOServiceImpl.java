@@ -62,41 +62,15 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                             if (carrierBookingReference == null) {
                                                 return Mono.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getId() + " - internal error!"));
                                             } else {
-                                                // Check if POST TD tries to change values in Booking
-                                                return getBooking(carrierBookingReference, shippingInstructionTO.getId())
-                                                        .flatMap(booking -> {
-                                                            if (transportDocumentTO.getServiceTypeAtOrigin() != null && !transportDocumentTO.getServiceTypeAtOrigin().equals(booking.getServiceTypeAtOrigin())) {
-                                                                return Mono.error(new CreateException("It is not possible to change ServiceTypeAtOrigin when creating a new TransportDocument. Please change this via booking"));
-                                                            } else {
-                                                                transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
-                                                            }
-                                                            if (transportDocumentTO.getServiceTypeAtDestination() != null && !transportDocumentTO.getServiceTypeAtDestination().equals(booking.getServiceTypeAtDestination())) {
-                                                                return Mono.error(new CreateException("It is not possible to change ServiceTypeAtDestination when creating a new TransportDocument. Please change this via booking"));
-                                                            } else {
-                                                                transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
-                                                            }
-                                                            if (transportDocumentTO.getShipmentTermAtOrigin() != null && !transportDocumentTO.getShipmentTermAtOrigin().equals(booking.getShipmentTermAtOrigin())) {
-                                                                return Mono.error(new CreateException("It is not possible to change ShipmentTermAtOrigin when creating a new TransportDocument. Please change this via booking"));
-                                                            } else {
-                                                                transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
-                                                            }
-                                                            if (transportDocumentTO.getShipmentTermAtDestination() != null && !transportDocumentTO.getShipmentTermAtDestination().equals(booking.getShipmentTermAtDestination())) {
-                                                                return Mono.error(new CreateException("It is not possible to change ShipmentTermAtDestination when creating a new TransportDocument. Please change this via booking"));
-                                                            } else {
-                                                                transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
-                                                            }
-                                                            if (transportDocumentTO.getServiceContract() != null && !transportDocumentTO.getServiceContract().equals(booking.getServiceContract())) {
-                                                                return Mono.error(new CreateException("It is not possible to change ServiceContract when creating a new TransportDocument. Please change this via booking"));
-                                                            } else {
-                                                                transportDocumentTO.setServiceContract(booking.getServiceContract());
-                                                            }
-                                                            return Mono.just(booking);
-                                                        });
+                                                return Flux.concat(
+                                                        updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO),
+                                                        createCharges(transportDocumentTO, shippingInstructionTO.getIsChargesDisplayed()),
+                                                        updateTransportDocumentWithTransportPlan(transportDocumentTO)
+                                                ).then();
                                             }
                                         })
                                         .thenReturn(transportDocumentTO),
                                 // Create charges if any
-                                createCharges(transportDocumentTO),
                                 // Create/Update clauses if any
                                 createClauses(transportDocumentTO)
                         )
@@ -105,7 +79,47 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         }
     }
 
-    private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO) {
+    /**
+     * Checks if TransportDocument differs from Booking with regards to ServiceType, ShipmentTerms and ContractService.
+     * Sets the above mentioned values from Booking on TransportDocument
+     * @param carrierBookingReference the reference to the Booking
+     * @param transportDocumentTO the TransportDocument to update
+     * @return Error if a discrepancy is found otherwise returns the Booking
+     */
+    private Mono<Booking> updateTransportDocumentWithBookingInfo(String carrierBookingReference, TransportDocumentTO transportDocumentTO) {
+        // Check if TransportDocument differs from values in Booking
+        return getBooking(carrierBookingReference, transportDocumentTO.getShippingInstructionID())
+                .flatMap(booking -> {
+                    if (transportDocumentTO.getServiceTypeAtOrigin() != null && !transportDocumentTO.getServiceTypeAtOrigin().equals(booking.getServiceTypeAtOrigin())) {
+                        return Mono.error(new CreateException("It is not possible to change ServiceTypeAtOrigin when creating a new TransportDocument. Please change this via booking"));
+                    } else {
+                        transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
+                    }
+                    if (transportDocumentTO.getServiceTypeAtDestination() != null && !transportDocumentTO.getServiceTypeAtDestination().equals(booking.getServiceTypeAtDestination())) {
+                        return Mono.error(new CreateException("It is not possible to change ServiceTypeAtDestination when creating a new TransportDocument. Please change this via booking"));
+                    } else {
+                        transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
+                    }
+                    if (transportDocumentTO.getShipmentTermAtOrigin() != null && !transportDocumentTO.getShipmentTermAtOrigin().equals(booking.getShipmentTermAtOrigin())) {
+                        return Mono.error(new CreateException("It is not possible to change ShipmentTermAtOrigin when creating a new TransportDocument. Please change this via booking"));
+                    } else {
+                        transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
+                    }
+                    if (transportDocumentTO.getShipmentTermAtDestination() != null && !transportDocumentTO.getShipmentTermAtDestination().equals(booking.getShipmentTermAtDestination())) {
+                        return Mono.error(new CreateException("It is not possible to change ShipmentTermAtDestination when creating a new TransportDocument. Please change this via booking"));
+                    } else {
+                        transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
+                    }
+                    if (transportDocumentTO.getServiceContract() != null && !transportDocumentTO.getServiceContract().equals(booking.getServiceContract())) {
+                        return Mono.error(new CreateException("It is not possible to change ServiceContract when creating a new TransportDocument. Please change this via booking"));
+                    } else {
+                        transportDocumentTO.setServiceContract(booking.getServiceContract());
+                    }
+                    return Mono.just(booking);
+                });
+    }
+
+    private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {
         List<ChargeTO> chargeTOs = transportDocumentTO.getCharges();
         if (chargeTOs == null || chargeTOs.isEmpty()) {
             // In case a new TransportDocument is created it is intentional to send an empty
@@ -113,19 +127,23 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
             transportDocumentTO.setCharges(Collections.emptyList());
             return Flux.empty();
         } else {
-            return Flux.fromIterable(chargeTOs)
-                    .map(chargeTO -> {
-                        // Insert TransportDocumentID on all Charges
-                        chargeTO.setTransportDocumentID(transportDocumentTO.getId());
-                        // Create a Charge object for all ChargeTOs
-                        return MappingUtil.instanceFrom(
-                                chargeTO,
-                                Charge::new,
-                                AbstractCharge.class
-                        );
-                    })
-                    .buffer(Util.SQL_LIST_BUFFER_SIZE)
-                    .concatMap(chargeService::createAll);
+            if (!isChargesDisplayed) {
+                return Flux.error(new CreateException("isDisplayCharges is set to false on ShippingInstruction - it is not possible to create new Charges as they will not be part of the TransportDocument"));
+            } else {
+                return Flux.fromIterable(chargeTOs)
+                        .map(chargeTO -> {
+                            // Insert TransportDocumentID on all Charges
+                            chargeTO.setTransportDocumentID(transportDocumentTO.getId());
+                            // Create a Charge object for all ChargeTOs
+                            return MappingUtil.instanceFrom(
+                                    chargeTO,
+                                    Charge::new,
+                                    AbstractCharge.class
+                            );
+                        })
+                        .buffer(Util.SQL_LIST_BUFFER_SIZE)
+                        .concatMap(chargeService::createAll);
+            }
         }
     }
 
@@ -149,7 +167,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 
     @Transactional
     @Override
-    public Mono<TransportDocumentTO> findById(UUID transportDocumentID, boolean includeCharges) {
+    public Mono<TransportDocumentTO> findById(UUID transportDocumentID) {
         TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
 
         return Flux.concat(
@@ -173,26 +191,11 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                 if (carrierBookingReference == null) {
                                                                     return Mono.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getId() + " - internal error!"));
                                                                 } else {
-//                                                                    return Flux.concat(
-                                                                            return getBooking(carrierBookingReference, shippingInstructionTO.getId())
-                                                                                    .flatMap(booking -> {
-                                                                                        transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
-                                                                                        transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
-                                                                                        transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
-                                                                                        transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
-                                                                                        transportDocumentTO.setServiceContract(booking.getServiceContract());
-                                                                                        return Mono.just(booking);
-                                                                                    })
-//                                                                            ,shipmentService.findByCarrierBookingReference(carrierBookingReference)
-//                                                                                    .next()
-//                                                                                    .flatMap(shipment -> {
-//                                                                                        shipmentTransportService.findByShipmentIDOrderBySequenceNumber(shipment.getId())
-//                                                                                                .next()
-//                                                                                                .flatMap(shipmentTransport -> xxx)
-//                                                                                    })
-//                                                                    )
-//                                                                    .count()
-                                                                    .then();
+                                                                    return Flux.concat(
+                                                                            updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO),
+                                                                            updateTransportDocumentWithCharges(transportDocumentTO, shippingInstructionTO.getIsChargesDisplayed()),
+                                                                            updateTransportDocumentWithTransportPlan(transportDocumentTO)
+                                                                    ).then();
                                                                 }
                                                             }
                                                     )
@@ -204,17 +207,37 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                     ).then();
                                 }
                     }),
-                includeCharges ?
-                    chargeService.findAllByTransportDocumentID(transportDocumentID)
-                            .map(charge -> MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class))
-                            .collectList()
-                            .doOnNext(transportDocumentTO::setCharges)
-                    : Flux.empty(),
                 clauseService.findAllByTransportDocumentID(transportDocumentID)
                         .map(clause -> MappingUtil.instanceFrom(clause, ClauseTO::new, AbstractClause.class))
                         .collectList()
                         .doOnNext(transportDocumentTO::setClauses)
         ).then(Mono.just(transportDocumentTO));
+    }
+
+    private Flux<ChargeTO> updateTransportDocumentWithCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {
+        if (isChargesDisplayed) {
+            return chargeService.findAllByTransportDocumentID(transportDocumentTO.getId())
+                    .map(charge -> MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class))
+                    .collectList()
+                    .doOnNext(transportDocumentTO::setCharges)
+                    .thenMany(Flux::just);
+        } else {
+            return Flux.empty();
+        }
+    }
+
+    private Mono<Void> updateTransportDocumentWithTransportPlan(TransportDocumentTO transportDocumentTO) {
+//                                                                    return Flux.concat(
+//                                                                            ,shipmentService.findByCarrierBookingReference(carrierBookingReference)
+//                                                                                    .next()
+//                                                                                    .flatMap(shipment -> {
+//                                                                                        shipmentTransportService.findByShipmentIDOrderBySequenceNumber(shipment.getId())
+//                                                                                                .next()
+//                                                                                                .flatMap(shipmentTransport -> xxx)
+//                                                                                    })
+//                                                                    )
+//                                                                    .count()
+//                                                                    .then();
     }
 
     @Override
