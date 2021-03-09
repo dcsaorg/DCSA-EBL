@@ -1,5 +1,7 @@
 package org.dcsa.ebl.model.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dcsa.core.model.AuditBase;
@@ -14,6 +16,7 @@ import java.util.UUID;
 public class AbstractShipmentLocation extends AuditBase {
 
     @Column("location_id")
+    @JsonIgnore
     private UUID locationID;
 
     @Column("location_type")

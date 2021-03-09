@@ -4,19 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.Booking;
-import org.dcsa.ebl.model.Charge;
-import org.dcsa.ebl.model.Clause;
-import org.dcsa.ebl.model.TransportDocument;
+import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractClause;
+import org.dcsa.ebl.model.base.AbstractShipmentLocation;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.transferobjects.ChargeTO;
 import org.dcsa.ebl.model.transferobjects.ClauseTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.repository.BookingRepository;
-import org.dcsa.ebl.repository.LocationRepository;
 import org.dcsa.ebl.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +32,9 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final ChargeService chargeService;
     private final ClauseService clauseService;
     private final LocationService locationService;
-    private final LocationRepository locationRepository;
+    private final AddressService addressService;
     private final BookingRepository bookingRepository;
-    private final ShipmentService shipmentService;
+    private final ShipmentLocationService shipmentLocationService;
     private final ShipmentTransportService shipmentTransportService;
 
     @Transactional
@@ -65,7 +62,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                 return Flux.concat(
                                                         updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO),
                                                         createCharges(transportDocumentTO, shippingInstructionTO.getIsChargesDisplayed()),
-                                                        updateTransportDocumentWithTransportPlan(transportDocumentTO)
+                                                        updateTransportDocumentWithTransportPlan(carrierBookingReference, transportDocumentTO)
                                                 ).then();
                                             }
                                         })
@@ -194,7 +191,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                     return Flux.concat(
                                                                             updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO),
                                                                             updateTransportDocumentWithCharges(transportDocumentTO, shippingInstructionTO.getIsChargesDisplayed()),
-                                                                            updateTransportDocumentWithTransportPlan(transportDocumentTO)
+                                                                            updateTransportDocumentWithTransportPlan(carrierBookingReference, transportDocumentTO)
                                                                     ).then();
                                                                 }
                                                             }
@@ -226,18 +223,37 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         }
     }
 
-    private Mono<Void> updateTransportDocumentWithTransportPlan(TransportDocumentTO transportDocumentTO) {
-//                                                                    return Flux.concat(
-//                                                                            ,shipmentService.findByCarrierBookingReference(carrierBookingReference)
-//                                                                                    .next()
-//                                                                                    .flatMap(shipment -> {
-//                                                                                        shipmentTransportService.findByShipmentIDOrderBySequenceNumber(shipment.getId())
-//                                                                                                .next()
-//                                                                                                .flatMap(shipmentTransport -> xxx)
-//                                                                                    })
-//                                                                    )
-//                                                                    .count()
-//                                                                    .then();
+    private Mono<Void> updateTransportDocumentWithTransportPlan(String carrierBookingReference, TransportDocumentTO transportDocumentTO) {
+        TransportPlan transportPlan = new TransportPlan();
+        transportDocumentTO.setTransportPlan(transportPlan);
+        return Flux.concat(
+                // Update ShipmentLocations on TransportPlan
+                shipmentLocationService.findAllByCarrierBookingReference(carrierBookingReference)
+                        .concatMap(shipmentLocation -> {
+                            ShipmentLocationTO shipmentLocationTO = MappingUtil.instanceFrom(shipmentLocation, ShipmentLocationTO::new, AbstractShipmentLocation.class);
+                            return locationService.findById(shipmentLocationTO.getLocationID())
+                                    .flatMap(location -> {
+                                        if (location.getAddressID() != null) {
+                                            return addressService.findById(location.getAddressID())
+                                                    .map(location::toLocationTO);
+                                        }
+                                        return Mono.just(location.toLocationTO(null));
+                                    })
+                                    .thenReturn(shipmentLocationTO);
+                        })
+                        .collectList()
+                        .doOnNext(transportPlan::setShipmentLocations)
+
+                // Update Transports on TransportPlan
+//                ,shipmentService.findByCarrierBookingReference(carrierBookingReference)
+//                        .next()
+//                        .flatMap(shipment -> {
+//                            shipmentTransportService.findByShipmentIDOrderBySequenceNumber(shipment.getId())
+//                                    .next()
+//                                    .flatMap(shipmentTransport -> xxx)
+//                        })
+        )
+        .then();
     }
 
     @Override
