@@ -2,7 +2,6 @@ package org.dcsa.ebl;
 
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.model.transferobjects.EquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
 import reactor.core.publisher.Mono;

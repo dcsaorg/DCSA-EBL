@@ -12,12 +12,4 @@ public abstract class AbstractShipmentEquipment {
 
     @Column("cargo_gross_weight_unit")
     private WeightUnit cargoGrossWeightUnit;
-
-    public void setCargoGrossWeightUnit(String cargoGrossWeightUnit) {
-        this.cargoGrossWeightUnit = WeightUnit.valueOf(cargoGrossWeightUnit);
-    }
-
-    public void setCargoGrossWeightUnit(WeightUnit cargoGrossWeightUnit) {
-        this.cargoGrossWeightUnit = cargoGrossWeightUnit;
-    }
 }

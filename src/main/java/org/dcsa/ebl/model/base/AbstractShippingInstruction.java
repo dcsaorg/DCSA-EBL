@@ -40,14 +40,6 @@ public abstract class AbstractShippingInstruction extends AuditBase implements G
     @NotNull
     private TransportDocumentTypeCode transportDocumentType;
 
-    public void setTransportDocumentType(String transportDocumentType) {
-        this.transportDocumentType = TransportDocumentTypeCode.valueOf(Objects.requireNonNull(transportDocumentType));
-    }
-
-    public void setTransportDocumentType(TransportDocumentTypeCode transportDocumentType) {
-        this.transportDocumentType = Objects.requireNonNull(transportDocumentType);
-    }
-
     @Column("is_charges_displayed")
     private Boolean isChargesDisplayed;
 }
