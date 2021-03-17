@@ -38,24 +38,8 @@ public abstract class AbstractCargoItem extends AuditBase {
     @Column("weight_unit")
     private WeightUnit weightUnit;
 
-    public void setWeightUnit(String weightUnit) {
-        this.weightUnit = WeightUnit.valueOf(weightUnit);
-    }
-
-    public void setWeightUnit(WeightUnit weightUnit) {
-        this.weightUnit = weightUnit;
-    }
-
     @Column("volume_unit")
     private VolumeUnit volumeUnit;
-
-    public void setVolumeUnit(String volumeUnit) {
-        this.volumeUnit = VolumeUnit.valueOf(volumeUnit);
-    }
-
-    public void setVolumeUnit(VolumeUnit volumeUnit) {
-        this.volumeUnit = volumeUnit;
-    }
 
     @Column("package_code")
     @Size(max = 3)

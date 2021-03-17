@@ -18,14 +18,6 @@ public class AbstractDocumentParty extends AuditBase {
     @NotNull
     private PartyFunction partyFunction;
 
-    public void setPartyFunction(String partyFunction) {
-        this.partyFunction = PartyFunction.valueOf(partyFunction);
-    }
-
-    public void setPartyFunction(PartyFunction partyFunction) {
-        this.partyFunction = partyFunction;
-    }
-
     @Column("should_be_notified")
     private Boolean shouldBeNotified;
 }
