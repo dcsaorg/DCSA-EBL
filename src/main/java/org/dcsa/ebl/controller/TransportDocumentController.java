@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
@@ -43,7 +44,7 @@ public class TransportDocumentController extends AbstractTOController<TransportD
 
     @GetMapping
     public Flux<TransportDocument> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        ExtendedRequest<TransportDocument> extendedRequest = new ExtendedRequest<>(extendedParameters,
+        ExtendedRequest<TransportDocument> extendedRequest = new TransportDocumentExtendedRequest<>(extendedParameters,
                 TransportDocument.class);
 
         try {

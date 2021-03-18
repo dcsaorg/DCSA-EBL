@@ -20,8 +20,4 @@ public class ShippingInstructionServiceImpl extends ExtendedBaseServiceImpl<Ship
         return shippingInstructionRepository;
     }
 
-    @Override
-    public Class<ShippingInstruction> getModelClass() {
-        return ShippingInstruction.class;
-    }
 }

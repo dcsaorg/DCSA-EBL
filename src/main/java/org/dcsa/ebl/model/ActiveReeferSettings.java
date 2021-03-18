@@ -33,14 +33,6 @@ public class ActiveReeferSettings extends AuditBase implements GetId<UUID> {
     @Column("temperature_unit")
     @Size(max = 3)
     private TemperatureUnit temperatureUnit;
-
-    public void setTemperatureUnit(@NotNull String temperatureUnit) {
-        this.temperatureUnit = TemperatureUnit.valueOf(temperatureUnit);
-    }
-
-    public void setTemperatureUnit(@NotNull TemperatureUnit temperatureUnit) {
-        this.temperatureUnit = temperatureUnit;
-    }
     
     @Column("humidity_min")
     private Float humidityMin;

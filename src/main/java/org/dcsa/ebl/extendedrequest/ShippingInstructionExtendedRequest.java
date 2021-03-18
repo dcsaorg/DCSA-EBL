@@ -1,17 +1,16 @@
 package org.dcsa.ebl.extendedrequest;
 
-import org.dcsa.core.extendedrequest.ExtendedParameters;
-import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.core.extendedrequest.FilterItem;
-import org.dcsa.core.extendedrequest.Join;
+import org.dcsa.core.extendedrequest.*;
+import org.dcsa.core.query.DBEntityAnalysis;
+import org.dcsa.ebl.model.CargoItem;
 import org.dcsa.ebl.model.Shipment;
+import org.dcsa.ebl.model.ShipmentEquipment;
 import org.dcsa.ebl.model.ShippingInstruction;
+import org.springframework.data.relational.core.sql.Join;
 
 public class ShippingInstructionExtendedRequest<T extends ShippingInstruction> extends ExtendedRequest<T> {
 
     private static final String CARRIER_BOOKING_REFERENCE_PARAMETER = "carrierBookingReference";
-
-    private boolean alreadyJoined = false;
 
     public ShippingInstructionExtendedRequest(ExtendedParameters extendedParameters, Class<T> modelClass) {
         super(extendedParameters, modelClass);
@@ -19,25 +18,23 @@ public class ShippingInstructionExtendedRequest<T extends ShippingInstruction> e
     }
 
     @Override
-    public void resetParameters() {
-        super.resetParameters();
-        alreadyJoined = false;
+    protected void markQueryFieldInUse(QueryField fieldInUse) {
+        super.markQueryFieldInUse(fieldInUse);
+        selectDistinct = selectDistinct || fieldInUse.getJsonName().equals(CARRIER_BOOKING_REFERENCE_PARAMETER);
     }
 
-    // TODO: Fix
-//    @Override
-//    protected boolean doJoin(String parameter, String value, boolean fromCursor) {
-//        if (CARRIER_BOOKING_REFERENCE_PARAMETER.equals(parameter)) {
-//            if (!alreadyJoined) {
-//                Join j = this.getJoin();
-//                j.add("cargo_item ON (shipping_instruction.id=cargo_item.shipping_instruction_id)");
-//                j.add("shipment_equipment ON (cargo_item.shipment_equipment_id=shipment_equipment.id)");
-//                j.add("shipment ON (shipment_equipment.shipment_id=shipment.id)");
-//                alreadyJoined = true;
-//            }
-//            filter.addFilterItem(new FilterItem(CARRIER_BOOKING_REFERENCE_PARAMETER, null, Shipment.class, value, true, false, true, false, filter.getNewBindCounter()));
-//            return true;
-//        }
-//        return super.doJoin(parameter, value, fromCursor);
-//    }
+    @Override
+    protected DBEntityAnalysis.DBEntityAnalysisBuilder<T> prepareDBEntityAnalysis() {
+        DBEntityAnalysis.DBEntityAnalysisBuilder<T> builder = super.prepareDBEntityAnalysis();
+        Class<?> primaryModel = builder.getPrimaryModelClass();
+        return builder
+                .join(Join.JoinType.JOIN, primaryModel, CargoItem.class)
+                .onFieldEqualsThen("id", "shippingInstructionID")
+                .chainJoin(ShipmentEquipment.class)
+                .onFieldEqualsThen("shipmentEquipmentID", "id")
+                .chainJoin(Shipment.class)
+                .onFieldEqualsThen("shipmentID", "id")
+                .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER);
+    }
+
 }

@@ -20,7 +20,7 @@ public interface DisplayedAddressRepository extends ExtendedRepository<Displayed
     Mono<Integer> clearShippingInstructionIDWhereShipmentIDIsNotNull(UUID shippingInstructionID);
 
 
-    Mono<Void> deleteByShippingInstructionIDAndShipmentIDIsNotNull(UUID shippingInstructionID);
+    Mono<Void> deleteByShippingInstructionIDAndShipmentIDIsNull(UUID shippingInstructionID);
 
     Flux<DisplayedAddress> findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentIDOrderByAddressLineNumberAsc(
             UUID partyID,

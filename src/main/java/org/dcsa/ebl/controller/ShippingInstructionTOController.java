@@ -3,7 +3,6 @@ package org.dcsa.ebl.controller;
 import com.github.fge.jsonpatch.JsonPatch;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
