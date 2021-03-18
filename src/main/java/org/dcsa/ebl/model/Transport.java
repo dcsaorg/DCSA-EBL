@@ -1,19 +1,20 @@
-package org.dcsa.ebl.model.base;
+package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.DCSATransportType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class AbstractTransport implements GetId<UUID> {
+@Table("transport")
+public class Transport implements GetId<UUID> {
     @Id
     private UUID id;
 
@@ -25,19 +26,16 @@ public class AbstractTransport implements GetId<UUID> {
     @Size(max = 100)
     private String transportName;
 
-    @Column("transport_name")
+    @Column("mode_of_transport")
     private DCSATransportType modeOfTransport;
 
-    @Size(max = 11)
-    private String longitude;
+    @Column("load_transport_call_id")
+    private UUID loadTransportCall;
 
-    @JsonProperty("UNLocationCode")
-    @Column("un_location_code")
-    @Size(max = 5)
-    private String unLocationCode;
+    @Column("discharge_transport_call_id")
+    private UUID dischargeTransportCall;
 
-    mode_of_transport varchar(3) NULL,
-    load_transport_call_id uuid NOT NULL,
-    discharge_transport_call_id uuid NOT NULL,
-    vessel varchar(7) NULL
+    @Column("vessel")
+    @Size(max = 7)
+    private String vesselIMONumber;
 }

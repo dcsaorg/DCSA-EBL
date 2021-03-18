@@ -1,4 +1,4 @@
-package org.dcsa.ebl.model;
+package org.dcsa.ebl.model.transferobjects;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

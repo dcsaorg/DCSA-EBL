@@ -2,6 +2,8 @@ package org.dcsa.ebl.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dcsa.ebl.model.transferobjects.ShipmentLocationTO;
+import org.dcsa.ebl.model.transferobjects.TransportTO;
 
 import java.util.List;
 
@@ -9,5 +11,5 @@ import java.util.List;
 @EqualsAndHashCode
 public class TransportPlan {
     private List<ShipmentLocationTO> shipmentLocations;
-    private List<Transport> transports;
+    private List<TransportTO> transports;
 }

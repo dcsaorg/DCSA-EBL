@@ -13,4 +13,6 @@ public interface LocationService extends ExtendedBaseService<Location, UUID> {
     Mono<LocationTO> ensureResolvable(LocationTO locationTO);
 
     Mono<LocationTO> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID);
+
+    Mono<LocationTO> findTOById(UUID locationID);
 }

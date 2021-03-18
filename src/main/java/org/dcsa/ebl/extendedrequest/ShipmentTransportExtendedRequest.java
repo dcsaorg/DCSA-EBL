@@ -2,10 +2,10 @@ package org.dcsa.ebl.extendedrequest;
 
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.ebl.model.ShipmentTransport;
+import org.dcsa.ebl.model.combined.ExtendedShipmentTransport;
 
-public class ShipmentLocationExtendedRequest<T extends ShipmentTransport> extends ExtendedRequest<T> {
-    public ShipmentLocationExtendedRequest(ExtendedParameters extendedParameters, Class<T> modelClass) {
+public class ShipmentTransportExtendedRequest extends ExtendedRequest<ExtendedShipmentTransport> {
+    public ShipmentTransportExtendedRequest(ExtendedParameters extendedParameters, Class<ExtendedShipmentTransport> modelClass) {
         super(extendedParameters, modelClass);
     }
 }

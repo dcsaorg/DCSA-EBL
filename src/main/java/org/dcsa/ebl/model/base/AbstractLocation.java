@@ -17,6 +17,7 @@ public class AbstractLocation implements GetId<UUID> {
     @JsonProperty("locationID")
     private UUID id;
 
+    @Column("location_name")
     @Size(max = 100)
     private String locationName;
 
