@@ -18,10 +18,4 @@ public class PartyContactDetailsServiceImpl extends ExtendedBaseServiceImpl<Part
     public PartyContactDetailsRepository getRepository() {
         return partyContactDetailsRepository;
     }
-
-    @Override
-    public Class<PartyContactDetails> getModelClass() {
-        return PartyContactDetails.class;
-    }
-
 }

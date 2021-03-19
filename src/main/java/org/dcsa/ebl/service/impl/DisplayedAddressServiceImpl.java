@@ -27,11 +27,6 @@ public class DisplayedAddressServiceImpl extends ExtendedBaseServiceImpl<Display
         return displayedAddressRepository;
     }
 
-    @Override
-    public Class<DisplayedAddress> getModelClass() {
-        return DisplayedAddress.class;
-    }
-
     public Mono<List<String>> loadDisplayedAddress(DocumentParty documentParty) {
         return displayedAddressRepository.findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentIDOrderByAddressLineNumberAsc(
                 documentParty.getPartyID(),

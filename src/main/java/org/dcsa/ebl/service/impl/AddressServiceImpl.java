@@ -22,11 +22,6 @@ public class AddressServiceImpl extends ExtendedBaseServiceImpl<AddressRepositor
     }
 
     @Override
-    public Class<Address> getModelClass() {
-        return Address.class;
-    }
-
-    @Override
     public Mono<Address> ensureResolvable(Address address) {
         return Util.resolveModelReference(
                 address,

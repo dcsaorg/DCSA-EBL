@@ -22,11 +22,6 @@ public class ShipmentServiceImpl extends ExtendedBaseServiceImpl<ShipmentReposit
     }
 
     @Override
-    public Class<Shipment> getModelClass() {
-        return Shipment.class;
-    }
-
-    @Override
     public Flux<Shipment> findByCarrierBookingReferenceIn(List<String> carrierBookingReference) {
         return shipmentRepository.findByCarrierBookingReferenceIn(carrierBookingReference);
     }

@@ -37,4 +37,7 @@ public class ShipmentTransport extends AuditBase implements GetId<UUID> {
 
     @Column("commercial_voyage_id")
     private UUID commercialVoyageID;
+
+    @Column("is_under_shippers_responsibility")
+    private Boolean isUnderShippersResponsibility;
 }

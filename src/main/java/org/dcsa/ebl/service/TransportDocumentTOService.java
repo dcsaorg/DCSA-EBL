@@ -10,6 +10,6 @@ import java.util.UUID;
 
 public interface TransportDocumentTOService {
     Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO);
-    Mono<TransportDocumentTO> findById(UUID uuid, boolean includeCharges);
+    Mono<TransportDocumentTO> findById(UUID uuid);
     Flux<TransportDocument> findAllExtended(final ExtendedRequest<TransportDocument> extendedRequest);
 }

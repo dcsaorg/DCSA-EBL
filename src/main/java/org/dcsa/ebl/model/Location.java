@@ -8,6 +8,7 @@ import org.dcsa.ebl.model.base.AbstractLocation;
 import org.dcsa.ebl.model.transferobjects.LocationTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
 import org.dcsa.ebl.model.utils.MappingUtil;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Objects;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class Location extends AbstractLocation implements SetId<UUID> {
 
+    @Column("address_id")
     private UUID addressID;
 
     public LocationTO toLocationTO(Address address) {

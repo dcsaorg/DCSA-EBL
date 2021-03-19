@@ -26,11 +26,6 @@ public class PartyServiceImpl extends ExtendedBaseServiceImpl<PartyRepository, P
         return partyRepository;
     }
 
-    @Override
-    public Class<Party> getModelClass() {
-        return Party.class;
-    }
-
     public Flux<Party> findAllById(Iterable<UUID> ids) {
         return partyRepository.findAllById(ids);
     }

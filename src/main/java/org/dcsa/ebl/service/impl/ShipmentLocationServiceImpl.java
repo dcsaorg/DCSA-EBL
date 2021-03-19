@@ -6,6 +6,7 @@ import org.dcsa.ebl.model.ShipmentLocation;
 import org.dcsa.ebl.repository.ShipmentLocationRepository;
 import org.dcsa.ebl.service.ShipmentLocationService;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -21,12 +22,6 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     }
 
     @Override
-    public Class<ShipmentLocation> getModelClass() {
-        return ShipmentLocation.class;
-    }
-
-
-    @Override
     public Mono<ShipmentLocation> findById(UUID id) {
         return Mono.error(new UnsupportedOperationException("findById not supported"));
     }
@@ -34,5 +29,10 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     @Override
     public Mono<ShipmentLocation> update(ShipmentLocation update) {
         return Mono.error(new UnsupportedOperationException("update not supported"));
+    }
+
+    @Override
+    public Flux<ShipmentLocation> findAllByCarrierBookingReference(String carrierBookingReference) {
+        return shipmentLocationRepository.findAllByCarrierBookingReference(carrierBookingReference);
     }
 }

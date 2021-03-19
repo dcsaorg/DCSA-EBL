@@ -20,4 +20,7 @@ public class ShipmentLocation extends AbstractShipmentLocation implements GetId<
 
     @Column("shipment_id")
     private UUID shipmentID;
+
+    @Column("location_id")
+    private UUID locationID;
 }

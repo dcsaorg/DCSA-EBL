@@ -25,21 +25,9 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
         return locationRepository;
     }
 
-    @Override
-    public Class<Location> getModelClass() {
-        return Location.class;
-    }
-
     public Mono<LocationTO> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID) {
-
         return locationRepository.findPaymentLocationByShippingInstructionID(shippingInstructionID)
-                .flatMap(location -> {
-                    if (location.getAddressID() != null) {
-                        return addressService.findById(location.getAddressID())
-                                .map(location::toLocationTO);
-                    }
-                    return Mono.just(location.toLocationTO(null));
-                });
+                .flatMap(this::getLocationTO);
     }
 
     @Override
@@ -61,5 +49,19 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
                 locTO -> this.create(locTO.toLocation()),
                 "Location"
         )).map(location -> location.toLocationTO(locationTO.getAddress()));
+    }
+
+    @Override
+    public Mono<LocationTO> findTOById(UUID locationID) {
+        return findById(locationID)
+                .flatMap(this::getLocationTO);
+    }
+
+    private Mono<LocationTO> getLocationTO(Location location) {
+        if (location.getAddressID() != null) {
+            return addressService.findById(location.getAddressID())
+                    .map(location::toLocationTO);
+        }
+        return Mono.just(location.toLocationTO(null));
     }
 }

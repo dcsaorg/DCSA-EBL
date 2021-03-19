@@ -27,11 +27,6 @@ public class CargoItemServiceImpl extends ExtendedBaseServiceImpl<CargoItemRepos
     }
 
     @Override
-    public Class<CargoItem> getModelClass() {
-        return CargoItem.class;
-    }
-
-    @Override
     public Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID) {
         return cargoItemRepository.findAllByShippingInstructionID(shippingInstructionID);
     }

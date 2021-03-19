@@ -20,11 +20,6 @@ public class ReferenceServiceImpl extends ExtendedBaseServiceImpl<ReferenceRepos
         return referenceRepository;
     }
 
-    @Override
-    public Class<Reference> getModelClass() {
-        return Reference.class;
-    }
-
     public Flux<Reference> findAllByShippingInstructionID(UUID shippingInstructionID) {
         return referenceRepository.findAllByShippingInstructionID(shippingInstructionID);
     }

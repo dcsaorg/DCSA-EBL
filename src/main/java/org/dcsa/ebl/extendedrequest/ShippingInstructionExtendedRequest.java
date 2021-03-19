@@ -14,6 +14,7 @@ public class ShippingInstructionExtendedRequest<T extends ShippingInstruction> e
 
     public ShippingInstructionExtendedRequest(ExtendedParameters extendedParameters, Class<T> modelClass) {
         super(extendedParameters, modelClass);
+        setSelectDistinct(true);
     }
 
     @Override

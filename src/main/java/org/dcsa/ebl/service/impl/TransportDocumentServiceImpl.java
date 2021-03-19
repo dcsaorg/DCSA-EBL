@@ -19,9 +19,4 @@ public class TransportDocumentServiceImpl extends ExtendedBaseServiceImpl<Transp
     public TransportDocumentRepository getRepository() {
         return transportDocumentRepository;
     }
-
-    @Override
-    public Class<TransportDocument> getModelClass() {
-        return TransportDocument.class;
-    }
 }

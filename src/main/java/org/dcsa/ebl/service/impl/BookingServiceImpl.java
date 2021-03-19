@@ -16,9 +16,4 @@ public class BookingServiceImpl extends ExtendedBaseServiceImpl<BookingRepositor
     public BookingRepository getRepository() {
         return bookingRepository;
     }
-
-    @Override
-    public Class<Booking> getModelClass() {
-        return Booking.class;
-    }
 }

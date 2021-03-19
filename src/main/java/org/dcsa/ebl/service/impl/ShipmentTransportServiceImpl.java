@@ -21,11 +21,6 @@ public class ShipmentTransportServiceImpl extends ExtendedBaseServiceImpl<Shipme
     }
 
     @Override
-    public Class<ShipmentTransport> getModelClass() {
-        return ShipmentTransport.class;
-    }
-
-    @Override
     public Flux<ShipmentTransport> findByShipmentIDOrderBySequenceNumber(UUID shipmentID) {
         return shipmentTransportRepository.findByShipmentIDOrderBySequenceNumber(shipmentID);
     }
