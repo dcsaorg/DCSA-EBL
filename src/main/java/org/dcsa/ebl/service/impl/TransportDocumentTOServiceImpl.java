@@ -18,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -88,27 +85,27 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         return getBooking(carrierBookingReference, transportDocumentTO.getShippingInstructionID())
                 .flatMap(booking -> {
                     if (!Objects.equals(transportDocumentTO.getServiceTypeAtOrigin(), booking.getServiceTypeAtOrigin())) {
-                        return getBookingError("ServiceTypeAtOrigin");
+                        return getBookingError("ServiceTypeAtOrigin", Objects.toString(booking.getServiceTypeAtOrigin()), Objects.toString(transportDocumentTO.getServiceTypeAtOrigin()));
                     } else {
                         transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
                     }
                     if (!Objects.equals(transportDocumentTO.getServiceTypeAtDestination(), booking.getServiceTypeAtDestination())) {
-                        return getBookingError("ServiceTypeAtDestination");
+                        return getBookingError("ServiceTypeAtDestination", Objects.toString(booking.getServiceTypeAtDestination()), Objects.toString(transportDocumentTO.getServiceTypeAtDestination()));
                     } else {
                         transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
                     }
                     if (!Objects.equals(transportDocumentTO.getShipmentTermAtOrigin(), booking.getShipmentTermAtOrigin())) {
-                        return getBookingError("ShipmentTermAtOrigin");
+                        return getBookingError("ShipmentTermAtOrigin", Objects.toString(booking.getShipmentTermAtOrigin()), Objects.toString(transportDocumentTO.getShipmentTermAtOrigin()));
                     } else {
                         transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
                     }
                     if (!Objects.equals(transportDocumentTO.getShipmentTermAtDestination(), booking.getShipmentTermAtDestination())) {
-                        return getBookingError("ShipmentTermAtDestination");
+                        return getBookingError("ShipmentTermAtDestination", Objects.toString(booking.getShipmentTermAtDestination()), Objects.toString(transportDocumentTO.getShipmentTermAtDestination()));
                     } else {
                         transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
                     }
                     if (!Objects.equals(transportDocumentTO.getServiceContract(), booking.getServiceContract())) {
-                        return getBookingError("ServiceContract");
+                        return getBookingError("ServiceContract", booking.getServiceContract(), transportDocumentTO.getServiceContract());
                     } else {
                         transportDocumentTO.setServiceContract(booking.getServiceContract());
                     }
@@ -116,8 +113,8 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                 });
     }
 
-    private <T> Mono<T> getBookingError(String fieldName) {
-        return Mono.error(new CreateException("It is not possible to change " + fieldName + " when creating a new TransportDocument. Please change this via booking"));
+    private <T> Mono<T> getBookingError(String fieldName, String fromValue, String toValue) {
+        return Mono.error(new CreateException("It is not possible to change " + fieldName + " from " + fromValue + " to " + toValue + " when creating a new TransportDocument. Please change this via booking"));
     }
 
     private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {
