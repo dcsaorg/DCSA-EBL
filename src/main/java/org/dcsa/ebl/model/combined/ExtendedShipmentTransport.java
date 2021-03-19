@@ -40,8 +40,6 @@ import java.util.UUID;
 
 public class ExtendedShipmentTransport extends ShipmentTransport {
 
-//    private String carrierVoyageNumber;
-
     // Load Transport
 
     @ModelClass(value = Transport.class, fieldName = "vesselIMONumber")
@@ -49,6 +47,11 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
 
     @ModelClass(value = ModeOfTransport.class, fieldName = "modeOfTransportType")
     private DCSATransportType modeOfTransport;
+
+    // Load TransportCall ID
+    @ModelClass(value = TransportCall.class, fieldName = "id")
+    @ViaJoinAlias("ltc")
+    private UUID loadTransportCallId;
 
     // Load Location
 
@@ -113,6 +116,11 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
     @ModelClass(value = Address.class, fieldName = "country")
     @ViaJoinAlias("la")
     private String loadAddressCountry;
+
+    // Discharge TransportCall ID
+    @ModelClass(value = TransportCall.class, fieldName = "id")
+    @ViaJoinAlias("dtc")
+    private UUID dischargeTransportCallId;
 
     // Discharge Location
 

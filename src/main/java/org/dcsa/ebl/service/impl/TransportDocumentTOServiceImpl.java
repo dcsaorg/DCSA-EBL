@@ -34,6 +34,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
     private final ShipmentLocationService shipmentLocationService;
     private final ExtendedShipmentTransportService extendedShipmentTransportService;
     private final ShipmentService shipmentService;
+    private final VoyageService voyageService;
 
     @Transactional
     @Override
@@ -249,7 +250,14 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                         transportTO.setVesselIMONumber(shipmentTransportExtended.getVesselIMONumber());
                                         transportTO.setCarrierVoyageNumber(null);
                                         transportTO.setUnderShippersResponsibility(shipmentTransportExtended.getIsUnderShippersResponsibility());
-                                        return Mono.just(transportTO);
+
+                                        // Find carrierVoyageNumber
+                                        return voyageService.findFirstByTransportCallOrderByCarrierVoyageNumberDesc(shipmentTransportExtended.getLoadTransportCallId())
+                                                .map(voyage -> {
+                                                    transportTO.setCarrierVoyageNumber(voyage.getCarrierVoyageNumber());
+                                                    return transportTO;
+                                                })
+                                                .switchIfEmpty(Mono.just(transportTO));
                                     })
                         )
                         .collectList()
