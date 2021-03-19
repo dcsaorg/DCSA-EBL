@@ -25,11 +25,6 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
         return locationRepository;
     }
 
-    @Override
-    public Class<Location> getModelClass() {
-        return Location.class;
-    }
-
     public Mono<LocationTO> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID) {
         return locationRepository.findPaymentLocationByShippingInstructionID(shippingInstructionID)
                 .flatMap(this::getLocationTO);

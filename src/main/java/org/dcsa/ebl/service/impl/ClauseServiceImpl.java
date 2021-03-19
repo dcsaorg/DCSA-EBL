@@ -24,11 +24,6 @@ public class ClauseServiceImpl extends ExtendedBaseServiceImpl<ClauseRepository,
     }
 
     @Override
-    public Class<Clause> getModelClass() {
-        return Clause.class;
-    }
-
-    @Override
     public Flux<Clause> createAll(List<Clause> Clauses) {
         return Flux.fromIterable(Clauses)
                 .concatMap(this::preCreateHook)

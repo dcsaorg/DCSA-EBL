@@ -21,11 +21,6 @@ public class SealServiceImpl extends ExtendedBaseServiceImpl<SealRepository, Sea
     }
 
     @Override
-    public Class<Seal> getModelClass() {
-        return Seal.class;
-    }
-
-    @Override
     public Flux<Seal> findAllByShipmentEquipmentID(UUID shipmentEquipmentID) {
         return sealRepository.findAllByShipmentEquipmentID(shipmentEquipmentID);
     }

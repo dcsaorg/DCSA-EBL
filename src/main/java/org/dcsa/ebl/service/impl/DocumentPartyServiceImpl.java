@@ -34,11 +34,6 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     }
 
     @Override
-    public Class<DocumentParty> getModelClass() {
-        return DocumentParty.class;
-    }
-
-    @Override
     public Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID) {
         return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }

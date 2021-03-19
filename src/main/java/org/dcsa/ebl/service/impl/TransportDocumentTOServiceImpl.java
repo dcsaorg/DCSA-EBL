@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -86,33 +87,37 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         // Check if TransportDocument differs from values in Booking
         return getBooking(carrierBookingReference, transportDocumentTO.getShippingInstructionID())
                 .flatMap(booking -> {
-                    if (transportDocumentTO.getServiceTypeAtOrigin() != null && !transportDocumentTO.getServiceTypeAtOrigin().equals(booking.getServiceTypeAtOrigin())) {
-                        return Mono.error(new CreateException("It is not possible to change ServiceTypeAtOrigin when creating a new TransportDocument. Please change this via booking"));
+                    if (!Objects.equals(transportDocumentTO.getServiceTypeAtOrigin(), booking.getServiceTypeAtOrigin())) {
+                        return getBookingError("ServiceTypeAtOrigin");
                     } else {
                         transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
                     }
-                    if (transportDocumentTO.getServiceTypeAtDestination() != null && !transportDocumentTO.getServiceTypeAtDestination().equals(booking.getServiceTypeAtDestination())) {
-                        return Mono.error(new CreateException("It is not possible to change ServiceTypeAtDestination when creating a new TransportDocument. Please change this via booking"));
+                    if (!Objects.equals(transportDocumentTO.getServiceTypeAtDestination(), booking.getServiceTypeAtDestination())) {
+                        return getBookingError("ServiceTypeAtDestination");
                     } else {
                         transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
                     }
-                    if (transportDocumentTO.getShipmentTermAtOrigin() != null && !transportDocumentTO.getShipmentTermAtOrigin().equals(booking.getShipmentTermAtOrigin())) {
-                        return Mono.error(new CreateException("It is not possible to change ShipmentTermAtOrigin when creating a new TransportDocument. Please change this via booking"));
+                    if (!Objects.equals(transportDocumentTO.getShipmentTermAtOrigin(), booking.getShipmentTermAtOrigin())) {
+                        return getBookingError("ShipmentTermAtOrigin");
                     } else {
                         transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
                     }
-                    if (transportDocumentTO.getShipmentTermAtDestination() != null && !transportDocumentTO.getShipmentTermAtDestination().equals(booking.getShipmentTermAtDestination())) {
-                        return Mono.error(new CreateException("It is not possible to change ShipmentTermAtDestination when creating a new TransportDocument. Please change this via booking"));
+                    if (!Objects.equals(transportDocumentTO.getShipmentTermAtDestination(), booking.getShipmentTermAtDestination())) {
+                        return getBookingError("ShipmentTermAtDestination");
                     } else {
                         transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
                     }
-                    if (transportDocumentTO.getServiceContract() != null && !transportDocumentTO.getServiceContract().equals(booking.getServiceContract())) {
-                        return Mono.error(new CreateException("It is not possible to change ServiceContract when creating a new TransportDocument. Please change this via booking"));
+                    if (!Objects.equals(transportDocumentTO.getServiceContract(), booking.getServiceContract())) {
+                        return getBookingError("ServiceContract");
                     } else {
                         transportDocumentTO.setServiceContract(booking.getServiceContract());
                     }
                     return Mono.just(booking);
                 });
+    }
+
+    private <T> Mono<T> getBookingError(String fieldName) {
+        return Mono.error(new CreateException("It is not possible to change " + fieldName + " when creating a new TransportDocument. Please change this via booking"));
     }
 
     private Flux<Charge> createCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {
@@ -253,11 +258,8 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 
                                         // Find carrierVoyageNumber
                                         return voyageService.findFirstByTransportCallOrderByCarrierVoyageNumberDesc(shipmentTransportExtended.getLoadTransportCallId())
-                                                .map(voyage -> {
-                                                    transportTO.setCarrierVoyageNumber(voyage.getCarrierVoyageNumber());
-                                                    return transportTO;
-                                                })
-                                                .switchIfEmpty(Mono.just(transportTO));
+                                                .doOnNext(voyage -> transportTO.setCarrierVoyageNumber(voyage.getCarrierVoyageNumber()))
+                                                .thenReturn(transportTO);
                                     })
                         )
                         .collectList()

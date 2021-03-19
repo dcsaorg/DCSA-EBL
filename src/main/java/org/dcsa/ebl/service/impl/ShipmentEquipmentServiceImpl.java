@@ -23,11 +23,6 @@ public class ShipmentEquipmentServiceImpl extends ExtendedBaseServiceImpl<Shipme
     }
 
     @Override
-    public Class<ShipmentEquipment> getModelClass() {
-        return ShipmentEquipment.class;
-    }
-
-    @Override
     public Flux<ShipmentEquipment> findAllByShipmentIDIn(List<UUID> shipmentIDs) {
         return shipmentEquipmentRepository.findAllByShipmentIDIn(shipmentIDs);
     }

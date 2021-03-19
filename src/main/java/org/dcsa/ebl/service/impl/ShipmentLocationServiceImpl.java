@@ -22,12 +22,6 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     }
 
     @Override
-    public Class<ShipmentLocation> getModelClass() {
-        return ShipmentLocation.class;
-    }
-
-
-    @Override
     public Mono<ShipmentLocation> findById(UUID id) {
         return Mono.error(new UnsupportedOperationException("findById not supported"));
     }

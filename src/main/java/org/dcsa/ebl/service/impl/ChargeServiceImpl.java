@@ -23,11 +23,6 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
     }
 
     @Override
-    public Class<Charge> getModelClass() {
-        return Charge.class;
-    }
-
-    @Override
     public Flux<Charge> createAll(List<Charge> charges) {
         return Flux.fromIterable(charges)
                 .concatMap(this::preCreateHook)

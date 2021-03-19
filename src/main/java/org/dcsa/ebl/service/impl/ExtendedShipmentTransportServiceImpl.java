@@ -5,8 +5,8 @@ import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.DeleteException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
+import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.extendedrequest.ShipmentTransportExtendedRequest;
 import org.dcsa.ebl.model.combined.ExtendedShipmentTransport;
 import org.dcsa.ebl.repository.ExtendedShipmentTransportRepository;
 import org.dcsa.ebl.service.ExtendedShipmentTransportService;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -36,7 +35,7 @@ public class ExtendedShipmentTransportServiceImpl extends ExtendedBaseServiceImp
 
     @Override
     public Flux<ExtendedShipmentTransport> findByShipmentIDOrderBySequenceNumber(UUID shipmentID) {
-        ShipmentTransportExtendedRequest shipmentTransportExtendedRequest = new ShipmentTransportExtendedRequest(extendedParameters, ExtendedShipmentTransport.class);
+        ExtendedRequest<ExtendedShipmentTransport> shipmentTransportExtendedRequest = new ExtendedRequest<>(extendedParameters, ExtendedShipmentTransport.class);
         Map<String,String> params = new HashMap<>();
         params.put("shipmentID", shipmentID.toString());
         // Sort by SequenceNumber
@@ -44,11 +43,6 @@ public class ExtendedShipmentTransportServiceImpl extends ExtendedBaseServiceImp
         shipmentTransportExtendedRequest.parseParameter(params);
 
         return getRepository().findAllExtended(shipmentTransportExtendedRequest);
-    }
-
-    @Override
-    public Class<ExtendedShipmentTransport> getModelClass() {
-        return ExtendedShipmentTransport.class;
     }
 
     @Override

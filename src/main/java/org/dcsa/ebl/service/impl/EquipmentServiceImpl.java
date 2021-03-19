@@ -20,15 +20,9 @@ import reactor.core.publisher.Mono;
 public class EquipmentServiceImpl extends ExtendedBaseServiceImpl<EquipmentRepository, Equipment, String> implements EquipmentService {
     private final EquipmentRepository equipmentRepository;
 
-
     @Override
     public EquipmentRepository getRepository() {
         return equipmentRepository;
-    }
-
-    @Override
-    public Class<Equipment> getModelClass() {
-        return Equipment.class;
     }
 
     @Override
