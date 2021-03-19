@@ -28,14 +28,6 @@ public class Reference extends AuditBase implements GetId<UUID> {
 
     private ReferenceTypeCode referenceType;
 
-    public void setReferenceType(String referenceType) {
-        this.referenceType = ReferenceTypeCode.valueOf(referenceType);
-    }
-
-    public void setReferenceType(ReferenceTypeCode referenceType) {
-        this.referenceType = referenceType;
-    }
-
     @Size(max = 100)
     private String referenceValue;
 

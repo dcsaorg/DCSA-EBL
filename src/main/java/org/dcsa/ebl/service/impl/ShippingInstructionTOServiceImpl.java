@@ -101,7 +101,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
 
                         shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
-                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit().name());
+                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit());
 
                         if (cargoItemTOs == null || cargoItemTOs.isEmpty()) {
                             return Mono.error(new IllegalStateException("No CargoItem referenced Equipment with "
