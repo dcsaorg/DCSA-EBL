@@ -9,6 +9,7 @@ import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
 import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
+import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -19,7 +20,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +31,8 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     private final ExtendedParameters extendedParameters;
 
     private final TransportDocumentTOService transportDocumentTOService;
+
+    private final R2dbcDialect r2dbcDialect;
 
     @Override
     public TransportDocumentTOService getService() {
@@ -45,11 +47,10 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     @GetMapping
     public Flux<TransportDocument> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         ExtendedRequest<TransportDocument> extendedRequest = new TransportDocumentExtendedRequest<>(extendedParameters,
-                TransportDocument.class);
+                r2dbcDialect, TransportDocument.class);
 
         try {
-            Map<String, String> params = request.getQueryParams().toSingleValueMap();
-            extendedRequest.parseParameter(params);
+            extendedRequest.parseParameter(request.getQueryParams());
         } catch (GetException e) {
             return Flux.error(e);
         }

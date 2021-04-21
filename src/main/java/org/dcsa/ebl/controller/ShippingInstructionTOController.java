@@ -10,6 +10,7 @@ import org.dcsa.ebl.extendedrequest.ShippingInstructionExtendedRequest;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
+import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -21,7 +22,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +33,8 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     private final ExtendedParameters extendedParameters;
 
     private final ShippingInstructionTOService shippingInstructionTOService;
+
+    private final R2dbcDialect r2dbcDialect;
 
     @Override
     public ShippingInstructionTOService getService() {
@@ -47,11 +49,10 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     @GetMapping
     public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
         ExtendedRequest<ShippingInstruction> extendedRequest = new ShippingInstructionExtendedRequest<>(extendedParameters,
-                ShippingInstruction.class);
+                r2dbcDialect, ShippingInstruction.class);
 
         try {
-            Map<String, String> params = request.getQueryParams().toSingleValueMap();
-            extendedRequest.parseParameter(params);
+            extendedRequest.parseParameter(request.getQueryParams());
         } catch (GetException e) {
             return Flux.error(e);
         }

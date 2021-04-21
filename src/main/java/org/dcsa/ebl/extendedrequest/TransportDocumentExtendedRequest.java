@@ -5,14 +5,15 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.extendedrequest.QueryField;
 import org.dcsa.core.query.DBEntityAnalysis;
 import org.dcsa.ebl.model.*;
+import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.relational.core.sql.Join;
 
 public class TransportDocumentExtendedRequest<T extends TransportDocument> extends ExtendedRequest<T> {
 
     private static final String CARRIER_BOOKING_REFERENCE_PARAMETER = "carrierBookingReference";
 
-    public TransportDocumentExtendedRequest(ExtendedParameters extendedParameters, Class<T> modelClass) {
-        super(extendedParameters, modelClass);
+    public TransportDocumentExtendedRequest(ExtendedParameters extendedParameters, R2dbcDialect r2dbcDialect, Class<T> modelClass) {
+        super(extendedParameters, r2dbcDialect, modelClass);
     }
 
     @Override
