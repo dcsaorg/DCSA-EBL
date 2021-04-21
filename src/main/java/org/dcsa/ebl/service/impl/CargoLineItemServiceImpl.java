@@ -56,6 +56,11 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
     }
 
     @Override
+    public UUID getIdOfEntity(CargoLineItem entity) {
+        return entity.getId();
+    }
+
+    @Override
     public Flux<CargoLineItem> findAll() {
         return cargoLineItemRepository.findAll();
     }
