@@ -10,11 +10,11 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Data
-public class AbstractParty implements GetId<UUID> {
+public class AbstractParty implements GetId<String> {
 
     @Id
     @JsonProperty("partyID")
-    private UUID id;
+    private String id;
 
     @Column("party_name")
     @Size(max = 100)

@@ -21,13 +21,13 @@ public class DisplayedAddress implements GetId<UUID> {
     private UUID id;  /* TODO: Remove */
 
     @Column("party_id")
-    private UUID partyID;
+    private String partyID;
 
     @Column("party_function")
     private PartyFunction partyFunction;
 
     @Column("shipping_instruction_id")
-    private UUID shippingInstructionID;
+    private String shippingInstructionID;
 
     @Column("shipment_id")
     private UUID shipmentID;

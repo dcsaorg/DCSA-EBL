@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux;
 import java.util.UUID;
 
 public interface ChargeRepository extends ExtendedRepository<Charge, UUID> {
-    Flux<Charge> findAllByTransportDocumentID(UUID transportDocumentID);
+    Flux<Charge> findAllByTransportDocumentReference(String transportDocumentReference);
 }

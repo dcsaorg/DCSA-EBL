@@ -9,11 +9,11 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 public interface DocumentPartyRepository extends ExtendedRepository<DocumentParty, UUID> {
-    Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID);
+    Flux<DocumentParty> findAllByShippingInstructionID(String shippingInstructionID);
     Mono<DocumentParty> findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentID(
-            UUID partyID,
+            String partyID,
             PartyFunction partyFunction,
-            UUID shippingInstructionID,
+            String shippingInstructionID,
             UUID shipmentID
     );
 }

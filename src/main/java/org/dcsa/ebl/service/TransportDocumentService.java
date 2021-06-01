@@ -5,6 +5,6 @@ import org.dcsa.ebl.model.TransportDocument;
 
 import java.util.UUID;
 
-public interface TransportDocumentService extends ExtendedBaseService<TransportDocument, UUID> {
+public interface TransportDocumentService extends ExtendedBaseService<TransportDocument, String> {
 
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface CargoItemRepository extends ExtendedRepository<CargoItem, UUID> {
 
-    Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID);
+    Flux<CargoItem> findAllByShippingInstructionID(String shippingInstructionID);
     Mono<Void> deleteAllByIdIn(List<UUID> cargoItemIDs);
 
 }

@@ -9,12 +9,10 @@ import org.dcsa.ebl.model.Location;
 import org.dcsa.ebl.model.base.AbstractLocation;
 import org.dcsa.ebl.model.utils.MappingUtil;
 
-import java.util.UUID;
-
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class LocationTO extends AbstractLocation implements ModelReferencingTO<Location, UUID>, SetId<UUID> {
+public class LocationTO extends AbstractLocation implements ModelReferencingTO<Location, String>, SetId<String> {
 
     private Address address;
 

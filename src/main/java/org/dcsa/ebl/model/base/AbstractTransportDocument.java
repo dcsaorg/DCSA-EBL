@@ -18,11 +18,7 @@ import java.util.UUID;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public abstract class AbstractTransportDocument extends AuditBase implements GetId<UUID> {
-
-    @Id
-    @JsonProperty("transportDocumentID")
-    private UUID id;
+public abstract class AbstractTransportDocument extends AuditBase {
 
     @Column("date_of_issue")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -36,9 +32,9 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate receivedForShipmentDate;
 
-    @Column("document_reference_number")
+    @Column("transport_document_reference")
     @Size(max = 20)
-    private String documentReferenceNumber;
+    private String transportDocumentReference;
 
     @Column("terms_and_conditions")
     private String termsAndConditions;
@@ -49,7 +45,7 @@ public abstract class AbstractTransportDocument extends AuditBase implements Get
 
     @Column("shipping_instruction_id")
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private UUID shippingInstructionID;
+    private String shippingInstructionID;
 
     @Column("declared_value_currency")
     @Size(max = 3)

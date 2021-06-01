@@ -27,12 +27,12 @@ public class CargoItemServiceImpl extends ExtendedBaseServiceImpl<CargoItemRepos
     }
 
     @Override
-    public Flux<CargoItem> findAllByShippingInstructionID(UUID shippingInstructionID) {
+    public Flux<CargoItem> findAllByShippingInstructionID(String shippingInstructionID) {
         return cargoItemRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 
     @Override
-    public Mono<Void> deleteAllCargoItemsOnShippingInstruction(UUID shippingInstructionID) {
+    public Mono<Void> deleteAllCargoItemsOnShippingInstruction(String shippingInstructionID) {
         return findAllByShippingInstructionID(shippingInstructionID)
                 .flatMap(cargoItem ->
                         cargoLineItemService.deleteByCargoItemID(cargoItem.getId())

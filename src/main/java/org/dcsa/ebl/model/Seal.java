@@ -1,11 +1,10 @@
 package org.dcsa.ebl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -16,7 +15,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Data
 @Table("seal")
-public class Seal extends AuditBase implements GetId<UUID> {
+@EqualsAndHashCode(callSuper = true)
+public class Seal extends AuditBase {
 
     @Id
     @JsonIgnore

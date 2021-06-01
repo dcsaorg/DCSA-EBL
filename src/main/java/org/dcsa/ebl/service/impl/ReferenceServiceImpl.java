@@ -20,7 +20,7 @@ public class ReferenceServiceImpl extends ExtendedBaseServiceImpl<ReferenceRepos
         return referenceRepository;
     }
 
-    public Flux<Reference> findAllByShippingInstructionID(UUID shippingInstructionID) {
+    public Flux<Reference> findAllByShippingInstructionID(String shippingInstructionID) {
         return referenceRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 }

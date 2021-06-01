@@ -13,11 +13,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 @Service
-public class PartyServiceImpl extends ExtendedBaseServiceImpl<PartyRepository, Party, UUID> implements PartyService {
+public class PartyServiceImpl extends ExtendedBaseServiceImpl<PartyRepository, Party, String> implements PartyService {
     private final AddressService addressService;
     private final PartyRepository partyRepository;
 
@@ -26,7 +24,7 @@ public class PartyServiceImpl extends ExtendedBaseServiceImpl<PartyRepository, P
         return partyRepository;
     }
 
-    public Flux<Party> findAllById(Iterable<UUID> ids) {
+    public Flux<Party> findAllById(Iterable<String> ids) {
         return partyRepository.findAllById(ids);
     }
 

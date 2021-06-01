@@ -32,7 +32,7 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
     }
 
     @Override
-    public Flux<Charge> findAllByTransportDocumentID(UUID transportDocumentID) {
-        return chargeRepository.findAllByTransportDocumentID(transportDocumentID);
+    public Flux<Charge> findAllByTransportDocumentReference(String transportDocumentReference) {
+        return chargeRepository.findAllByTransportDocumentReference(transportDocumentReference);
     }
 }
