@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface ReferenceService extends ExtendedBaseService<Reference, UUID> {
 
-    Flux<Reference> findAllByShippingInstructionID(UUID shippingInstructionID);
+    Flux<Reference> findAllByShippingInstructionID(String shippingInstructionID);
 }

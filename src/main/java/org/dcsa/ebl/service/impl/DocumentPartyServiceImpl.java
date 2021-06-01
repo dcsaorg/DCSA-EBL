@@ -34,7 +34,7 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     }
 
     @Override
-    public Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID) {
+    public Flux<DocumentParty> findAllByShippingInstructionID(String shippingInstructionID) {
         return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 
@@ -67,7 +67,7 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
                 .flatMap(this::save);
     }
 
-    public Mono<Void> deleteObsoleteDocumentPartyInstances(UUID shippingInstructionID) {
+    public Mono<Void> deleteObsoleteDocumentPartyInstances(String shippingInstructionID) {
         return displayedAddressService.deleteAllDisplayedAddressesForShippingInstruction(shippingInstructionID)
                 .thenMany(documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID))
                 .groupBy(documentParty -> documentParty.getShipmentID() != null)
@@ -99,7 +99,7 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
     }
 
     @Override
-    public Flux<DocumentPartyTO> ensureResolvable(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs) {
+    public Flux<DocumentPartyTO> ensureResolvable(String shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs) {
         return Flux.fromIterable(documentPartyTOs)
                 .concatMap(documentPartyTO -> {
                     DocumentParty documentParty;

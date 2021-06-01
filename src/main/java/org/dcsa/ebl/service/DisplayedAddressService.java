@@ -13,5 +13,5 @@ public interface DisplayedAddressService extends ExtendedBaseService<DisplayedAd
 
     Mono<List<String>> loadDisplayedAddress(DocumentParty documentParty);
     Flux<DisplayedAddress> createDisplayedAddresses(DocumentParty documentParty, List<String> displayedAddressesAsStrings);
-    Mono<Void> deleteAllDisplayedAddressesForShippingInstruction(UUID shippingInstructionID);
+    Mono<Void> deleteAllDisplayedAddressesForShippingInstruction(String shippingInstructionID);
 }

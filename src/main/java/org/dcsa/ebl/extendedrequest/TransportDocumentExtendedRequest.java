@@ -28,9 +28,9 @@ public class TransportDocumentExtendedRequest<T extends TransportDocument> exten
         Class<?> primaryModel = builder.getPrimaryModelClass();
         return builder
                 .join(Join.JoinType.JOIN, primaryModel, ShippingInstruction.class)
-                .onFieldEqualsThen("shippingInstructionID", "id")
+                .onFieldEqualsThen("shippingInstructionID", "shippingInstructionID")
                 .chainJoin(CargoItem.class)
-                .onFieldEqualsThen("id", "shippingInstructionID")
+                .onFieldEqualsThen("shippingInstructionID", "shippingInstructionID")
                 .chainJoin(ShipmentEquipment.class)
                 .onFieldEqualsThen("shipmentEquipmentID", "id")
                 .chainJoin(Shipment.class)

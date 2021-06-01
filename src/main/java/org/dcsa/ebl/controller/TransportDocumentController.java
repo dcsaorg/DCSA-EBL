@@ -20,7 +20,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -61,13 +60,13 @@ public class TransportDocumentController extends AbstractTOController<TransportD
     }
 
     @GetMapping(path="{transportDocumentID}")
-    public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID) {
+    public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentID) {
         return transportDocumentTOService.findById(transportDocumentID);
     }
 
     @PutMapping( path = "{transportDocumentID}")
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<TransportDocumentTO> update(@PathVariable UUID transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
+    public Mono<TransportDocumentTO> update(@PathVariable String transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
@@ -85,7 +84,7 @@ public class TransportDocumentController extends AbstractTOController<TransportD
 
     @DeleteMapping( path ="{transportDocumentID}" )
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<Void> deleteById(@PathVariable UUID transportDocumentID) {
+    public Mono<Void> deleteById(@PathVariable String transportDocumentID) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 }

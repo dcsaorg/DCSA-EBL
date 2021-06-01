@@ -3,20 +3,16 @@ package org.dcsa.ebl.model.transferobjects;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.Util;
 import org.dcsa.ebl.model.Address;
 import org.dcsa.ebl.model.Party;
 import org.dcsa.ebl.model.base.AbstractParty;
 import org.dcsa.ebl.model.utils.MappingUtil;
-import org.springframework.data.relational.core.mapping.Table;
-
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class PartyTO extends AbstractParty implements ModelReferencingTO<Party, UUID>, SetId<UUID> {
+public class PartyTO extends AbstractParty implements ModelReferencingTO<Party, String>, SetId<String> {
 
     private Address address;
 

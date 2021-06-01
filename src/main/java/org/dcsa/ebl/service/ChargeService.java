@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface ChargeService extends ExtendedBaseService<Charge, UUID> {
     Flux<Charge> createAll(List<Charge> charges);
-    Flux<Charge> findAllByTransportDocumentID(UUID transportDocumentID);
+    Flux<Charge> findAllByTransportDocumentReference(String transportDocumentReference);
 }

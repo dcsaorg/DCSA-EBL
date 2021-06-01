@@ -12,11 +12,9 @@ import org.dcsa.ebl.service.LocationService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 @Service
-public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationRepository, Location, UUID> implements LocationService {
+public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationRepository, Location, String> implements LocationService {
     private final LocationRepository locationRepository;
     private final AddressService addressService;
 
@@ -25,7 +23,7 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
         return locationRepository;
     }
 
-    public Mono<LocationTO> findPaymentLocationByShippingInstructionID(UUID shippingInstructionID) {
+    public Mono<LocationTO> findPaymentLocationByShippingInstructionID(String shippingInstructionID) {
         return locationRepository.findPaymentLocationByShippingInstructionID(shippingInstructionID)
                 .flatMap(this::getLocationTO);
     }
@@ -52,7 +50,7 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
     }
 
     @Override
-    public Mono<LocationTO> findTOById(UUID locationID) {
+    public Mono<LocationTO> findTOById(String locationID) {
         return findById(locationID)
                 .flatMap(this::getLocationTO);
     }

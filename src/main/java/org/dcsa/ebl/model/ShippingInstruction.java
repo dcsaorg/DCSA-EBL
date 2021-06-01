@@ -16,6 +16,6 @@ import java.util.UUID;
 public class ShippingInstruction extends AbstractShippingInstruction {
 
     @NotNull
-    @Column("freight_payable_at")
-    private UUID freightPayableAt;
+    @Column("invoice_payable_at")
+    private String freightPayableAt;
 }

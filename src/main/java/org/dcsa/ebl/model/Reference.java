@@ -1,8 +1,8 @@
 package org.dcsa.ebl.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
@@ -19,6 +19,7 @@ import java.util.UUID;
 @Table("\"references\"")
 @NoArgsConstructor
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class Reference extends AuditBase implements GetId<UUID> {
 
     @Id
@@ -33,7 +34,7 @@ public class Reference extends AuditBase implements GetId<UUID> {
 
     @Column("shipping_instruction_id")
     @JsonIgnore
-    private UUID shippingInstructionID;
+    private String shippingInstructionID;
 
     @JsonIgnore
     public UUID getId() {

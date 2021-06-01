@@ -17,15 +17,15 @@ public interface DisplayedAddressRepository extends ExtendedRepository<Displayed
             + " WHERE shipping_instruction_id = :shippingInstructionID"
             + "   AND shipment_id IS NOT NULL"
     )
-    Mono<Integer> clearShippingInstructionIDWhereShipmentIDIsNotNull(UUID shippingInstructionID);
+    Mono<Integer> clearShippingInstructionIDWhereShipmentIDIsNotNull(String shippingInstructionID);
 
 
-    Mono<Void> deleteByShippingInstructionIDAndShipmentIDIsNull(UUID shippingInstructionID);
+    Mono<Void> deleteByShippingInstructionIDAndShipmentIDIsNull(String shippingInstructionID);
 
     Flux<DisplayedAddress> findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentIDOrderByAddressLineNumberAsc(
-            UUID partyID,
+            String partyID,
             PartyFunction partyFunction,
-            UUID shippingInstructionID,
+            String shippingInstructionID,
             UUID shipmentID
     );
 }

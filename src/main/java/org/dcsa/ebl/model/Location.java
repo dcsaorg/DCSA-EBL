@@ -3,7 +3,6 @@ package org.dcsa.ebl.model;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.base.AbstractLocation;
 import org.dcsa.ebl.model.transferobjects.LocationTO;
 import org.dcsa.ebl.model.transferobjects.SetId;
@@ -18,7 +17,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class Location extends AbstractLocation implements SetId<UUID> {
+public class Location extends AbstractLocation implements SetId<String> {
 
     @Column("address_id")
     private UUID addressID;

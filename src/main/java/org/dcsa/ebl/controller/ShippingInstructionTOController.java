@@ -1,6 +1,5 @@
 package org.dcsa.ebl.controller;
 
-import com.github.fge.jsonpatch.JsonPatch;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.GetException;
@@ -63,7 +62,7 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     }
 
     @GetMapping(path = "{shippingInstructionID}")
-    public Mono<ShippingInstructionTO> findById(@PathVariable UUID shippingInstructionID) {
+    public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
         return shippingInstructionTOService.findById(shippingInstructionID);
     }
 
@@ -74,14 +73,8 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
         return shippingInstructionTOService.create(shippingInstructionTO);
     }
 
-    @Transactional
-    @PatchMapping(path = "{shippingInstructionID}", consumes = "application/json-patch+json")
-    public Mono<ShippingInstructionTO> patch(@PathVariable UUID shippingInstructionID, @Valid @RequestBody JsonPatch patch) {
-        return shippingInstructionTOService.patchOriginal(shippingInstructionID, patch);
-    }
-
     @PutMapping( path = "{shippingInstructionID}")
-    public Mono<ShippingInstructionTO> update(@PathVariable UUID shippingInstructionID, @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
+    public Mono<ShippingInstructionTO> update(@PathVariable String shippingInstructionID, @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
         return shippingInstructionTOService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
     }
 

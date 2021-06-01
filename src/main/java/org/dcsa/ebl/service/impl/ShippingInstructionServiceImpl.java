@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class ShippingInstructionServiceImpl extends ExtendedBaseServiceImpl<ShippingInstructionRepository, ShippingInstruction, UUID> implements ShippingInstructionService {
+public class ShippingInstructionServiceImpl extends ExtendedBaseServiceImpl<ShippingInstructionRepository, ShippingInstruction, String> implements ShippingInstructionService {
 
     private final ShippingInstructionRepository shippingInstructionRepository;
 

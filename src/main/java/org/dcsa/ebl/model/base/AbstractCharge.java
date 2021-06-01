@@ -20,7 +20,7 @@ public abstract class AbstractCharge extends AuditBase implements GetId<UUID> {
     private UUID id;
 
     @Column("transport_document_id")
-    private UUID transportDocumentID;
+    private String transportDocumentReference;
 
     @Column("charge_type")
     @Size(max = 20)

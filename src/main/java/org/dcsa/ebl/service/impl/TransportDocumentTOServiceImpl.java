@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -47,14 +49,14 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         } else {
             return transportDocumentService.create(transportDocument)
                     .flatMap(td -> {
-                        transportDocumentTO.setId(td.getId());
+                        transportDocumentTO.setTransportDocumentReference(td.getTransportDocumentReference());
                         return Flux.concat(
                                 shippingInstructionTOService.findById(transportDocument.getShippingInstructionID())
                                         .flatMap(shippingInstructionTO -> {
                                             transportDocumentTO.setShippingInstruction(shippingInstructionTO);
                                             String carrierBookingReference = shippingInstructionTOService.getCarrierBookingReference(shippingInstructionTO);
                                             if (carrierBookingReference == null) {
-                                                return Mono.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getId() + " - internal error!"));
+                                                return Mono.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getShippingInstructionID() + " - internal error!"));
                                             } else {
                                                 return Flux.concat(
                                                         updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO),
@@ -131,7 +133,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                 return Flux.fromIterable(chargeTOs)
                         .map(chargeTO -> {
                             // Insert TransportDocumentID on all Charges
-                            chargeTO.setTransportDocumentID(transportDocumentTO.getId());
+                            chargeTO.setTransportDocumentReference(transportDocumentTO.getTransportDocumentReference());
                             // Create a Charge object for all ChargeTOs
                             return MappingUtil.instanceFrom(
                                     chargeTO,
@@ -157,7 +159,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                     .buffer(Util.SQL_LIST_BUFFER_SIZE)
                     .concatMap(clauses -> clauseService.createAll(clauses)
                             // Make sure many-many relations are created
-                            .concatMap(clause -> clauseService.createTransportDocumentClauseRelation(clause.getId(), transportDocumentTO.getId()))
+                            .concatMap(clause -> clauseService.createTransportDocumentClauseRelation(clause.getId(), transportDocumentTO.getTransportDocumentReference()))
                             .then()
                     );
         }
@@ -165,11 +167,11 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 
     @Transactional
     @Override
-    public Mono<TransportDocumentTO> findById(UUID transportDocumentID) {
+    public Mono<TransportDocumentTO> findById(String transportDocumentReference) {
         TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
 
         return Flux.concat(
-                transportDocumentService.findById(transportDocumentID)
+                transportDocumentService.findById(transportDocumentReference)
                     .flatMapMany(
                             transportDocument -> {
                                 MappingUtil.copyFields(
@@ -187,7 +189,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                                                 transportDocumentTO.setShippingInstruction(shippingInstructionTO);
                                                                 String carrierBookingReference = shippingInstructionTOService.getCarrierBookingReference(shippingInstructionTO);
                                                                 if (carrierBookingReference == null) {
-                                                                    return Flux.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getId() + " - internal error!"));
+                                                                    return Flux.error(new IllegalStateException("No CarrierBookingReference specified on ShippingInstruction:" + shippingInstructionTO.getShippingInstructionID() + " - internal error!"));
                                                                 } else {
                                                                     return Flux.concat(
                                                                             updateTransportDocumentWithBookingInfo(carrierBookingReference, transportDocumentTO)
@@ -204,7 +206,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                     );
                                 }
                     }),
-                clauseService.findAllByTransportDocumentID(transportDocumentID)
+                clauseService.findAllByTransportDocumentID(transportDocumentReference)
                         .map(clause -> MappingUtil.instanceFrom(clause, ClauseTO::new, AbstractClause.class))
                         .collectList()
                         .doOnNext(transportDocumentTO::setClauses)
@@ -213,7 +215,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
 
     private Mono<Void> updateTransportDocumentWithCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {
         if (isChargesDisplayed) {
-            return chargeService.findAllByTransportDocumentID(transportDocumentTO.getId())
+            return chargeService.findAllByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
                     .map(charge -> MappingUtil.instanceFrom(charge, ChargeTO::new, AbstractCharge.class))
                     .collectList()
                     .doOnNext(transportDocumentTO::setCharges)
@@ -270,11 +272,11 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         return transportDocumentService.findAllExtended(extendedRequest);
     }
 
-    private Mono<Booking> getBooking(String carrierBookingReference, UUID shippingSInstructionID) {
+    private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionID) {
         // Don't use ServiceClass - use Repository directly in order to throw internal error if BookingReference does not exist.
         return bookingRepository.findById(carrierBookingReference)
                 .switchIfEmpty(Mono.error(
-                        new IllegalStateException("The CarrierBookingReference: " + carrierBookingReference + " specified on ShippingInstruction:" + shippingSInstructionID.toString() + " does not exist!")
+                        new IllegalStateException("The CarrierBookingReference: " + carrierBookingReference + " specified on ShippingInstruction:" + shippingInstructionID + " does not exist!")
                 ));
     }
 }
