@@ -10,14 +10,11 @@ import org.dcsa.core.model.ViaJoinAlias;
 import org.dcsa.ebl.model.*;
 import org.dcsa.ebl.model.enums.DCSATransportType;
 import org.dcsa.ebl.model.transferobjects.LocationTO;
-import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.sql.Join;
-
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @PrimaryModel(ShipmentTransport.class)
 @JoinedWithModel(lhsFieldName = "transportID", rhsModel = Transport.class, rhsFieldName = "id", joinType = Join.JoinType.LEFT_OUTER_JOIN)
 
@@ -51,13 +48,13 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
     // Load TransportCall ID
     @ModelClass(value = TransportCall.class, fieldName = "id")
     @ViaJoinAlias("ltc")
-    private UUID loadTransportCallId;
+    private String loadTransportCallId;
 
     // Load Location
 
     @ModelClass(value = Location.class, fieldName = "id")
     @ViaJoinAlias("ll")
-    private UUID loadLocationId;
+    private String loadLocationId;
 
     @ModelClass(value = Location.class, fieldName = "locationName")
     @ViaJoinAlias("ll")
@@ -65,7 +62,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
 
     @ModelClass(value = Location.class, fieldName = "addressID")
     @ViaJoinAlias("ll")
-    private UUID loadLocationAddressID;
+    private String loadLocationAddressID;
 
     @ModelClass(value = Location.class, fieldName = "latitude")
     @ViaJoinAlias("ll")
@@ -83,7 +80,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
 
     @ModelClass(value = Address.class, fieldName = "id")
     @ViaJoinAlias("la")
-    private UUID loadAddressId;
+    private String loadAddressId;
 
     @ModelClass(value = Address.class, fieldName = "name")
     @ViaJoinAlias("la")
@@ -120,13 +117,13 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
     // Discharge TransportCall ID
     @ModelClass(value = TransportCall.class, fieldName = "id")
     @ViaJoinAlias("dtc")
-    private UUID dischargeTransportCallId;
+    private String dischargeTransportCallId;
 
     // Discharge Location
 
     @ModelClass(value = Location.class, fieldName = "id")
     @ViaJoinAlias("dl")
-    private UUID dischargeLocationId;
+    private String dischargeLocationId;
 
     @ModelClass(value = Location.class, fieldName = "locationName")
     @ViaJoinAlias("dl")
@@ -134,7 +131,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
 
     @ModelClass(value = Location.class, fieldName = "addressID")
     @ViaJoinAlias("dl")
-    private UUID dischargeLocationAddressID;
+    private String dischargeLocationAddressID;
 
     @ModelClass(value = Location.class, fieldName = "latitude")
     @ViaJoinAlias("dl")
@@ -152,7 +149,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
 
     @ModelClass(value = Address.class, fieldName = "id")
     @ViaJoinAlias("da")
-    private UUID dischargeAddressId;
+    private String dischargeAddressId;
 
     @ModelClass(value = Address.class, fieldName = "name")
     @ViaJoinAlias("da")
