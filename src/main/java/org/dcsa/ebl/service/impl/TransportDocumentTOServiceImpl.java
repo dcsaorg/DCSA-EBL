@@ -132,7 +132,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
             } else {
                 return Flux.fromIterable(chargeTOs)
                         .map(chargeTO -> {
-                            // Insert TransportDocumentID on all Charges
+                            // Insert TransportDocumentReference on all Charges
                             chargeTO.setTransportDocumentReference(transportDocumentTO.getTransportDocumentReference());
                             // Create a Charge object for all ChargeTOs
                             return MappingUtil.instanceFrom(
@@ -206,7 +206,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                     );
                                 }
                     }),
-                clauseService.findAllByTransportDocumentID(transportDocumentReference)
+                clauseService.findAllByTransportDocumentReference(transportDocumentReference)
                         .map(clause -> MappingUtil.instanceFrom(clause, ClauseTO::new, AbstractClause.class))
                         .collectList()
                         .doOnNext(transportDocumentTO::setClauses)
