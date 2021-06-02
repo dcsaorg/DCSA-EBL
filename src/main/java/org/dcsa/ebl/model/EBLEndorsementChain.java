@@ -19,9 +19,9 @@ public class EBLEndorsementChain extends AuditBase implements GetId<UUID> {
     @Id
     private UUID id;  /* TODO: Remove */
 
-    @Column("transport_document_id")
+    @Column("transport_document_reference")
     @NotNull
-    private UUID transportDocumentID;
+    private UUID transportDocumentReference;
 
     @Column("title_holder")
     @NotNull

@@ -59,14 +59,14 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         );
     }
 
-    @GetMapping(path="{transportDocumentID}")
-    public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentID) {
-        return transportDocumentTOService.findById(transportDocumentID);
+    @GetMapping(path="{transportDocumentReference}")
+    public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentReference) {
+        return transportDocumentTOService.findById(transportDocumentReference);
     }
 
-    @PutMapping( path = "{transportDocumentID}")
+    @PutMapping( path = "{transportDocumentReference}")
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<TransportDocumentTO> update(@PathVariable String transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
+    public Mono<TransportDocumentTO> update(@PathVariable String transportDocumentReference, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
@@ -82,9 +82,9 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
-    @DeleteMapping( path ="{transportDocumentID}" )
+    @DeleteMapping( path ="{transportDocumentReference}" )
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<Void> deleteById(@PathVariable String transportDocumentID) {
+    public Mono<Void> deleteById(@PathVariable String transportDocumentReference) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 }

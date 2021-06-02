@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ClauseService extends ExtendedBaseService<Clause, UUID> {
     Flux<Clause> createAll(List<Clause> clauses);
-    Flux<Clause> findAllByTransportDocumentID(String transportDocumentReference);
+    Flux<Clause> findAllByTransportDocumentReference(String transportDocumentReference);
 
     // Misuse this class to create the Many-Many relation between TransportDocument and Clause
     // as Spring R2DBC does not support combined keys in ModelClasses

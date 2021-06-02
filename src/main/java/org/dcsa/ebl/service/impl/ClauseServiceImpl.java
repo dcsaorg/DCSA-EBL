@@ -33,7 +33,7 @@ public class ClauseServiceImpl extends ExtendedBaseServiceImpl<ClauseRepository,
     }
 
     @Override
-    public Flux<Clause> findAllByTransportDocumentID(String transportDocumentReference) {
+    public Flux<Clause> findAllByTransportDocumentReference(String transportDocumentReference) {
         return clauseRepository.findAllByTransportDocumentReference(transportDocumentReference);
     }
 
