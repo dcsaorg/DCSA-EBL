@@ -63,6 +63,20 @@ public class Util {
         };
     }
 
+    public static <TO, M, ID> Mono<M> createOrFindByContent(TO instanceTO, Function<TO, Mono<M>> findByContent, Function<TO, Mono<M>> create) {
+        return findByContent.apply(instanceTO)
+                .switchIfEmpty(Mono.defer(() -> create.apply(instanceTO)))
+                .doOnNext(m -> {
+                    if (instanceTO instanceof SetId && m instanceof GetId) {
+                        @SuppressWarnings({"unchecked"})
+                        SetId<ID> s = (SetId<ID>)instanceTO;
+                        @SuppressWarnings({"unchecked"})
+                        GetId<ID> g = (GetId<ID>)m;
+                        s.setId(g.getId());
+                    }
+                });
+    }
+
     public static <TO extends ModelReferencingTO<M, ID>, M extends GetId<ID>, ID> Mono<M> resolveModelReference(TO instanceTO, Function<ID, Mono<M>> findByID, Function<TO, Mono<M>> create, String entityName) {
         ID id = Objects.requireNonNull(instanceTO).getId();
         if (id != null) {
@@ -79,7 +93,7 @@ public class Util {
                     .doOnNext(m -> {
                         if (m instanceof SetId) {
                             @SuppressWarnings({"rawtypes", "unchecked"})
-                            SetId<ID> s = ((SetId)m);
+                            SetId<ID> s = ((SetId)instanceTO);
                             s.setId(m.getId());
                         }
                     });

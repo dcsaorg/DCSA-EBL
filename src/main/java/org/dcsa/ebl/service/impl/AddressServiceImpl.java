@@ -23,11 +23,6 @@ public class AddressServiceImpl extends ExtendedBaseServiceImpl<AddressRepositor
 
     @Override
     public Mono<Address> ensureResolvable(Address address) {
-        return Util.resolveModelReference(
-                address,
-                this::findById,
-                this::create,
-                "Address"
-        );
+        return Util.createOrFindByContent(address, addressRepository::findByContent, this::create);
     }
 }
