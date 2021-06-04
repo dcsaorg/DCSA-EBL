@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model.base;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +12,10 @@ import javax.validation.constraints.Size;
 
 @Data
 @NoArgsConstructor
-public class AbstractLocation implements GetId<String> {
+public class AbstractLocation {
+
     @Id
-    @JsonProperty("locationID")
+    @JsonIgnore
     private String id;
 
     @Column("location_name")

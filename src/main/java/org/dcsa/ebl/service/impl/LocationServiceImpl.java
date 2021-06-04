@@ -41,11 +41,10 @@ public class LocationServiceImpl extends ExtendedBaseServiceImpl<LocationReposit
         }
 
         return locationTOMono
-            .flatMap(locTo -> Util.resolveModelReference(
+            .flatMap(locTo -> Util.createOrFindByContent(
                 locTo,
-                this::findById,
-                locTO -> this.create(locTO.toLocation()),
-                "Location"
+                locationRepository::findByContent,
+                locTO -> this.create(locTO.toLocation())
         )).map(location -> location.toLocationTO(locationTO.getAddress()));
     }
 
