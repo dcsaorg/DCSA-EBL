@@ -1,6 +1,5 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
@@ -26,7 +25,6 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "shipping-instructions", produces = {MediaType.APPLICATION_JSON_VALUE})
-@Tag(name = "Shipping Instructions", description = "The Shipping Instruction API")
 public class ShippingInstructionTOController extends AbstractTOController<ShippingInstructionTOService> {
 
     private final ExtendedParameters extendedParameters;
