@@ -1,6 +1,5 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
@@ -24,7 +23,6 @@ import javax.validation.Valid;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "transport-documents", produces = {MediaType.APPLICATION_JSON_VALUE})
-@Tag(name = "Transport Documents", description = "The Transport Document API")
 public class TransportDocumentController extends AbstractTOController<TransportDocumentTOService> {
 
     private final ExtendedParameters extendedParameters;

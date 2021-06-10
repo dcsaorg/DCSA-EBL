@@ -1,6 +1,5 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.controller.AbstractEventController;
 import org.dcsa.core.events.model.ShipmentEvent;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "events", produces = {MediaType.APPLICATION_JSON_VALUE})
-@Tag(name = "Events", description = "The event API")
 public class EventController extends AbstractEventController<ShipmentEventService, ShipmentEvent> {
 
     private final ShipmentEventService eventService;
