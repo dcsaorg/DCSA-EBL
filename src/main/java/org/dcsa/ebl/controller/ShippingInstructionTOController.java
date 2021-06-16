@@ -43,22 +43,6 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
         return "ShippingInstruction";
     }
 
-    @GetMapping
-    public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        ExtendedRequest<ShippingInstruction> extendedRequest = new ShippingInstructionExtendedRequest<>(extendedParameters,
-                r2dbcDialect, ShippingInstruction.class);
-
-        try {
-            extendedRequest.parseParameter(request.getQueryParams());
-        } catch (GetException e) {
-            return Flux.error(e);
-        }
-
-        return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
-                () -> extendedRequest.insertHeaders(response, request)
-        );
-    }
-
     @GetMapping(path = "{shippingInstructionID}")
     public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
         return shippingInstructionTOService.findById(shippingInstructionID);
