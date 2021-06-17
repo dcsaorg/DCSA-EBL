@@ -1,12 +1,8 @@
 package org.dcsa.ebl.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.transferobjects.ModelReferencingTO;
-import org.dcsa.ebl.model.transferobjects.SetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -17,10 +13,10 @@ import java.util.UUID;
 @Table("address")
 @Data
 @NoArgsConstructor
-public class Address implements ModelReferencingTO<Address, UUID>, SetId<UUID> {
+public class Address {
 
     @Id
-    @JsonProperty("id")
+    @JsonIgnore
     private UUID id;
 
     @Size(max = 100)
@@ -50,13 +46,4 @@ public class Address implements ModelReferencingTO<Address, UUID>, SetId<UUID> {
     @Size(max = 75)
     private String country;
 
-    @Override
-    public boolean isSolelyReferenceToModel() {
-        return Util.containsOnlyID(this, Address::new);
-    }
-
-    @Override
-    public boolean isEqualsToModel(Address address) {
-        return equals(address);
-    }
 }
