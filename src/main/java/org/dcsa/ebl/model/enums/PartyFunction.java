@@ -7,7 +7,8 @@ public enum PartyFunction {
     COX,
     N1,
     N2,
+    NI,
     SFA,
-    CFA,
-    CNO;
+    DDR,
+    DDS;
 }
