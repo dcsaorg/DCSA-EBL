@@ -18,6 +18,6 @@ public class AbstractDocumentParty extends AuditBase {
     @NotNull
     private PartyFunction partyFunction;
 
-    @Column("should_be_notified")
-    private Boolean shouldBeNotified;
+    @Column("is_to_be_notified")
+    private Boolean isToBeNotified;
 }
