@@ -1,9 +1,5 @@
 package org.dcsa.ebl.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
-import com.github.fge.jsonpatch.JsonPatchException;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
@@ -56,7 +52,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final ShipmentService shipmentService;
 
     private final Validator validator;
-    private final ObjectMapper objectMapper;
 
     private Mono<Void> processFreightPayableAt(ShippingInstructionTO shippingInstructionTO, ShippingInstruction shippingInstruction) {
         return Mono.justOrEmpty(shippingInstructionTO.getFreightPayableAt())
@@ -138,7 +133,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     @Transactional
     @Override
-    public Mono<ShippingInstructionTO> findById(UUID id) {
+    public Mono<ShippingInstructionTO> findById(String id) {
         ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
         return Flux.concat(
             shippingInstructionService.findById(id)
@@ -246,7 +241,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     ) {
         Map<UUID, String> usedEquipmentReferences = new HashMap<>();
         Function<String, RuntimeException> exceptionType = creationFlow ? CreateException::new : UpdateException::new;
-        UUID shippingInstructionID = shippingInstructionUpdateInfo.getShippingInstructionID();
+        String shippingInstructionID = shippingInstructionUpdateInfo.getShippingInstructionID();
         Map<String, UUID> equipmentReference2ID = shippingInstructionUpdateInfo.getEquipmentReference2ShipmentEquipmentID();
         Map<String, UUID> bookingReference2Shipment = shippingInstructionUpdateInfo.getCarrierBookingReference2ShipmentID();
         return Flux.fromIterable(cargoItemTOs)
@@ -317,7 +312,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .then();
     }
 
-    private Mono<Void> mapReferences(UUID shippingInstructionID, Iterable<Reference> references, Function<Reference, Mono<Reference>> saveFunction) {
+    private Mono<Void> mapReferences(String shippingInstructionID, Iterable<Reference> references, Function<Reference, Mono<Reference>> saveFunction) {
         return Flux.fromIterable(references)
                 .flatMap(reference -> {
                     reference.setShippingInstructionID(shippingInstructionID);
@@ -467,8 +462,8 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 .thenReturn(shippingInstruction)
                 .flatMap(shippingInstructionService::create)
                 .flatMapMany(savedShippingInstruction -> {
-            UUID shippingInstructionID = savedShippingInstruction.getId();
-            shippingInstructionTO.setId(savedShippingInstruction.getId());
+            String shippingInstructionID = savedShippingInstruction.getShippingInstructionID();
+            shippingInstructionTO.setShippingInstructionID(savedShippingInstruction.getShippingInstructionID());
             ShippingInstructionUpdateInfo shippingInstructionUpdateInfo = new ShippingInstructionUpdateInfo(shippingInstructionID, shippingInstructionTO);
 
             return loadShipmentIDs(shippingInstructionUpdateInfo)
@@ -504,33 +499,18 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         // that were not a part of the POST (e.g. ShipmentLocations via the
         // Shipment).  See #63 and #64 as an example of issues fixed by this
         // approach
-        .map(ShippingInstructionTO::getId)
+        .map(ShippingInstructionTO::getShippingInstructionID)
         .flatMap(this::findById);
     }
 
     @Transactional
     @Override
-    public Mono<ShippingInstructionTO> patchOriginal(UUID shippingInstructionId, JsonPatch patch) {
-        return genericUpdate(shippingInstructionId, original -> {
-            JsonNode target = objectMapper.convertValue(original, JsonNode.class);
-            JsonNode jsonValue;
-            try {
-                jsonValue = patch.apply(target);
-            } catch (JsonPatchException e) {
-                throw new UpdateException(e.getMessage());
-            }
-            return objectMapper.convertValue(jsonValue, ShippingInstructionTO.class);
-        });
-    }
-
-    @Transactional
-    @Override
-    public Mono<ShippingInstructionTO> replaceOriginal(UUID shippingInstructionId, ShippingInstructionTO update) {
+    public Mono<ShippingInstructionTO> replaceOriginal(String shippingInstructionId, ShippingInstructionTO update) {
         return genericUpdate(shippingInstructionId, original -> update);
     }
 
     @Transactional
-    private Mono<ShippingInstructionTO> genericUpdate(UUID shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
+    private Mono<ShippingInstructionTO> genericUpdate(String shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
         return findById(shippingInstructionId)
                 .flatMap(original -> {
                     ShippingInstructionTO update = mutator.apply(original);
@@ -538,7 +518,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                     if (!violations.isEmpty()) {
                         throw new ConstraintViolationException(violations);
                     }
-                    if (!original.getId().equals(update.getId())) {
+                    if (!original.getShippingInstructionID().equals(update.getShippingInstructionID())) {
                         throw new UpdateException("Cannot change the ID of the ShippingInstruction");
                     }
                     try {
@@ -586,7 +566,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             documentPartyService.deleteObsoleteDocumentPartyInstances(shippingInstructionId),
                             // We delete obsolete cargo item and cargo line items first.  This avoids conflicts if a
                             // cargo line item is moved between two cargo items (as you can only use the ID once).
-                            cargoItemService.deleteAllCargoItemsOnShippingInstruction(original.getId())
+                            cargoItemService.deleteAllCargoItemsOnShippingInstruction(original.getShippingInstructionID())
                     );
 
                     Flux<Object> handleEquipmentAndCargoItems =
@@ -651,7 +631,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
 
     // This is a work around for missing 1:1 support via r2dbc.
     private Flux<DocumentPartyTO> setPartyOnAllMatchingInstances(Flux<Party> partyFlux,
-                                                                 Map<UUID, ? extends Iterable<DocumentPartyTO>> id2TOMap
+                                                                 Map<String, ? extends Iterable<DocumentPartyTO>> id2TOMap
     ) {
         return partyFlux
                 .concatMap(party -> {

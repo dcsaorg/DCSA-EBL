@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class VoyageServiceImpl extends ExtendedBaseServiceImpl<VoyageRepository, Voyage, UUID> implements VoyageService {
+public class VoyageServiceImpl extends ExtendedBaseServiceImpl<VoyageRepository, Voyage, String> implements VoyageService {
     private final VoyageRepository voyageRepository;
 
     @Override
@@ -21,7 +21,7 @@ public class VoyageServiceImpl extends ExtendedBaseServiceImpl<VoyageRepository,
     }
 
     @Override
-    public Mono<Voyage> findFirstByTransportCallOrderByCarrierVoyageNumberDesc(UUID transportCallID) {
+    public Mono<Voyage> findFirstByTransportCallOrderByCarrierVoyageNumberDesc(String transportCallID) {
         return getRepository().findFirstByTransportCallOrderByCarrierVoyageNumberDesc(transportCallID);
     }
 }

@@ -5,23 +5,20 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
 import org.dcsa.ebl.model.enums.TransportDocumentTypeCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.NotNull;
-import java.util.Objects;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public abstract class AbstractShippingInstruction extends AuditBase implements GetId<UUID> {
+public abstract class AbstractShippingInstruction extends AuditBase {
 
     @Id
-    @JsonProperty("shippingInstructionID")
-    private UUID id;
+    @Column("id")
+    private String shippingInstructionID;
 
     @Column("number_of_copies")
     private Integer numberOfCopies;

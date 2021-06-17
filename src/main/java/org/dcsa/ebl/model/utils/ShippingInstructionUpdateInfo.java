@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 public class ShippingInstructionUpdateInfo {
 
-    private final UUID shippingInstructionID;
+    private final String shippingInstructionID;
     private final ShippingInstructionTO shippingInstructionTO;
 
     private Map<String, String> equipmentReference2CarrierBookingReference;

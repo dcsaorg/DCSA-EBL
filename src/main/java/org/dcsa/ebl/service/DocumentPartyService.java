@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 public interface DocumentPartyService extends ExtendedBaseService<DocumentParty, UUID> {
-    Flux<DocumentParty> findAllByShippingInstructionID(UUID shippingInstructionID);
-    Mono<Void> deleteObsoleteDocumentPartyInstances(UUID shippingInstructionID);
-    Flux<DocumentPartyTO> ensureResolvable(UUID shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs);
+    Flux<DocumentParty> findAllByShippingInstructionID(String shippingInstructionID);
+    Mono<Void> deleteObsoleteDocumentPartyInstances(String shippingInstructionID);
+    Flux<DocumentPartyTO> ensureResolvable(String shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs);
 }

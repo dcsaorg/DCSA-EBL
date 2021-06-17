@@ -1,6 +1,5 @@
 package org.dcsa.ebl.controller;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
@@ -20,12 +19,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "transport-documents", produces = {MediaType.APPLICATION_JSON_VALUE})
-@Tag(name = "Transport Documents", description = "The Transport Document API")
 public class TransportDocumentController extends AbstractTOController<TransportDocumentTOService> {
 
     private final ExtendedParameters extendedParameters;
@@ -60,14 +57,14 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         );
     }
 
-    @GetMapping(path="{transportDocumentID}")
-    public Mono<TransportDocumentTO> findById(@PathVariable UUID transportDocumentID) {
-        return transportDocumentTOService.findById(transportDocumentID);
+    @GetMapping(path="{transportDocumentReference}")
+    public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentReference) {
+        return transportDocumentTOService.findById(transportDocumentReference);
     }
 
-    @PutMapping( path = "{transportDocumentID}")
+    @PutMapping( path = "{transportDocumentReference}")
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<TransportDocumentTO> update(@PathVariable UUID transportDocumentID, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
+    public Mono<TransportDocumentTO> update(@PathVariable String transportDocumentReference, @Valid @RequestBody TransportDocumentTO transportDocumentTO) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
@@ -83,9 +80,9 @@ public class TransportDocumentController extends AbstractTOController<TransportD
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 
-    @DeleteMapping( path ="{transportDocumentID}" )
+    @DeleteMapping( path ="{transportDocumentReference}" )
     @ResponseStatus( HttpStatus.FORBIDDEN )
-    public Mono<Void> deleteById(@PathVariable UUID transportDocumentID) {
+    public Mono<Void> deleteById(@PathVariable String transportDocumentReference) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
     }
 }

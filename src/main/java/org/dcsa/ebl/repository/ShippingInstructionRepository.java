@@ -5,6 +5,6 @@ import org.dcsa.ebl.model.ShippingInstruction;
 
 import java.util.UUID;
 
-public interface ShippingInstructionRepository extends ExtendedRepository<ShippingInstruction, UUID> {
+public interface ShippingInstructionRepository extends ExtendedRepository<ShippingInstruction, String> {
 
 }

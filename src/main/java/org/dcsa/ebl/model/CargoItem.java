@@ -26,7 +26,7 @@ public class CargoItem extends AbstractCargoItem implements GetId<UUID> {
     private UUID shipmentID;
 
     @Column("shipping_instruction_id")
-    private UUID shippingInstructionID;
+    private String shippingInstructionID;
 
     @Column("shipment_equipment_id")
     @NotNull

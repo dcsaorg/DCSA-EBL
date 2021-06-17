@@ -12,14 +12,14 @@ import java.util.UUID;
 public interface ClauseRepository extends ExtendedRepository<Clause, UUID> {
     @Query("SELECT carrier_clauses.* from carrier_clauses " +
            "JOIN transport_document_carrier_clauses ON id = carrier_clause_id " +
-           "WHERE transport_document_id = :transportDocumentID")
-    Flux<Clause> findAllByTransportDocumentID(UUID transportDocumentID);
+           "WHERE transport_document_reference = :transportDocumentReference")
+    Flux<Clause> findAllByTransportDocumentReference(String transportDocumentReference);
 
     @Modifying
     @Query("INSERT INTO transport_document_carrier_clauses (" +
-           "carrier_clause_id, transport_document_id" +
+           "carrier_clause_id, transport_document_reference" +
            ") VALUES (" +
-           ":clauseID, :transportDocumentID" +
+           ":clauseID, :transportDocumentReference" +
            ")")
-    Mono<Void> createTransportDocumentIDClauseIDRelation(UUID clauseID, UUID transportDocumentID);
+    Mono<Void> createTransportDocumentReferenceClauseIDRelation(UUID clauseID, String transportDocumentReference);
 }

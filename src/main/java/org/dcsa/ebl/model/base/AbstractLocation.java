@@ -8,14 +8,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.Size;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class AbstractLocation implements GetId<UUID> {
+public class AbstractLocation implements GetId<String> {
     @Id
     @JsonProperty("locationID")
-    private UUID id;
+    private String id;
 
     @Column("location_name")
     @Size(max = 100)

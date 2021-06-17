@@ -33,14 +33,14 @@ public class ClauseServiceImpl extends ExtendedBaseServiceImpl<ClauseRepository,
     }
 
     @Override
-    public Flux<Clause> findAllByTransportDocumentID(UUID transportDocumentID) {
-        return clauseRepository.findAllByTransportDocumentID(transportDocumentID);
+    public Flux<Clause> findAllByTransportDocumentReference(String transportDocumentReference) {
+        return clauseRepository.findAllByTransportDocumentReference(transportDocumentReference);
     }
 
     // Misuse this class to create the Many-Many relation between TransportDocument and Clause
     // as Spring R2DBC does not support combined keys in ModelClasses
     @Override
-    public Mono<Void> createTransportDocumentClauseRelation(UUID clauseID, UUID transportDocumentID) {
-        return clauseRepository.createTransportDocumentIDClauseIDRelation(clauseID, transportDocumentID);
+    public Mono<Void> createTransportDocumentClauseRelation(UUID clauseID, String transportDocumentReference) {
+        return clauseRepository.createTransportDocumentReferenceClauseIDRelation(clauseID, transportDocumentReference);
     }
 }

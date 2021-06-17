@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface ReferenceRepository extends ExtendedRepository<Reference, UUID> {
 
-    Flux<Reference> findAllByShippingInstructionID(UUID shippingInstructionID);
+    Flux<Reference> findAllByShippingInstructionID(String shippingInstructionID);
 
 }

@@ -6,6 +6,6 @@ import org.dcsa.ebl.model.Party;
 
 import java.util.UUID;
 
-public interface PartyRepository extends ExtendedRepository<Party, UUID> {
+public interface PartyRepository extends ExtendedRepository<Party, String> {
 
 }

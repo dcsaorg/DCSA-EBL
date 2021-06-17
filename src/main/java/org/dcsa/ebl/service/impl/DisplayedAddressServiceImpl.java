@@ -66,7 +66,7 @@ public class DisplayedAddressServiceImpl extends ExtendedBaseServiceImpl<Display
     }
 
     @Override
-    public Mono<Void> deleteAllDisplayedAddressesForShippingInstruction(UUID shippingInstructionID) {
+    public Mono<Void> deleteAllDisplayedAddressesForShippingInstruction(String shippingInstructionID) {
         return displayedAddressRepository.deleteByShippingInstructionIDAndShipmentIDIsNull(shippingInstructionID)
                 .then(displayedAddressRepository.clearShippingInstructionIDWhereShipmentIDIsNotNull(shippingInstructionID))
                 .then();
