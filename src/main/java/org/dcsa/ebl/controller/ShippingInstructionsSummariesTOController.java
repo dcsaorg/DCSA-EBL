@@ -49,6 +49,7 @@ public class ShippingInstructionsSummariesTOController extends AbstractTOControl
             return Flux.error(e);
         }
 
+        
         return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
                 () -> extendedRequest.insertHeaders(response, request)
         );
