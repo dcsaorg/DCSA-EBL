@@ -9,18 +9,13 @@ import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import javax.validation.Valid;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
