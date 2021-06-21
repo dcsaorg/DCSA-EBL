@@ -1,22 +1,15 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
-import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.ebl.extendedrequest.ShippingInstructionExtendedRequest;
-import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionTOService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.Valid;
@@ -41,22 +34,6 @@ public class ShippingInstructionTOController extends AbstractTOController<Shippi
     @Override
     public String getType() {
         return "ShippingInstruction";
-    }
-
-    @GetMapping
-    public Flux<ShippingInstructionTO> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        ExtendedRequest<ShippingInstruction> extendedRequest = new ShippingInstructionExtendedRequest<>(extendedParameters,
-                r2dbcDialect, ShippingInstruction.class);
-
-        try {
-            extendedRequest.parseParameter(request.getQueryParams());
-        } catch (GetException e) {
-            return Flux.error(e);
-        }
-
-        return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
-                () -> extendedRequest.insertHeaders(response, request)
-        );
     }
 
     @GetMapping(path = "{shippingInstructionID}")
