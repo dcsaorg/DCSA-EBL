@@ -9,6 +9,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         path: DCSA-EBL
+        submodules: recursive
     - name: Set up Java JDK
       uses: actions/setup-java@v1.4.3
       with:
@@ -28,13 +29,6 @@ jobs:
 
     - name: Build Electronic Bill of Lading API
       run: cd DCSA-EBL && mvn package -DskipTests -X #Need to skip the tests as they depend on a running DB
-
-    - name: Checkout IM
-      uses: actions/checkout@v2
-      with:
-        repository: dcsaorg/DCSA-Information-Model
-        ref: master
-        path: DCSA-Information-Model
 
     - name: Run the EBL microservice plus database
       run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V
@@ -57,7 +51,7 @@ jobs:
       run: echo "SELECT 1;" | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f -
 
     - name: Load DCSA EBL test data
-      run: cat DCSA-Information-Model/datamodel/testdata.d/*.sql | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f -
+      run: cat DCSA-EBL/DCSA-Information-Model/datamodel/testdata.d/*.sql | docker exec -i -u postgres dcsa_db psql -d dcsa_openapi -f -
 
     - name: Run API validator
       run: cd DCSA-API-Validator && mvn test -Dtest.suite=EBLV1.xml
