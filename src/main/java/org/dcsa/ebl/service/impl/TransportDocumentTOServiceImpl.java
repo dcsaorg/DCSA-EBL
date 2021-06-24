@@ -86,27 +86,27 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
         // Check if TransportDocument differs from values in Booking
         return getBooking(carrierBookingReference, transportDocumentTO.getShippingInstructionID())
                 .flatMap(booking -> {
-                    if (!Objects.equals(transportDocumentTO.getServiceTypeAtOrigin(), booking.getServiceTypeAtOrigin())) {
+                    if (transportDocumentTO.getServiceTypeAtOrigin() != null && !Objects.equals(transportDocumentTO.getServiceTypeAtOrigin(), booking.getServiceTypeAtOrigin())) {
                         return getBookingError("ServiceTypeAtOrigin", Objects.toString(booking.getServiceTypeAtOrigin()), Objects.toString(transportDocumentTO.getServiceTypeAtOrigin()));
                     } else {
                         transportDocumentTO.setServiceTypeAtOrigin(booking.getServiceTypeAtOrigin());
                     }
-                    if (!Objects.equals(transportDocumentTO.getServiceTypeAtDestination(), booking.getServiceTypeAtDestination())) {
+                    if (transportDocumentTO.getServiceTypeAtDestination() != null && !Objects.equals(transportDocumentTO.getServiceTypeAtDestination(), booking.getServiceTypeAtDestination())) {
                         return getBookingError("ServiceTypeAtDestination", Objects.toString(booking.getServiceTypeAtDestination()), Objects.toString(transportDocumentTO.getServiceTypeAtDestination()));
                     } else {
                         transportDocumentTO.setServiceTypeAtDestination(booking.getServiceTypeAtDestination());
                     }
-                    if (!Objects.equals(transportDocumentTO.getShipmentTermAtOrigin(), booking.getShipmentTermAtOrigin())) {
+                    if (transportDocumentTO.getShipmentTermAtOrigin() != null && !Objects.equals(transportDocumentTO.getShipmentTermAtOrigin(), booking.getShipmentTermAtOrigin())) {
                         return getBookingError("ShipmentTermAtOrigin", Objects.toString(booking.getShipmentTermAtOrigin()), Objects.toString(transportDocumentTO.getShipmentTermAtOrigin()));
                     } else {
                         transportDocumentTO.setShipmentTermAtOrigin(booking.getShipmentTermAtOrigin());
                     }
-                    if (!Objects.equals(transportDocumentTO.getShipmentTermAtDestination(), booking.getShipmentTermAtDestination())) {
+                    if (transportDocumentTO.getShipmentTermAtDestination() != null && !Objects.equals(transportDocumentTO.getShipmentTermAtDestination(), booking.getShipmentTermAtDestination())) {
                         return getBookingError("ShipmentTermAtDestination", Objects.toString(booking.getShipmentTermAtDestination()), Objects.toString(transportDocumentTO.getShipmentTermAtDestination()));
                     } else {
                         transportDocumentTO.setShipmentTermAtDestination(booking.getShipmentTermAtDestination());
                     }
-                    if (!Objects.equals(transportDocumentTO.getServiceContract(), booking.getServiceContract())) {
+                    if (transportDocumentTO.getServiceContract() != null && !Objects.equals(transportDocumentTO.getServiceContract(), booking.getServiceContract())) {
                         return getBookingError("ServiceContract", booking.getServiceContract(), transportDocumentTO.getServiceContract());
                     } else {
                         transportDocumentTO.setServiceContract(booking.getServiceContract());
