@@ -2,29 +2,25 @@ package org.dcsa.ebl.model.base;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public abstract class AbstractTransportDocument extends AuditBase {
 
-    @Column("date_of_issue")
+    @Column("issue_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfIssue;
 
-    @Column("onboard_date")
+    @Column("shipped_onboard_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate onboardDate;
 
