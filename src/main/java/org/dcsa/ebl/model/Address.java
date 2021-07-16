@@ -36,8 +36,9 @@ public class Address {
     @Size(max = 10)
     private String postalCode;
 
+    @Column("city")
     @Size(max = 65)
-    private String city;
+    private String cityName;
 
     @Column("state_region")
     @Size(max = 75)

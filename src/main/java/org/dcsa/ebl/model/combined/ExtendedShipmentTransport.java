@@ -190,7 +190,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
         loadAddress.setStreetNumber(getLoadAddressStreetNumber());
         loadAddress.setFloor(getLoadAddressFloor());
         loadAddress.setPostalCode(getLoadAddressPostalCode());
-        loadAddress.setCity(getLoadAddressCity());
+        loadAddress.setCityName(getLoadAddressCity());
         loadAddress.setStateRegion(getLoadAddressStateRegion());
         loadAddress.setCountry(getLoadAddressCountry());
         return loadAddress;
@@ -203,7 +203,7 @@ public class ExtendedShipmentTransport extends ShipmentTransport {
         dischargeAddress.setStreetNumber(getDischargeAddressStreetNumber());
         dischargeAddress.setFloor(getDischargeAddressFloor());
         dischargeAddress.setPostalCode(getDischargeAddressPostalCode());
-        dischargeAddress.setCity(getDischargeAddressCity());
+        dischargeAddress.setCityName(getDischargeAddressCity());
         dischargeAddress.setStateRegion(getDischargeAddressStateRegion());
         dischargeAddress.setCountry(getDischargeAddressCountry());
         return dischargeAddress;
