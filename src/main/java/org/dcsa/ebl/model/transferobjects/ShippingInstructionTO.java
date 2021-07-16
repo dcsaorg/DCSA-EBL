@@ -37,7 +37,7 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
     private String carrierBookingReference;
 
     @NotNull
-    private LocationTO freightPayableAt;
+    private LocationTO invoicePayableAt;
 
     /**
      * Pull the carrierBookingReference from cargo items into the ShippingInstruction if possible

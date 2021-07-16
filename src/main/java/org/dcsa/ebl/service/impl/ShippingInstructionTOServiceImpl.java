@@ -54,9 +54,9 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     private final Validator validator;
 
     private Mono<Void> processFreightPayableAt(ShippingInstructionTO shippingInstructionTO, ShippingInstruction shippingInstruction) {
-        return Mono.justOrEmpty(shippingInstructionTO.getFreightPayableAt())
+        return Mono.justOrEmpty(shippingInstructionTO.getInvoicePayableAt())
                 .flatMap(locationService::ensureResolvable)
-                .doOnNext(shippingInstructionTO::setFreightPayableAt)
+                .doOnNext(shippingInstructionTO::setInvoicePayableAt)
                 .map(LocationTO::getId)
                 .doOnNext(shippingInstruction::setFreightPayableAt)
                 .then();
@@ -145,7 +145,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                             )
                     ),
             locationService.findPaymentLocationByShippingInstructionID(id)
-                .doOnNext(shippingInstructionTO::setFreightPayableAt),
+                .doOnNext(shippingInstructionTO::setInvoicePayableAt),
             cargoItemService.findAllByShippingInstructionID(id)
                 .concatMap(cargoItem -> {
                     CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
