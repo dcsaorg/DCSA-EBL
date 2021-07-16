@@ -2,21 +2,19 @@ package org.dcsa.ebl.repository;
 
 import org.dcsa.core.repository.ExtendedRepository;
 import org.dcsa.ebl.model.Address;
-import org.springframework.data.relational.core.mapping.Column;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.Size;
 import java.util.UUID;
 
 public interface AddressRepository extends ExtendedRepository<Address, UUID> {
 
-    Mono<Address> findByNameAndStreetAndStreetNumberAndFloorAndPostalCodeAndCityAndStateRegionAndCountry(
+    Mono<Address> findByNameAndStreetAndStreetNumberAndFloorAndPostalCodeAndCityNameAndStateRegionAndCountry(
             String name,
             String street,
             String streetNumber,
             String floor,
             String postalCode,
-            String city,
+            String cityName,
             String stateRegion,
             String country
     );
@@ -25,13 +23,13 @@ public interface AddressRepository extends ExtendedRepository<Address, UUID> {
         if (address.getId() != null) {
             return findById(address.getId());
         }
-        return findByNameAndStreetAndStreetNumberAndFloorAndPostalCodeAndCityAndStateRegionAndCountry(
+        return findByNameAndStreetAndStreetNumberAndFloorAndPostalCodeAndCityNameAndStateRegionAndCountry(
                 address.getName(),
                 address.getStreet(),
                 address.getStreetNumber(),
                 address.getFloor(),
                 address.getPostalCode(),
-                address.getCity(),
+                address.getCityName(),
                 address.getStateRegion(),
                 address.getCountry()
         );
