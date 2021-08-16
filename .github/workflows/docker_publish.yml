@@ -8,7 +8,7 @@ name: Docker
 on:
   push:
     branches:
-      - master
+      - DDT-160-push-docker-image-to-container-registry
     
 env:
   # Use docker.io for Docker Hub if empty
