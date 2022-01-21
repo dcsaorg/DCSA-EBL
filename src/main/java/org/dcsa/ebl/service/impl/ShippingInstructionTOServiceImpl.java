@@ -147,79 +147,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
     public Mono<ShippingInstructionTO> findById(String id) {
         ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
         return Mono.empty();
-        // TODO: fix me
-//        return Flux.concat(
-//            shippingInstructionService.findById(id)
-//                    .doOnNext(shippingInstruction ->
-//                            MappingUtil.copyFields(
-//                                    shippingInstruction,
-//                                    shippingInstructionTO,
-//                                    AbstractShippingInstruction.class
-//                            )
-//                    ),
-//            locationService.findPaymentLocationByShippingInstructionID(id)
-//                .doOnNext(shippingInstructionTO::setInvoicePayableAt),
-//            cargoItemService.findAllByShippingInstructionID(id)
-//                .concatMap(cargoItem -> {
-//                    CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
-//
-//                    // cargoItemTO.equipmentReference is intentionally null
-//
-//                    // TODO Performance: This suffers from N+1 syndrome (1 Query for the CargoItems and then N for the Cargo Lines)
-//                    return cargoLineItemService.findAllByCargoItemID(cargoItem.getId())
-//                            .map(cargoLineItem -> MappingUtil.instanceFrom(cargoLineItem, CargoLineItemTO::new, AbstractCargoLineItem.class))
-//                            .collectList()
-//                            .doOnNext(cargoItemTO::setCargoLineItems)
-//                            .then(Mono.zip(Mono.just(cargoItem), Mono.just(cargoItemTO)));
-//                })
-//                .collectList()
-//                .flatMapMany(tuples -> {
-//                    List<CargoItemTO> cargoItemTOs = tuples.stream().map(Tuple2::getT2).collect(Collectors.toList());
-//                    List<UUID> shipmentIds = tuples.stream().map(Tuple2::getT1).map(CargoItem::getShipmentID)
-//                            .distinct().collect(Collectors.toList());
-//                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds, tuples)
-//                            .then(Mono.just(cargoItemTOs));
-//                })
-//                .doOnNext(cargoItemTOs -> {
-//                    shippingInstructionTO.setCargoItems(cargoItemTOs);
-//                    shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
-//                })
-//                .count(),
-//           // TODO: Ideally we would use a JOIN to pull Party/PartyContactDetails together with DocumentParty due to the 1:1 relation
-//           // but for now this will do.
-//           documentPartyService.findAllByShippingInstructionID(id)
-//                .flatMap(documentParty -> Mono.zip(
-//                               Mono.just(documentParty.getPartyID()),
-//                               Mono.just(MappingUtil.instanceFrom(
-//                                       documentParty,
-//                                       DocumentPartyTO::new,
-//                                       AbstractDocumentParty.class
-//                               )).flatMap(documentPartyTO ->
-//                                   // FIXME: N+1 performance
-//                                   Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
-//                                           .flatMap(partyContactDetailsService::findById)
-//                                           .doOnNext(documentPartyTO::setPartyContactDetails)
-//                                           .thenReturn(documentParty)
-//                                           .flatMap(displayedAddressService::loadDisplayedAddress)
-//                                           .doOnNext(documentPartyTO::setDisplayedAddress)
-//                                           .thenReturn(documentPartyTO)
-//
-//                               )
-//                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
-//                .flatMapMany(partyID2DocumentPartyTOs ->
-//                        setPartyOnAllMatchingInstances(
-//                                partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
-//                                partyID2DocumentPartyTOs
-//                        )
-//                )
-//                .collectList()
-//                .doOnNext(shippingInstructionTO::setDocumentParties),
-//           referenceService.findAllByShippingInstructionID(id)
-//                .collectList()
-//                .doOnNext(shippingInstructionTO::setReferences)
-//        )
-//                /* Consume all the items; we want the side-effect, not the return value */
-//                .then(Mono.just(shippingInstructionTO));
     }
 
     private Mono<ShippingInstructionUpdateInfo> loadShipmentIDs(ShippingInstructionUpdateInfo instructionUpdateInfo) {
@@ -239,13 +166,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 Collections.unmodifiableMap(equipmentReference2CarrierBookingReference)
         );
         return Mono.empty();
-//        return Flux.fromIterable(cargoItemTOs)
-//                .map(CargoItemTO::getCarrierBookingReference)
-//                .buffer(SQL_LIST_BUFFER_SIZE)
-//                .concatMap(shipmentService::findByCarrierBookingReferenceIn)
-//                .collectMap(Shipment::getCarrierBookingReference, Shipment::getId)
-//                .doOnNext(instructionUpdateInfo::setCarrierBookingReference2ShipmentID)
-//                .thenReturn(instructionUpdateInfo);
     }
 
     private Mono<Void> processCargoItems(
@@ -669,13 +589,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         if (documentPartyTO.getParty() != null) {
                             return Flux.error(new IllegalArgumentException("DocumentPartyTo already had a Party!?"));
                         }
-                        // TODO: fix me
-//                        if (addressID != null) {
-//                            return addressMono
-//                                    .map(party::toPartyTO)
-//                                    .doOnNext(documentPartyTO::setParty);
-//                        }
-//                        documentPartyTO.setParty(party.toPartyTO(null));
                         return Mono.empty();
                     });
         }).thenMany(Flux.fromIterable(id2TOMap.values()))

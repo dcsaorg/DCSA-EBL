@@ -40,13 +40,10 @@ public class EquipmentTO extends AbstractEquipment implements ModelReferencingTO
         clone = MappingUtil.instanceFrom(equipment, Equipment::new, Equipment.class);
         assert this.getEquipmentReference().equals(equipment.getEquipmentReference());
 
-        // TODO: fix me
-//        modified |= setIfChanged(clone.getWeightUnit(), this.getWeightUnit(), clone::setWeightUnit);
         modified |= setIfChanged(clone.getTareWeight(), this.getTareWeight(), clone::setTareWeight);
         modified |= setIfChanged(clone.getIsoEquipmentCode(), this.getIsoEquipmentCode(), clone::setIsoEquipmentCode);
         if (this.getIsShipperOwned() != null) {
-        // TODO: fix me
-//            modified |= setIfChanged(clone.getIsShipperOwned(), this.getIsShipperOwned(), clone::setIsShipperOwned);
+
         }
 
         return modified ? clone : null;

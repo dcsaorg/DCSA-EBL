@@ -34,7 +34,5 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
     @Override
     public Flux<Charge> findAllByTransportDocumentReference(String transportDocumentReference) {
         return Flux.empty();
-        // TODO: fix me
-//        return chargeRepository.findAllByTransportDocumentReference(transportDocumentReference);
     }
 }

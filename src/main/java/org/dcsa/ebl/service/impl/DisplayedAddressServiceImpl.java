@@ -29,53 +29,15 @@ public class DisplayedAddressServiceImpl extends ExtendedBaseServiceImpl<Display
 
     public Mono<List<String>> loadDisplayedAddress(DocumentParty documentParty) {
         return Mono.empty();
-        // TODO: fix me
-//        return displayedAddressRepository.findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentIDOrderByAddressLineNumberAsc(
-//                documentParty.getPartyID(),
-//                documentParty.getPartyFunction(),
-//                documentParty.getShippingInstructionID(),
-//                documentParty.getShipmentID()
-//        )
-//        .map(DisplayedAddress::getAddressLine)
-//        .collectList();
     }
 
     @Override
     public Flux<DisplayedAddress> createDisplayedAddresses(DocumentParty documentParty, List<String> displayedAddressesAsStrings) {
         return Flux.empty();
-        // TODO: fix me
-//        DisplayedAddress base;
-//        List<DisplayedAddress> displayedAddressList;
-//        if (displayedAddressesAsStrings == null || displayedAddressesAsStrings.isEmpty()) {
-//            return Flux.empty();
-//        }
-//        base = new DisplayedAddress();
-//        base.setPartyID(Objects.requireNonNull(documentParty.getPartyID(), "partyID"));
-//        base.setPartyFunction(documentParty.getPartyFunction());
-//        base.setShipmentID(documentParty.getShipmentID());
-//        base.setShippingInstructionID(documentParty.getShippingInstructionID());
-//        displayedAddressList = new ArrayList<>(displayedAddressesAsStrings.size());
-//        for (int i = 0 ; i < displayedAddressesAsStrings.size() ; i++) {
-//            DisplayedAddress displayedAddress = MappingUtil.instanceFrom(base, DisplayedAddress::new, DisplayedAddress.class);
-//            displayedAddress.setAddressLine(displayedAddressesAsStrings.get(i));
-//            displayedAddress.setAddressLineNumber(i);
-//            displayedAddressList.add(displayedAddress);
-//        }
-//        return Flux.fromIterable(displayedAddressList)
-//                .concatMap(this::preCreateHook)
-//                .concatMap(this::preSaveHook)
-//                .buffer(Util.SQL_LIST_BUFFER_SIZE)
-//                .concatMap(displayedAddressRepository::saveAll);
-//
     }
 
     @Override
     public Mono<Void> deleteAllDisplayedAddressesForShippingInstruction(String shippingInstructionID) {
         return Mono.empty();
-        // TODO: fix me
-//
-//        return displayedAddressRepository.deleteByShippingInstructionIDAndShipmentIDIsNull(shippingInstructionID)
-//                .then(displayedAddressRepository.clearShippingInstructionIDWhereShipmentIDIsNotNull(shippingInstructionID))
-//                .then();
     }
 }

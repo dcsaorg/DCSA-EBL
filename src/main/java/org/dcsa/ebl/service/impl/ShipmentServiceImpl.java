@@ -25,8 +25,6 @@ public class ShipmentServiceImpl extends ExtendedBaseServiceImpl<ShipmentReposit
     @Override
     public Flux<Shipment> findByCarrierBookingReferenceIn(List<String> carrierBookingReference) {
         return Flux.empty();
-        // TODO: fix me
-//        return shipmentRepository.findByCarrierBookingReferenceIn(carrierBookingReference);
     }
 
     @Override

@@ -34,7 +34,5 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
     @Override
     public Flux<ShipmentLocation> findAllByCarrierBookingReference(String carrierBookingReference) {
         return Flux.empty();
-        // TODO: fix me
-//        return shipmentLocationRepository.findAllByCarrierBookingReference(carrierBookingReference);
     }
 }
