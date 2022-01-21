@@ -43,9 +43,6 @@ spring:
   webflux:
     base-path: /v1
 
-auth0:
-  audience: localhost
-  enabled: false
 springdoc:
   api-docs:
     path: /api-docs
