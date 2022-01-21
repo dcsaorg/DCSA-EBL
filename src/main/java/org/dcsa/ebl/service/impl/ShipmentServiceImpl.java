@@ -1,12 +1,13 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.Shipment;
+import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.model.Shipment;
-import org.dcsa.ebl.repository.ShipmentRepository;
 import org.dcsa.ebl.service.ShipmentService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,11 +24,13 @@ public class ShipmentServiceImpl extends ExtendedBaseServiceImpl<ShipmentReposit
 
     @Override
     public Flux<Shipment> findByCarrierBookingReferenceIn(List<String> carrierBookingReference) {
-        return shipmentRepository.findByCarrierBookingReferenceIn(carrierBookingReference);
+        return Flux.empty();
+        // TODO: fix me
+//        return shipmentRepository.findByCarrierBookingReferenceIn(carrierBookingReference);
     }
 
     @Override
-    public Flux<Shipment> findByCarrierBookingReference(String carrierBookingReference) {
+    public Mono<Shipment> findByCarrierBookingReference(String carrierBookingReference) {
         return shipmentRepository.findByCarrierBookingReference(carrierBookingReference);
     }
 

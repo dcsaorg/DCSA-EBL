@@ -1,11 +1,11 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
-import org.dcsa.ebl.model.TransportDocument;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentTOService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;

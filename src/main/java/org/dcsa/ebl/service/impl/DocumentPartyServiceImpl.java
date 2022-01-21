@@ -1,19 +1,15 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.DocumentParty;
+import org.dcsa.core.events.repository.DocumentPartyRepository;
+import org.dcsa.core.events.service.PartyService;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.DocumentParty;
-import org.dcsa.ebl.model.base.AbstractDocumentParty;
 import org.dcsa.ebl.model.transferobjects.DocumentPartyTO;
-import org.dcsa.ebl.model.transferobjects.PartyTO;
-import org.dcsa.ebl.model.utils.MappingUtil;
-import org.dcsa.ebl.repository.DocumentPartyRepository;
 import org.dcsa.ebl.service.DisplayedAddressService;
 import org.dcsa.ebl.service.DocumentPartyService;
 import org.dcsa.ebl.service.PartyContactDetailsService;
-import org.dcsa.ebl.service.PartyService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,7 +31,9 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
 
     @Override
     public Flux<DocumentParty> findAllByShippingInstructionID(String shippingInstructionID) {
-        return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
+        return Flux.empty();
+        // TODO: fix me
+//        return documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID);
     }
 
     @Override
@@ -57,70 +55,76 @@ public class DocumentPartyServiceImpl extends ExtendedBaseServiceImpl<DocumentPa
 
     @Override
     public Mono<DocumentParty> update(final DocumentParty update) {
-        return documentPartyRepository.findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentID(
-                update.getPartyID(),
-                update.getPartyFunction(),
-                update.getShippingInstructionID(),
-                update.getShipmentID()
-        )
-                .flatMap(current -> this.preUpdateHook(current, update))
-                .flatMap(this::save);
+        // TODO: fix me
+        return Mono.empty();
+//        return documentPartyRepository.findByPartyIDAndPartyFunctionAndShippingInstructionIDAndShipmentID(
+//                update.getPartyID(),
+//                update.getPartyFunction(),
+//                update.getShippingInstructionID(),
+//                update.getShipmentID()
+//        )
+//                .flatMap(current -> this.preUpdateHook(current, update))
+//                .flatMap(this::save);
     }
 
     public Mono<Void> deleteObsoleteDocumentPartyInstances(String shippingInstructionID) {
-        return displayedAddressService.deleteAllDisplayedAddressesForShippingInstruction(shippingInstructionID)
-                .thenMany(documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID))
-                .groupBy(documentParty -> documentParty.getShipmentID() != null)
-                .concatMap(documentPartyGroupedFlux -> {
-                    if (documentPartyGroupedFlux.key()) {
-                        // Has a shipment ID, clear the shipping instruction ID but leave the entry
-                        return documentPartyGroupedFlux.flatMap(original -> {
-                            DocumentParty update = MappingUtil.instanceFrom(original, DocumentParty::new, DocumentParty.class);
-                            update.setShippingInstructionID(null);
-                            return this.preUpdateHook(original, update);
-                        })
-                                .concatMap(this::preSaveHook)
-                                .buffer(Util.SQL_LIST_BUFFER_SIZE)
-                                .concatMap(documentPartyRepository::saveAll);
-                    }
-                    // No shipment ID, delete them
-                    return documentPartyGroupedFlux
-                            .buffer(Util.SQL_LIST_BUFFER_SIZE)
-                            .concatMap(documentParties ->
-                                documentPartyRepository.deleteAll(documentParties)
-                                        .thenMany(Flux.fromIterable(documentParties))
-                                        .filter(documentParty -> documentParty.getPartyContactDetailsID() != null)
-                                        .map(DocumentParty::getPartyContactDetailsID)
-                                        .flatMap(partyContactDetailsService::deleteById)
-                            );
-
-                })
-                .then();
+        return Mono.empty();
+        // TODO: fix me
+//        return displayedAddressService.deleteAllDisplayedAddressesForShippingInstruction(shippingInstructionID)
+//                .thenMany(documentPartyRepository.findAllByShippingInstructionID(shippingInstructionID))
+//                .groupBy(documentParty -> documentParty.getShipmentID() != null)
+//                .concatMap(documentPartyGroupedFlux -> {
+//                    if (documentPartyGroupedFlux.key()) {
+//                        // Has a shipment ID, clear the shipping instruction ID but leave the entry
+//                        return documentPartyGroupedFlux.flatMap(original -> {
+//                            DocumentParty update = MappingUtil.instanceFrom(original, DocumentParty::new, DocumentParty.class);
+//                            update.setShippingInstructionID(null);
+//                            return this.preUpdateHook(original, update);
+//                        })
+//                                .concatMap(this::preSaveHook)
+//                                .buffer(Util.SQL_LIST_BUFFER_SIZE)
+//                                .concatMap(documentPartyRepository::saveAll);
+//                    }
+//                    // No shipment ID, delete them
+//                    return documentPartyGroupedFlux
+//                            .buffer(Util.SQL_LIST_BUFFER_SIZE)
+//                            .concatMap(documentParties ->
+//                                documentPartyRepository.deleteAll(documentParties)
+//                                        .thenMany(Flux.fromIterable(documentParties))
+//                                        .filter(documentParty -> documentParty.getPartyContactDetailsID() != null)
+//                                        .map(DocumentParty::getPartyContactDetailsID)
+//                                        .flatMap(partyContactDetailsService::deleteById)
+//                            );
+//
+//                })
+//                .then();
     }
 
     @Override
     public Flux<DocumentPartyTO> ensureResolvable(String shippingInstructionID, Iterable<DocumentPartyTO> documentPartyTOs) {
-        return Flux.fromIterable(documentPartyTOs)
-                .concatMap(documentPartyTO -> {
-                    DocumentParty documentParty;
-                    PartyTO partyTO = documentPartyTO.getParty();
-
-                    documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
-                    documentParty.setShippingInstructionID(shippingInstructionID);
-
-                    return Mono.justOrEmpty(documentPartyTO.getPartyContactDetails())
-                            .flatMap(partyContactDetailsService::create)
-                            .doOnNext(partyContactDetails -> documentParty.setPartyContactDetailsID(partyContactDetails.getId()))
-                            .then(partyService.ensureResolvable(partyTO))
-                            .doOnNext(resolvedParty -> {
-                                documentParty.setPartyID(resolvedParty.getId());
-                                documentPartyTO.setParty(resolvedParty);
-                            }).flatMap(ignored -> create(documentParty))
-                            .flatMapMany(savedDocumentParty -> displayedAddressService.createDisplayedAddresses(
-                                    savedDocumentParty,
-                                    documentPartyTO.getDisplayedAddress()
-                            )).then(Mono.just(documentPartyTO));
-                });
+        return Flux.empty();
+        // TODO: fix me
+//        return Flux.fromIterable(documentPartyTOs)
+//                .concatMap(documentPartyTO -> {
+//                    DocumentParty documentParty;
+//                    PartyTO partyTO = documentPartyTO.getParty();
+//
+//                    documentParty = MappingUtil.instanceFrom(documentPartyTO, DocumentParty::new, AbstractDocumentParty.class);
+//                    documentParty.setShippingInstructionID(shippingInstructionID);
+//
+//                    return Mono.justOrEmpty(documentPartyTO.getPartyContactDetails())
+//                            .flatMap(partyContactDetailsService::create)
+//                            .doOnNext(partyContactDetails -> documentParty.setPartyContactDetailsID(partyContactDetails.getId()))
+//                            .then(partyService.ensureResolvable(partyTO))
+//                            .doOnNext(resolvedParty -> {
+//                                documentParty.setPartyID(resolvedParty.getId());
+//                                documentPartyTO.setParty(resolvedParty);
+//                            }).flatMap(ignored -> create(documentParty))
+//                            .flatMapMany(savedDocumentParty -> displayedAddressService.createDisplayedAddresses(
+//                                    savedDocumentParty,
+//                                    documentPartyTO.getDisplayedAddress()
+//                            )).then(Mono.just(documentPartyTO));
+//                });
     }
 
 }

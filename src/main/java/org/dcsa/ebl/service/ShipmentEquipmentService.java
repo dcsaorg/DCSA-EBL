@@ -1,7 +1,7 @@
 package org.dcsa.ebl.service;
 
+import org.dcsa.core.events.model.ShipmentEquipment;
 import org.dcsa.core.service.ExtendedBaseService;
-import org.dcsa.ebl.model.ShipmentEquipment;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

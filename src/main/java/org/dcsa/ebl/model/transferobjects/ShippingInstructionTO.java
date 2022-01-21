@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.ebl.model.Reference;
+import org.dcsa.core.events.model.Reference;
+import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 
 import javax.validation.Valid;

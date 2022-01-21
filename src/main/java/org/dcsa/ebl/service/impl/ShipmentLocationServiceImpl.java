@@ -1,9 +1,9 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.ShipmentLocation;
+import org.dcsa.core.events.repository.ShipmentLocationRepository;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.model.ShipmentLocation;
-import org.dcsa.ebl.repository.ShipmentLocationRepository;
 import org.dcsa.ebl.service.ShipmentLocationService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -33,6 +33,8 @@ public class ShipmentLocationServiceImpl extends ExtendedBaseServiceImpl<Shipmen
 
     @Override
     public Flux<ShipmentLocation> findAllByCarrierBookingReference(String carrierBookingReference) {
-        return shipmentLocationRepository.findAllByCarrierBookingReference(carrierBookingReference);
+        return Flux.empty();
+        // TODO: fix me
+//        return shipmentLocationRepository.findAllByCarrierBookingReference(carrierBookingReference);
     }
 }

@@ -1,10 +1,9 @@
 package org.dcsa.ebl.service;
 
+import org.dcsa.core.events.model.Equipment;
 import org.dcsa.core.service.ExtendedBaseService;
-import org.dcsa.ebl.model.Equipment;
 import org.dcsa.ebl.model.transferobjects.EquipmentTO;
 import org.dcsa.ebl.model.transferobjects.ShipmentEquipmentTO;
-import org.dcsa.ebl.repository.EquipmentRepository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;

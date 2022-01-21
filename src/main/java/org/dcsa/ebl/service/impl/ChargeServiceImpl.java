@@ -1,10 +1,10 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.Charge;
+import org.dcsa.core.events.repository.ChargeRepository;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.Charge;
-import org.dcsa.ebl.repository.ChargeRepository;
 import org.dcsa.ebl.service.ChargeService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository, Charge, UUID> implements ChargeService {
+public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository, Charge, String> implements ChargeService {
     private final ChargeRepository chargeRepository;
 
     @Override
@@ -33,6 +33,8 @@ public class ChargeServiceImpl extends ExtendedBaseServiceImpl<ChargeRepository,
 
     @Override
     public Flux<Charge> findAllByTransportDocumentReference(String transportDocumentReference) {
-        return chargeRepository.findAllByTransportDocumentReference(transportDocumentReference);
+        return Flux.empty();
+        // TODO: fix me
+//        return chargeRepository.findAllByTransportDocumentReference(transportDocumentReference);
     }
 }

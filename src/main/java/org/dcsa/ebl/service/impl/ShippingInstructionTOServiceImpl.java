@@ -1,12 +1,22 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.*;
+import org.dcsa.core.events.model.transferobjects.LocationTO;
+import org.dcsa.core.events.service.AddressService;
+import org.dcsa.core.events.service.LocationService;
+import org.dcsa.core.events.service.PartyService;
+import org.dcsa.core.events.service.ReferenceService;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.ChangeSet;
+import org.dcsa.ebl.model.Seal;
 import org.dcsa.ebl.model.*;
-import org.dcsa.ebl.model.base.*;
+import org.dcsa.ebl.model.base.AbstractCargoItem;
+import org.dcsa.ebl.model.base.AbstractCargoLineItem;
+import org.dcsa.ebl.model.base.AbstractEquipment;
+import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.model.utils.ShippingInstructionUpdateInfo;
@@ -72,141 +82,144 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                         Collectors.mapping(Tuple2::getT2, Collectors.toList())
                 )
         );
-        return Flux.concat(
-                shipmentService.findAllById(shipmentIDs)
-                    .collectMap(Shipment::getId, Shipment::getCarrierBookingReference)
-                    .flatMapMany(shipmentId2BookingReference ->
-                        Flux.fromIterable(cargoItemTuples)
-                                .flatMap(tuple -> {
-                                    CargoItem cargoItem = tuple.getT1();
-                                    CargoItemTO cargoItemTO = tuple.getT2();
-                                    String bookingReference = shipmentId2BookingReference.get(cargoItem.getShipmentID());
-                                    if (bookingReference == null) {
-                                        return Mono.error(new IllegalStateException("CargoItem " + cargoItem.getId()
-                                                + " references Shipment " + cargoItem.getShipmentID()
-                                                + " but we did not get its booking reference!?"));
-                                    }
-                                    cargoItemTO.setCarrierBookingReference(bookingReference);
-                                    return Mono.empty();
-                                })
-                ),
-                shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
-                    .concatMap(shipmentEquipment -> {
-                        ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
-                        List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
-
-                        shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
-                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit());
-
-                        if (cargoItemTOs == null || cargoItemTOs.isEmpty()) {
-                            return Mono.error(new IllegalStateException("No CargoItem referenced Equipment with "
-                                    + shipmentEquipment.getEquipmentReference() + "!?"));
-                        }
-                        for (CargoItemTO cargoItemTO : cargoItemTOs) {
-                            cargoItemTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
-                        }
-
-                        // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
-                        //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
-                        //
-                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 (LEFT) JOIN between
-                        // ShipmentEquipment, Equipment, and ActiveReeferSettings.  Seals are a bit more
-                        // problematic as it will force a lot of data to be repeated for each seal (plus r2dbc
-                        // does not have a good solution for 1:N relations at the moment)
-                        //
-                        // Anyway, we start here and can improve it later.
-                        return Flux.concat(
-                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
-                                        .map(equipment -> MappingUtil.instanceFrom(equipment, EquipmentTO::new, AbstractEquipment.class))
-                                        .doOnNext(shipmentEquipmentTO::setEquipment),
-                                sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
-                                    .collectList()
-                                    .doOnNext(shipmentEquipmentTO::setSeals),
-                                // ActiveReeferSettings is optional
-                                activeReeferSettingsRepository.findById(shipmentEquipment.getId())
-                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
-                        ).then(Mono.just(shipmentEquipmentTO));
-                    }).collectList()
-                    .doOnNext(shippingInstructionTO::setShipmentEquipments)
-        ).then(Mono.just(shippingInstructionTO));
+        return Mono.empty();
+//        return Flux.concat(
+//                shipmentService.findAllById(shipmentIDs)
+//                    .collectMap(Shipment::getId, Shipment::getCarrierBookingReference)
+//                    .flatMapMany(shipmentId2BookingReference ->
+//                        Flux.fromIterable(cargoItemTuples)
+//                                .flatMap(tuple -> {
+//                                    CargoItem cargoItem = tuple.getT1();
+//                                    CargoItemTO cargoItemTO = tuple.getT2();
+//                                    String bookingReference = shipmentId2BookingReference.get(cargoItem.getShipmentID());
+//                                    if (bookingReference == null) {
+//                                        return Mono.error(new IllegalStateException("CargoItem " + cargoItem.getId()
+//                                                + " references Shipment " + cargoItem.getShipmentID()
+//                                                + " but we did not get its booking reference!?"));
+//                                    }
+//                                    cargoItemTO.setCarrierBookingReference(bookingReference);
+//                                    return Mono.empty();
+//                                })
+//                ),
+//                shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
+//                    .concatMap(shipmentEquipment -> {
+//                        ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+//                        List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
+//
+//                        shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
+//                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit());
+//
+//                        if (cargoItemTOs == null || cargoItemTOs.isEmpty()) {
+//                            return Mono.error(new IllegalStateException("No CargoItem referenced Equipment with "
+//                                    + shipmentEquipment.getEquipmentReference() + "!?"));
+//                        }
+//                        for (CargoItemTO cargoItemTO : cargoItemTOs) {
+//                            cargoItemTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
+//                        }
+//
+//                        // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
+//                        //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
+//                        //
+//                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 (LEFT) JOIN between
+//                        // ShipmentEquipment, Equipment, and ActiveReeferSettings.  Seals are a bit more
+//                        // problematic as it will force a lot of data to be repeated for each seal (plus r2dbc
+//                        // does not have a good solution for 1:N relations at the moment)
+//                        //
+//                        // Anyway, we start here and can improve it later.
+//                        return Flux.concat(
+//                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
+//                                        .map(equipment -> MappingUtil.instanceFrom(equipment, EquipmentTO::new, AbstractEquipment.class))
+//                                        .doOnNext(shipmentEquipmentTO::setEquipment),
+//                                sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
+//                                    .collectList()
+//                                    .doOnNext(shipmentEquipmentTO::setSeals),
+//                                // ActiveReeferSettings is optional
+//                                activeReeferSettingsRepository.findById(shipmentEquipment.getId())
+//                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
+//                        ).then(Mono.just(shipmentEquipmentTO));
+//                    }).collectList()
+//                    .doOnNext(shippingInstructionTO::setShipmentEquipments)
+//        ).then(Mono.just(shippingInstructionTO));
     }
 
     @Transactional
     @Override
     public Mono<ShippingInstructionTO> findById(String id) {
         ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
-        return Flux.concat(
-            shippingInstructionService.findById(id)
-                    .doOnNext(shippingInstruction ->
-                            MappingUtil.copyFields(
-                                    shippingInstruction,
-                                    shippingInstructionTO,
-                                    AbstractShippingInstruction.class
-                            )
-                    ),
-            locationService.findPaymentLocationByShippingInstructionID(id)
-                .doOnNext(shippingInstructionTO::setInvoicePayableAt),
-            cargoItemService.findAllByShippingInstructionID(id)
-                .concatMap(cargoItem -> {
-                    CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
-
-                    // cargoItemTO.equipmentReference is intentionally null
-
-                    // TODO Performance: This suffers from N+1 syndrome (1 Query for the CargoItems and then N for the Cargo Lines)
-                    return cargoLineItemService.findAllByCargoItemID(cargoItem.getId())
-                            .map(cargoLineItem -> MappingUtil.instanceFrom(cargoLineItem, CargoLineItemTO::new, AbstractCargoLineItem.class))
-                            .collectList()
-                            .doOnNext(cargoItemTO::setCargoLineItems)
-                            .then(Mono.zip(Mono.just(cargoItem), Mono.just(cargoItemTO)));
-                })
-                .collectList()
-                .flatMapMany(tuples -> {
-                    List<CargoItemTO> cargoItemTOs = tuples.stream().map(Tuple2::getT2).collect(Collectors.toList());
-                    List<UUID> shipmentIds = tuples.stream().map(Tuple2::getT1).map(CargoItem::getShipmentID)
-                            .distinct().collect(Collectors.toList());
-                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds, tuples)
-                            .then(Mono.just(cargoItemTOs));
-                })
-                .doOnNext(cargoItemTOs -> {
-                    shippingInstructionTO.setCargoItems(cargoItemTOs);
-                    shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
-                })
-                .count(),
-           // TODO: Ideally we would use a JOIN to pull Party/PartyContactDetails together with DocumentParty due to the 1:1 relation
-           // but for now this will do.
-           documentPartyService.findAllByShippingInstructionID(id)
-                .flatMap(documentParty -> Mono.zip(
-                               Mono.just(documentParty.getPartyID()),
-                               Mono.just(MappingUtil.instanceFrom(
-                                       documentParty,
-                                       DocumentPartyTO::new,
-                                       AbstractDocumentParty.class
-                               )).flatMap(documentPartyTO ->
-                                   // FIXME: N+1 performance
-                                   Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
-                                           .flatMap(partyContactDetailsService::findById)
-                                           .doOnNext(documentPartyTO::setPartyContactDetails)
-                                           .thenReturn(documentParty)
-                                           .flatMap(displayedAddressService::loadDisplayedAddress)
-                                           .doOnNext(documentPartyTO::setDisplayedAddress)
-                                           .thenReturn(documentPartyTO)
-
-                               )
-                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
-                .flatMapMany(partyID2DocumentPartyTOs ->
-                        setPartyOnAllMatchingInstances(
-                                partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
-                                partyID2DocumentPartyTOs
-                        )
-                )
-                .collectList()
-                .doOnNext(shippingInstructionTO::setDocumentParties),
-           referenceService.findAllByShippingInstructionID(id)
-                .collectList()
-                .doOnNext(shippingInstructionTO::setReferences)
-        )
-                /* Consume all the items; we want the side-effect, not the return value */
-                .then(Mono.just(shippingInstructionTO));
+        return Mono.empty();
+        // TODO: fix me
+//        return Flux.concat(
+//            shippingInstructionService.findById(id)
+//                    .doOnNext(shippingInstruction ->
+//                            MappingUtil.copyFields(
+//                                    shippingInstruction,
+//                                    shippingInstructionTO,
+//                                    AbstractShippingInstruction.class
+//                            )
+//                    ),
+//            locationService.findPaymentLocationByShippingInstructionID(id)
+//                .doOnNext(shippingInstructionTO::setInvoicePayableAt),
+//            cargoItemService.findAllByShippingInstructionID(id)
+//                .concatMap(cargoItem -> {
+//                    CargoItemTO cargoItemTO = MappingUtil.instanceFrom(cargoItem, CargoItemTO::new, AbstractCargoItem.class);
+//
+//                    // cargoItemTO.equipmentReference is intentionally null
+//
+//                    // TODO Performance: This suffers from N+1 syndrome (1 Query for the CargoItems and then N for the Cargo Lines)
+//                    return cargoLineItemService.findAllByCargoItemID(cargoItem.getId())
+//                            .map(cargoLineItem -> MappingUtil.instanceFrom(cargoLineItem, CargoLineItemTO::new, AbstractCargoLineItem.class))
+//                            .collectList()
+//                            .doOnNext(cargoItemTO::setCargoLineItems)
+//                            .then(Mono.zip(Mono.just(cargoItem), Mono.just(cargoItemTO)));
+//                })
+//                .collectList()
+//                .flatMapMany(tuples -> {
+//                    List<CargoItemTO> cargoItemTOs = tuples.stream().map(Tuple2::getT2).collect(Collectors.toList());
+//                    List<UUID> shipmentIds = tuples.stream().map(Tuple2::getT1).map(CargoItem::getShipmentID)
+//                            .distinct().collect(Collectors.toList());
+//                    return extractShipmentRelatedFields(shippingInstructionTO, shipmentIds, tuples)
+//                            .then(Mono.just(cargoItemTOs));
+//                })
+//                .doOnNext(cargoItemTOs -> {
+//                    shippingInstructionTO.setCargoItems(cargoItemTOs);
+//                    shippingInstructionTO.hoistCarrierBookingReferenceIfPossible();
+//                })
+//                .count(),
+//           // TODO: Ideally we would use a JOIN to pull Party/PartyContactDetails together with DocumentParty due to the 1:1 relation
+//           // but for now this will do.
+//           documentPartyService.findAllByShippingInstructionID(id)
+//                .flatMap(documentParty -> Mono.zip(
+//                               Mono.just(documentParty.getPartyID()),
+//                               Mono.just(MappingUtil.instanceFrom(
+//                                       documentParty,
+//                                       DocumentPartyTO::new,
+//                                       AbstractDocumentParty.class
+//                               )).flatMap(documentPartyTO ->
+//                                   // FIXME: N+1 performance
+//                                   Mono.justOrEmpty(documentParty.getPartyContactDetailsID())
+//                                           .flatMap(partyContactDetailsService::findById)
+//                                           .doOnNext(documentPartyTO::setPartyContactDetails)
+//                                           .thenReturn(documentParty)
+//                                           .flatMap(displayedAddressService::loadDisplayedAddress)
+//                                           .doOnNext(documentPartyTO::setDisplayedAddress)
+//                                           .thenReturn(documentPartyTO)
+//
+//                               )
+//                )).collectMultimap(Tuple2::getT1, Tuple2::getT2)
+//                .flatMapMany(partyID2DocumentPartyTOs ->
+//                        setPartyOnAllMatchingInstances(
+//                                partyService.findAllById(partyID2DocumentPartyTOs.keySet()),
+//                                partyID2DocumentPartyTOs
+//                        )
+//                )
+//                .collectList()
+//                .doOnNext(shippingInstructionTO::setDocumentParties),
+//           referenceService.findAllByShippingInstructionID(id)
+//                .collectList()
+//                .doOnNext(shippingInstructionTO::setReferences)
+//        )
+//                /* Consume all the items; we want the side-effect, not the return value */
+//                .then(Mono.just(shippingInstructionTO));
     }
 
     private Mono<ShippingInstructionUpdateInfo> loadShipmentIDs(ShippingInstructionUpdateInfo instructionUpdateInfo) {
@@ -225,13 +238,14 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         instructionUpdateInfo.setEquipmentReference2CarrierBookingReference(
                 Collections.unmodifiableMap(equipmentReference2CarrierBookingReference)
         );
-        return Flux.fromIterable(cargoItemTOs)
-                .map(CargoItemTO::getCarrierBookingReference)
-                .buffer(SQL_LIST_BUFFER_SIZE)
-                .concatMap(shipmentService::findByCarrierBookingReferenceIn)
-                .collectMap(Shipment::getCarrierBookingReference, Shipment::getId)
-                .doOnNext(instructionUpdateInfo::setCarrierBookingReference2ShipmentID)
-                .thenReturn(instructionUpdateInfo);
+        return Mono.empty();
+//        return Flux.fromIterable(cargoItemTOs)
+//                .map(CargoItemTO::getCarrierBookingReference)
+//                .buffer(SQL_LIST_BUFFER_SIZE)
+//                .concatMap(shipmentService::findByCarrierBookingReferenceIn)
+//                .collectMap(Shipment::getCarrierBookingReference, Shipment::getId)
+//                .doOnNext(instructionUpdateInfo::setCarrierBookingReference2ShipmentID)
+//                .thenReturn(instructionUpdateInfo);
     }
 
     private Mono<Void> processCargoItems(
@@ -509,17 +523,19 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
         return genericUpdate(shippingInstructionId, original -> update);
     }
 
+    // TODO: fix me, private fails with an error
     @Transactional
-    private Mono<ShippingInstructionTO> genericUpdate(String shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
+//    private Mono<ShippingInstructionTO> genericUpdate(String shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
+    public Mono<ShippingInstructionTO> genericUpdate(String shippingInstructionId, Function<ShippingInstructionTO, ShippingInstructionTO> mutator) {
         return findById(shippingInstructionId)
                 .flatMap(original -> {
                     ShippingInstructionTO update = mutator.apply(original);
                     Set<ConstraintViolation<ShippingInstructionTO>> violations = validator.validate(update);
                     if (!violations.isEmpty()) {
-                        throw new ConstraintViolationException(violations);
+                        return Mono.error(new ConstraintViolationException(violations));
                     }
                     if (!original.getShippingInstructionID().equals(update.getShippingInstructionID())) {
-                        throw new UpdateException("Cannot change the ID of the ShippingInstruction");
+                        return Mono.error(new UpdateException("Cannot change the ID of the ShippingInstruction"));
                     }
                     try {
                         original.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
@@ -641,7 +657,7 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             if (list == null) {
                 // We listed all known IDs, so this "should not happen" unless the code above
                 // for generating the map changed.
-                throw new IllegalArgumentException("We pulled a Party by ID that we did not request!?");
+                return Flux.error(new IllegalArgumentException("We pulled a Party by ID that we did not request!?"));
             }
             if (addressID != null) {
                 addressMono = addressService.findById(addressID);
@@ -651,14 +667,15 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
             return Flux.fromIterable(list)
                     .concatMap(documentPartyTO -> {
                         if (documentPartyTO.getParty() != null) {
-                            throw new IllegalArgumentException("DocumentPartyTo already had a Party!?");
+                            return Flux.error(new IllegalArgumentException("DocumentPartyTo already had a Party!?"));
                         }
-                        if (addressID != null) {
-                            return addressMono
-                                    .map(party::toPartyTO)
-                                    .doOnNext(documentPartyTO::setParty);
-                        }
-                        documentPartyTO.setParty(party.toPartyTO(null));
+                        // TODO: fix me
+//                        if (addressID != null) {
+//                            return addressMono
+//                                    .map(party::toPartyTO)
+//                                    .doOnNext(documentPartyTO::setParty);
+//                        }
+//                        documentPartyTO.setParty(party.toPartyTO(null));
                         return Mono.empty();
                     });
         }).thenMany(Flux.fromIterable(id2TOMap.values()))

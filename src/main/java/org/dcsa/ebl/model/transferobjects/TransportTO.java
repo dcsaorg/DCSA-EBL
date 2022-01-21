@@ -2,8 +2,8 @@ package org.dcsa.ebl.model.transferobjects;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.dcsa.ebl.model.Transport;
-import org.dcsa.ebl.model.enums.DCSATransportType;
+import org.dcsa.core.events.model.enums.DCSATransportType;
+import org.dcsa.core.events.model.transferobjects.LocationTO;
 
 @Data
 @EqualsAndHashCode
