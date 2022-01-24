@@ -83,63 +83,6 @@ public class ShippingInstructionTOServiceImpl implements ShippingInstructionTOSe
                 )
         );
         return Mono.empty();
-//        return Flux.concat(
-//                shipmentService.findAllById(shipmentIDs)
-//                    .collectMap(Shipment::getId, Shipment::getCarrierBookingReference)
-//                    .flatMapMany(shipmentId2BookingReference ->
-//                        Flux.fromIterable(cargoItemTuples)
-//                                .flatMap(tuple -> {
-//                                    CargoItem cargoItem = tuple.getT1();
-//                                    CargoItemTO cargoItemTO = tuple.getT2();
-//                                    String bookingReference = shipmentId2BookingReference.get(cargoItem.getShipmentID());
-//                                    if (bookingReference == null) {
-//                                        return Mono.error(new IllegalStateException("CargoItem " + cargoItem.getId()
-//                                                + " references Shipment " + cargoItem.getShipmentID()
-//                                                + " but we did not get its booking reference!?"));
-//                                    }
-//                                    cargoItemTO.setCarrierBookingReference(bookingReference);
-//                                    return Mono.empty();
-//                                })
-//                ),
-//                shipmentEquipmentService.findAllByShipmentIDIn(shipmentIDs)
-//                    .concatMap(shipmentEquipment -> {
-//                        ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
-//                        List<CargoItemTO> cargoItemTOs = shipmentEquipmentID2CargoItems.get(shipmentEquipment.getId());
-//
-//                        shipmentEquipmentTO.setCargoGrossWeight(shipmentEquipment.getCargoGrossWeight());
-//                        shipmentEquipmentTO.setCargoGrossWeightUnit(shipmentEquipment.getCargoGrossWeightUnit());
-//
-//                        if (cargoItemTOs == null || cargoItemTOs.isEmpty()) {
-//                            return Mono.error(new IllegalStateException("No CargoItem referenced Equipment with "
-//                                    + shipmentEquipment.getEquipmentReference() + "!?"));
-//                        }
-//                        for (CargoItemTO cargoItemTO : cargoItemTOs) {
-//                            cargoItemTO.setEquipmentReference(shipmentEquipment.getEquipmentReference());
-//                        }
-//
-//                        // TODO Performance: This suffers from N+1 syndrome (1 Query for the ShipmentEquipment
-//                        //  and then N for the ActiveReeferSettings + N for the Equipment + N for the Seals)
-//                        //
-//                        // ActiveReeferSettings + Equipment should be doable with a trivial 1:1 (LEFT) JOIN between
-//                        // ShipmentEquipment, Equipment, and ActiveReeferSettings.  Seals are a bit more
-//                        // problematic as it will force a lot of data to be repeated for each seal (plus r2dbc
-//                        // does not have a good solution for 1:N relations at the moment)
-//                        //
-//                        // Anyway, we start here and can improve it later.
-//                        return Flux.concat(
-//                                equipmentService.findById(shipmentEquipment.getEquipmentReference())
-//                                        .map(equipment -> MappingUtil.instanceFrom(equipment, EquipmentTO::new, AbstractEquipment.class))
-//                                        .doOnNext(shipmentEquipmentTO::setEquipment),
-//                                sealService.findAllByShipmentEquipmentID(shipmentEquipment.getId())
-//                                    .collectList()
-//                                    .doOnNext(shipmentEquipmentTO::setSeals),
-//                                // ActiveReeferSettings is optional
-//                                activeReeferSettingsRepository.findById(shipmentEquipment.getId())
-//                                    .doOnNext(shipmentEquipmentTO::setActiveReeferSettings)
-//                        ).then(Mono.just(shipmentEquipmentTO));
-//                    }).collectList()
-//                    .doOnNext(shippingInstructionTO::setShipmentEquipments)
-//        ).then(Mono.just(shippingInstructionTO));
     }
 
     @Transactional
