@@ -1,7 +1,7 @@
 package org.dcsa.ebl.service;
 
+import org.dcsa.core.events.model.ShipmentLocation;
 import org.dcsa.core.service.ExtendedBaseService;
-import org.dcsa.ebl.model.ShipmentLocation;
 import reactor.core.publisher.Flux;
 
 import java.util.UUID;

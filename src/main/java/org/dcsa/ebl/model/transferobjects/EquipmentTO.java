@@ -3,7 +3,7 @@ package org.dcsa.ebl.model.transferobjects;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.ebl.model.Equipment;
+import org.dcsa.core.events.model.Equipment;
 import org.dcsa.ebl.model.base.AbstractEquipment;
 import org.dcsa.ebl.model.utils.MappingUtil;
 
@@ -40,11 +40,10 @@ public class EquipmentTO extends AbstractEquipment implements ModelReferencingTO
         clone = MappingUtil.instanceFrom(equipment, Equipment::new, Equipment.class);
         assert this.getEquipmentReference().equals(equipment.getEquipmentReference());
 
-        modified |= setIfChanged(clone.getWeightUnit(), this.getWeightUnit(), clone::setWeightUnit);
         modified |= setIfChanged(clone.getTareWeight(), this.getTareWeight(), clone::setTareWeight);
         modified |= setIfChanged(clone.getIsoEquipmentCode(), this.getIsoEquipmentCode(), clone::setIsoEquipmentCode);
         if (this.getIsShipperOwned() != null) {
-            modified |= setIfChanged(clone.getIsShipperOwned(), this.getIsShipperOwned(), clone::setIsShipperOwned);
+
         }
 
         return modified ? clone : null;

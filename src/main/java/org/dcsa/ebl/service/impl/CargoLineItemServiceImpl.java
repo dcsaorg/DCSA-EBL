@@ -28,12 +28,12 @@ public class CargoLineItemServiceImpl extends ExtendedBaseServiceImpl<CargoLineI
 
     @Override
     public Mono<CargoLineItem> create(CargoLineItem cargoLineItem) {
-        return cargoLineItemRepository.insert(cargoLineItem);
+        return cargoLineItemRepository.save(cargoLineItem);
     }
 
     public Flux<CargoLineItem> createAll(Iterable<CargoLineItem> cargoLineItems) {
         return Flux.fromIterable(cargoLineItems)
-                .concatMap(cargoLineItemRepository::insert);
+                .concatMap(cargoLineItemRepository::save);
     }
 
     @Override

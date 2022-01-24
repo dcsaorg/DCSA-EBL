@@ -1,9 +1,9 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.ShipmentEquipment;
+import org.dcsa.core.events.repository.ShipmentEquipmentRepository;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.model.ShipmentEquipment;
-import org.dcsa.ebl.repository.ShipmentEquipmentRepository;
 import org.dcsa.ebl.service.ShipmentEquipmentService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

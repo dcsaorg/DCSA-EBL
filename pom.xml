@@ -19,8 +19,7 @@
 		<java.version>11</java.version>
 		<rest-assured.version>4.3.1</rest-assured.version>
 		<groovy.version>3.0.2</groovy.version>
-		<dcsa.version>0.8.2</dcsa.version>
-		<dcsa.events.version>0.0.1</dcsa.events.version>
+		<dcsa.events.version>0.0.51</dcsa.events.version>
 		<dcsa.core.tag/>
 		<dcsa.event.tag/>
 		<dcsa.artifacttype>-SNAPSHOT</dcsa.artifacttype>
@@ -66,12 +65,6 @@
 		<dependency>
 			<groupId>io.r2dbc</groupId>
 			<artifactId>r2dbc-postgresql</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.dcsa</groupId>
-			<artifactId>dcsa_core</artifactId>
-			<version>${dcsa.version}${dcsa.core.tag}${dcsa.artifacttype}</version>
 		</dependency>
 
 		<dependency>
@@ -146,7 +139,7 @@
 		<repository>
 			<id>spring-libs-milestone</id>
 			<name>Spring Milestone Maven Repository</name>
-			<url>http://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
+			<url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
 		</repository>
 		<repository>
 			<id>github</id>
