@@ -1,6 +1,9 @@
-name: Microservices CI
+name: DCSA-EBL MASTER CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
