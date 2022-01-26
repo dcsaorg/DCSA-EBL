@@ -1,10 +1,10 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.CargoItem;
 import org.dcsa.core.exception.UpdateException;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
 import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.CargoItem;
 import org.dcsa.ebl.repository.CargoItemRepository;
 import org.dcsa.ebl.service.CargoItemService;
 import org.dcsa.ebl.service.CargoLineItemService;
