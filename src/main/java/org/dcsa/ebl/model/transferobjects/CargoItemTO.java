@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.ebl.model.base.AbstractCargoItem;
+import org.dcsa.core.events.model.base.AbstractCargoItem;
 
 import javax.validation.constraints.Size;
 import java.util.List;

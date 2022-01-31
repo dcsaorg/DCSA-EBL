@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dcsa.core.events.model.enums.WeightUnit;
 import org.dcsa.core.model.AuditBase;
 import org.dcsa.core.model.GetId;
-import org.dcsa.ebl.model.enums.WeightUnit;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 

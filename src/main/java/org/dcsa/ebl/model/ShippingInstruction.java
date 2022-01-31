@@ -18,4 +18,6 @@ public class ShippingInstruction extends AbstractShippingInstruction {
     @NotNull
     @Column("invoice_payable_at")
     private String freightPayableAt;
+
+
 }

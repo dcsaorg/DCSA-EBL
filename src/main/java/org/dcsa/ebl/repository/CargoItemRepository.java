@@ -1,7 +1,7 @@
 package org.dcsa.ebl.repository;
 
+import org.dcsa.core.events.model.CargoItem;
 import org.dcsa.core.repository.ExtendedRepository;
-import org.dcsa.ebl.model.CargoItem;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

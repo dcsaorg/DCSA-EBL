@@ -151,9 +151,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
                                         return Flux.concat(
                                             updateTransportDocumentWithBookingInfo(
                                                 carrierBookingReference, transportDocumentTO),
-                                            updateTransportDocumentWithCharges(
-                                                transportDocumentTO,
-                                                shippingInstructionTO.getIsChargesDisplayed()),
                                             updateTransportDocumentWithTransportPlan(
                                                 carrierBookingReference, transportDocumentTO));
                                       }
