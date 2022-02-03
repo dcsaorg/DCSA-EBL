@@ -13,9 +13,11 @@ import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
+import org.dcsa.ebl.model.transferobjects.ShippingInstructionSummaryTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -23,6 +25,7 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import reactor.core.publisher.Flux;
 
 @RequiredArgsConstructor
 @Service
@@ -155,5 +158,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   public Mono<ShippingInstructionTO> replaceOriginal(
       String shippingInstructionID, ShippingInstructionTO update) {
     return null;
+  }
+
+  @Override
+  public Flux<ShippingInstructionSummaryTO> findShippingInstructions(List<String> carrierBookingReferences, ShipmentEventTypeCode documentStatus, Pageable pageable) {
+    return shippingInstructionRepository.findShippingInstructions(carrierBookingReferences, documentStatus, pageable);
   }
 }

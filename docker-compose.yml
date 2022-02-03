@@ -1,10 +1,13 @@
 version: '3.5'
+
 services:
     dcsa-ebl:
         build:
            .
         ports:
             - 9090:9090
+        environment:
+            - "SPRING_PROFILES_ACTIVE=local"
         logging:
             options:
                 max-file: '10'
@@ -18,4 +21,3 @@ services:
             DCSA-Information-Model/datamodel/
         ports:
             - 5432:5432
-
