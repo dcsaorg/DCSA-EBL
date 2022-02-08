@@ -1,11 +1,10 @@
 package org.dcsa.ebl.service;
 
-import org.dcsa.core.service.ExtendedBaseService;
-import org.dcsa.ebl.model.Seal;
+import org.dcsa.core.events.model.Seal;
 import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
-public interface SealService extends ExtendedBaseService<Seal, UUID> {
+public interface SealService {
     Flux<Seal> findAllByShipmentEquipmentID(UUID shipmentEquipmentID);
 }

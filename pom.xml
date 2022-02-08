@@ -19,10 +19,12 @@
 		<java.version>11</java.version>
 		<rest-assured.version>4.3.1</rest-assured.version>
 		<groovy.version>3.0.2</groovy.version>
-		<dcsa.events.version>0.0.51</dcsa.events.version>
+		<dcsa.events.version>0.0.52</dcsa.events.version>
 		<dcsa.core.tag/>
 		<dcsa.event.tag/>
 		<dcsa.artifacttype>-SNAPSHOT</dcsa.artifacttype>
+		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+		<org.lombok.version>1.18.22</org.lombok.version>
 	</properties>
 
 	<dependencies>
@@ -127,8 +129,41 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${org.mapstruct.version}</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok-mapstruct-binding</artifactId>
+							<version>0.2.0</version>
+						</path>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${org.lombok.version}</version>
+						</path>
+						<!-- other annotation processors -->
+					</annotationProcessorPaths>
+					<compilerArgs>
+						<compilerArg>
+							-Amapstruct.defaultComponentModel=spring
+						</compilerArg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
+
 
 	<repositories>
 		<repository>

@@ -7,7 +7,7 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.extendedrequest.ShippingInstructionExtendedRequest;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
-import org.dcsa.ebl.service.ShippingInstructionTOService;
+import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -20,16 +20,16 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "shipping-instructions-summaries", produces = {MediaType.APPLICATION_JSON_VALUE})
-public class ShippingInstructionsSummariesTOController extends AbstractTOController<ShippingInstructionTOService> {
+public class ShippingInstructionsSummariesTOController extends AbstractTOController<ShippingInstructionService> {
 
     private final ExtendedParameters extendedParameters;
 
-    private final ShippingInstructionTOService shippingInstructionTOService;
+    private final ShippingInstructionService shippingInstructionTOService;
 
     private final R2dbcDialect r2dbcDialect;
 
     @Override
-    public ShippingInstructionTOService getService() {
+    public ShippingInstructionService getService() {
         return shippingInstructionTOService;
     }
 
@@ -49,9 +49,9 @@ public class ShippingInstructionsSummariesTOController extends AbstractTOControl
             return Flux.error(e);
         }
 
-        
-        return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
-                () -> extendedRequest.insertHeaders(response, request)
-        );
+        return Flux.empty();
+//        return shippingInstructionTOService.findAllExtended(extendedRequest).doOnComplete(
+//                () -> extendedRequest.insertHeaders(response, request)
+//        );
     }
 }

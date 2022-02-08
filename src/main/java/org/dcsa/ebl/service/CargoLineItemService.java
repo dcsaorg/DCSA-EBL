@@ -1,7 +1,7 @@
 package org.dcsa.ebl.service;
 
+import org.dcsa.core.events.model.CargoLineItem;
 import org.dcsa.core.service.BaseService;
-import org.dcsa.ebl.model.CargoLineItem;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
