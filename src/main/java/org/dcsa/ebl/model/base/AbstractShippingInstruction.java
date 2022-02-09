@@ -52,11 +52,9 @@ public abstract class AbstractShippingInstruction extends AuditBase {
   @Column("is_to_order")
   private Boolean isToOrder;
 
-  @NotNull
   @Column("are_charges_displayed_on_originals")
   private Boolean areChargesDisplayedOnOriginals;
 
-  @NotNull
   @Column("are_charges_displayed_on_copies")
   private Boolean areChargesDisplayedOnCopies;
 
