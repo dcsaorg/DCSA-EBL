@@ -6,15 +6,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.events.model.Reference;
-import org.dcsa.core.events.model.transferobjects.CargoItemTO;
-import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
+import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,16 +21,15 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private String carrierBookingReference;
 
-  @NotNull private LocationTO placeOfIssue;
+  private LocationTO placeOfIssue;
 
   @JsonProperty("utilizedTransportEquipments")
-  @NotNull
   @Valid
   private List<ShipmentEquipmentTO> shipmentEquipments;
 
-  @NotNull @Valid private List<DocumentPartyTO> documentParties;
+  @Valid private List<DocumentPartyTO> documentParties;
 
-  @NotNull @Valid private List<Reference> references;
+  @Valid private List<ReferenceTO> references;
 
   /**
    * Pull the carrierBookingReference from cargo items into the ShippingInstruction if possible
@@ -119,6 +113,8 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
    */
   @JsonIgnore
   public void pushCarrierBookingReferenceIntoCargoItemsIfNecessary() {
+    if (this.getShipmentEquipments() == null) return;
+
     List<CargoItemTO> cargoItems = new ArrayList<>();
     for (ShipmentEquipmentTO shipmentEquipmentTO : this.shipmentEquipments) {
       cargoItems.addAll(shipmentEquipmentTO.getCargoItems());

@@ -10,8 +10,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
 @SpringBootApplication
-@ComponentScan("org.dcsa")
-@EnableR2dbcRepositories(basePackages = {"org.dcsa"}, repositoryBaseClass = ExtendedRepositoryImpl.class)
 public class Application {
 
 	@Bean
@@ -21,7 +19,6 @@ public class Application {
 				.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
 				.findAndRegisterModules();
 	}
-
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);

@@ -8,10 +8,7 @@ import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.CargoItemTO;
 import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.core.events.repository.ShipmentRepository;
-import org.dcsa.core.events.service.DocumentPartyService;
-import org.dcsa.core.events.service.LocationService;
-import org.dcsa.core.events.service.ShipmentEquipmentService;
-import org.dcsa.core.events.service.ShipmentEventService;
+import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -36,6 +33,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final ShipmentEquipmentService shipmentEquipmentService;
   private final ShipmentEventService shipmentEventService;
   private final DocumentPartyService documentPartyService;
+  private final ReferenceService referenceService;
 
   // Repositories
   private final ShipmentRepository shipmentRepository;
@@ -50,73 +48,72 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   @Transactional
   @Override
-  public Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
+  public Mono<ShippingInstructionResponseTO> createShippingInstruction(
+      ShippingInstructionTO shippingInstructionTO) {
     shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
 
     OffsetDateTime now = OffsetDateTime.now();
-    ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
+    ShippingInstruction shippingInstruction =
+        shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
-
-    final String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
 
     return shippingInstructionRepository
         .save(shippingInstruction)
         .flatMap(
             si -> {
-              if (shippingInstructionTO.getPlaceOfIssue() != null) {
-                return locationService
-                    .createLocationByTO(
-                        shippingInstructionTO.getPlaceOfIssue(),
-                        poi ->
-                            shippingInstructionRepository.setPlaceOfIssueFor(
-                                poi, si.getShippingInstructionID()))
-                    .then(Mono.just(si));
-              }
-              return Mono.just(si);
+              if (shippingInstructionTO.getPlaceOfIssue() == null) return Mono.just(si);
+              return locationService
+                  .createLocationByTO(
+                      shippingInstructionTO.getPlaceOfIssue(),
+                      poi ->
+                          shippingInstructionRepository.setPlaceOfIssueFor(
+                              poi, si.getShippingInstructionID()))
+                  .then(Mono.just(si));
             })
-        .flatMap(
-            si ->
-                shipmentRepository
-                    .findByCarrierBookingReference(carrierBookingReference)
-                    .flatMap(
-                        x -> {
-                          if (shippingInstructionTO.getShipmentEquipments() != null) {
-                            return shipmentEquipmentService
-                                .createShipmentEquipment(
-                                    x.getShipmentID(),
-                                    si.getShippingInstructionID(),
-                                    shippingInstructionTO.getShipmentEquipments())
-                                .then(Mono.just(si));
-                          }
-                          return Mono.just(si);
-                        }).thenReturn(si))
         .flatMap(
             si -> {
-              if (shippingInstructionTO.getDocumentParties() != null) {
-                return documentPartyService
-                    .createDocumentPartiesByShippingInstructionID(
-                        si.getShippingInstructionID(),
-                        shippingInstructionTO.getDocumentParties())
-                    .then(Mono.just(si));
-              }
-              return Mono.just(si);
+              if (shippingInstructionTO.getShipmentEquipments() == null) return Mono.just(si);
+              String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
+              return shipmentRepository
+                  .findByCarrierBookingReference(carrierBookingReference)
+                  .flatMap(
+                      x ->
+                          shipmentEquipmentService
+                              .createShipmentEquipment(
+                                  x.getShipmentID(),
+                                  si.getShippingInstructionID(),
+                                  shippingInstructionTO.getShipmentEquipments())
+                              .then(Mono.just(si)))
+                  .thenReturn(si);
+            })
+        .flatMap(
+            si -> {
+              if (shippingInstructionTO.getDocumentParties() == null) return Mono.just(si);
+              return documentPartyService
+                  .createDocumentPartiesByShippingInstructionID(
+                      si.getShippingInstructionID(), shippingInstructionTO.getDocumentParties())
+                  .then(Mono.just(si));
+            })
+        .flatMap(
+            si -> {
+              if (shippingInstructionTO.getReferences() == null) return Mono.just(si);
+              return referenceService
+                  .createReferencesByShippingInstructionIDAndTOs(
+                      si.getShippingInstructionID(), shippingInstructionTO.getReferences())
+                  .then(Mono.just(si));
             })
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
-        .flatMap(
-            si ->
-                Mono.just(
-                    shippingInstructionMapper.shippingInstructionToShippingInstructionResponseTO(
-                        si)));
+        .map(shippingInstructionMapper::shippingInstructionToShippingInstructionResponseTO);
   }
 
-  // TODO: fix me once we know whether carrierBookingReference can be null (none on SI and no CargoItems)
+  // TODO: fix once we know carrierBookingReference can be null (none on SI and no CargoItems)
   private String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO) {
     if (shippingInstructionTO.getCarrierBookingReference() == null) {
       List<CargoItemTO> cargoItems = new ArrayList<>();
       for (ShipmentEquipmentTO shipmentEquipmentTO :
-              shippingInstructionTO.getShipmentEquipments()) {
+          shippingInstructionTO.getShipmentEquipments()) {
         cargoItems.addAll(shipmentEquipmentTO.getCargoItems());
       }
       return cargoItems.get(0).getCarrierBookingReference();
@@ -129,14 +126,15 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
-                ConcreteRequestErrorMessageException.internalServerError(
+                ConcreteRequestErrorMessageException.invalidParameter(
                     "Failed to create shipment event for ShippingInstruction.")));
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
       ShippingInstruction shippingInstruction, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
-    shipmentEvent.setShipmentEventTypeCode(ShipmentEventTypeCode.valueOf(shippingInstruction.getDocumentStatus().name()));
+    shipmentEvent.setShipmentEventTypeCode(
+        ShipmentEventTypeCode.valueOf(shippingInstruction.getDocumentStatus().name()));
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
