@@ -3,8 +3,9 @@ package org.dcsa.ebl.model.base;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.core.events.model.enums.DocumentStatus;
+import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.model.AuditBase;
+import org.dcsa.core.validator.EnumSubset;
 import org.dcsa.ebl.model.enums.TransportDocumentTypeCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -12,6 +13,8 @@ import org.springframework.data.relational.core.mapping.Column;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.OffsetDateTime;
+
+import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -22,13 +25,14 @@ public abstract class AbstractShippingInstruction extends AuditBase {
   @Column("id")
   private String shippingInstructionID;
 
+  @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
   @Column("document_status")
-  private DocumentStatus documentStatus;
+  private ShipmentEventTypeCode documentStatus;
 
-  @Column("shipping_instruction_created_date_time")
+  @Column("created_date_time")
   private OffsetDateTime shippingInstructionCreatedDateTime;
 
-  @Column("shipping_instruction_updated_date_time")
+  @Column("updated_date_time")
   private OffsetDateTime shippingInstructionUpdatedDateTime;
 
   @NotNull

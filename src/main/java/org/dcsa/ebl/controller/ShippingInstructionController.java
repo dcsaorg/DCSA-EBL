@@ -34,7 +34,7 @@ public class ShippingInstructionController {
   }
 
   @PostMapping
-  @ResponseStatus(HttpStatus.ACCEPTED)
+  @ResponseStatus(HttpStatus.CREATED)
   public Mono<ShippingInstructionResponseTO> create(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
     return shippingInstructionService.createShippingInstruction(shippingInstructionTO);
   }
