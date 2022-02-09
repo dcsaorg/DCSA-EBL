@@ -8,5 +8,5 @@ RUN apt-get update \
 
 EXPOSE 9090
 ENV db_hostname dcsa_db
-COPY target/dcsa_ebl-*.war .
-CMD java -jar dcsa_ebl-*.war
+COPY target/dcsa_ebl-*.jar .
+CMD java -jar dcsa_ebl-*.jar
