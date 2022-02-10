@@ -52,7 +52,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     try {
       shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
-    } catch (ConcreteRequestErrorMessageException e) {
+    } catch (IllegalStateException e) {
       return Mono.error(e);
     }
 
@@ -82,6 +82,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
               return shipmentRepository
                   .findByCarrierBookingReference(carrierBookingReference)
+                  .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter("No shipment found with carrierBookingReference: " + carrierBookingReference)))
                   .flatMap(
                       x ->
                           shipmentEquipmentService

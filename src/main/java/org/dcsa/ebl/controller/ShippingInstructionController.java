@@ -41,16 +41,4 @@ public class ShippingInstructionController {
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
     return shippingInstructionService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
   }
-
-  @DeleteMapping
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  public Mono<Void> delete(@RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
-  }
-
-  @DeleteMapping(path = "{shippingInstructionID}")
-  @ResponseStatus(HttpStatus.FORBIDDEN)
-  public Mono<Void> deleteById(@PathVariable UUID shippingInstructionID) {
-    return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
-  }
 }
