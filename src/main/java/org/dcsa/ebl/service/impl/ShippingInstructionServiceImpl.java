@@ -114,7 +114,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   // TODO: fix once we know carrierBookingReference can be null (none on SI and no CargoItems)
-  private String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO) {
+  String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO) {
     if (shippingInstructionTO.getCarrierBookingReference() == null) {
       List<CargoItemTO> cargoItems = new ArrayList<>();
       for (ShipmentEquipmentTO shipmentEquipmentTO :
