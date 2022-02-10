@@ -377,5 +377,21 @@ class ShippingInstructionServiceImplTest {
               })
           .verify();
     }
+
+    @Test
+    @DisplayName("Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
+    void testCreateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.",
+                    throwable.getMessage());
+              })
+          .verify();
+    }
   }
 }

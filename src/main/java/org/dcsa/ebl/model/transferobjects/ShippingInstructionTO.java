@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 
 import javax.validation.Valid;
@@ -125,7 +126,7 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
       for (CargoItemTO cargoItemTO : cargoItems) {
         String cargoBookingReference = cargoItemTO.getCarrierBookingReference();
         if (cargoBookingReference != null) {
-          throw new IllegalStateException(
+          throw ConcreteRequestErrorMessageException.invalidParameter(
               "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.");
         }
         cargoItemTO.setCarrierBookingReference(centralBookingReference);

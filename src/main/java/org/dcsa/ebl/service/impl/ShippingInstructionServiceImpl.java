@@ -48,9 +48,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   @Transactional
   @Override
-  public Mono<ShippingInstructionResponseTO> createShippingInstruction(
-      ShippingInstructionTO shippingInstructionTO) {
-    shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+  public Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
+
+    try {
+      shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+    } catch (ConcreteRequestErrorMessageException e) {
+      return Mono.error(e);
+    }
 
     OffsetDateTime now = OffsetDateTime.now();
     ShippingInstruction shippingInstruction =
