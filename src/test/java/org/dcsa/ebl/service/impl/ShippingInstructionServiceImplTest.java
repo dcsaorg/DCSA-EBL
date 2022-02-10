@@ -354,7 +354,7 @@ class ShippingInstructionServiceImplTest {
     }
 
     @Test
-    @DisplayName("Failing creation a shipment event should result in an error")
+    @DisplayName("Failing to create a shipment event should result in error")
     void testShipmentEventFailedShouldResultInError() {
 
       shippingInstructionTO.setCarrierBookingReference(null);
