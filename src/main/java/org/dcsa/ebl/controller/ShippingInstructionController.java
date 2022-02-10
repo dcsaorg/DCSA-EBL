@@ -18,7 +18,7 @@ import java.util.UUID;
 @RestController
 @Validated
 @RequestMapping(
-    value = "shipping-instructions",
+    value = "/shipping-instructions",
     produces = {MediaType.APPLICATION_JSON_VALUE})
 public class ShippingInstructionController {
 
