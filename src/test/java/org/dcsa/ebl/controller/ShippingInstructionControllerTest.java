@@ -75,7 +75,7 @@ class ShippingInstructionControllerTest {
 
     CargoLineItemTO cargoLineItemTO = new CargoLineItemTO();
     cargoLineItemTO.setCargoLineItemID("Some CargoLineItem ID");
-    cargoLineItemTO.setShippingMarks("All sorst of remarks!");
+    cargoLineItemTO.setShippingMarks("All sorts of remarks!");
 
     CargoItemTO cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
