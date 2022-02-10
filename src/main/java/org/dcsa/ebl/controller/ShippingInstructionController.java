@@ -24,7 +24,7 @@ public class ShippingInstructionController {
 
   private final ShippingInstructionService shippingInstructionService;
 
-  @GetMapping(path = "{shippingInstructionID}")
+  @GetMapping(path = "/{shippingInstructionID}")
   public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
     return shippingInstructionService.findById(shippingInstructionID);
   }
