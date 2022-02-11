@@ -28,8 +28,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -298,6 +297,10 @@ class ShippingInstructionServiceImplTest {
                 assertEquals(
                     shippingInstruction.getDocumentStatus(),
                     argumentCaptor.getValue().getDocumentStatus());
+                assertNotNull(argumentCaptor.getValue().getPlaceOfIssue());
+                assertNotNull(argumentCaptor.getValue().getDocumentParties());
+                assertNotNull(argumentCaptor.getValue().getReferences());
+                assertNotNull(argumentCaptor.getValue().getShipmentEquipments());
               })
           .verifyComplete();
     }
@@ -348,6 +351,10 @@ class ShippingInstructionServiceImplTest {
                     .createDocumentPartiesByShippingInstructionID(any(), any());
                 verify(referenceService, never())
                     .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                assertNull(argumentCaptor.getValue().getPlaceOfIssue());
+                assertNull(argumentCaptor.getValue().getDocumentParties());
+                assertNull(argumentCaptor.getValue().getReferences());
+                assertNull(argumentCaptor.getValue().getShipmentEquipments());
               })
           .verifyComplete();
     }
