@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@DisplayName("Tests for ShippingInstructionController")
+@DisplayName("Tests for Event Controller")
 @ActiveProfiles("test")
 @WebFluxTest(controllers = {EventController.class})
 @Import(value = {GlobalExceptionHandler.class, SecurityConfig.class})
