@@ -5,8 +5,7 @@ import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.CargoItemTO;
-import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
+import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -48,7 +47,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   @Transactional
   @Override
-  public Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
+  public Mono<ShippingInstructionResponseTO> createShippingInstruction(
+      ShippingInstructionTO shippingInstructionTO) {
 
     try {
       shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
@@ -57,7 +57,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     }
 
     OffsetDateTime now = OffsetDateTime.now();
-    ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
+    ShippingInstruction shippingInstruction =
+        shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
@@ -66,51 +67,70 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .save(shippingInstruction)
         .flatMap(
             si -> {
-              if (shippingInstructionTO.getPlaceOfIssue() == null) return Mono.just(si);
-              return locationService
-                  .createLocationByTO(
-                      shippingInstructionTO.getPlaceOfIssue(),
-                      poi ->
-                          shippingInstructionRepository.setPlaceOfIssueFor(
-                              poi, si.getShippingInstructionID()))
-                  .then(Mono.just(si));
-            })
-        .flatMap(
-            si -> {
-              if (shippingInstructionTO.getShipmentEquipments() == null) return Mono.just(si);
-              String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
-              // TODO: we have a known bug here that needs to be addressed (if carrierBookingReference differs from each cargoItem)
-              return shipmentRepository
-                  .findByCarrierBookingReference(carrierBookingReference)
-                  .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter("No shipment found with carrierBookingReference: " + carrierBookingReference)))
-                  .flatMap(
-                      x ->
-                          shipmentEquipmentService
-                              .createShipmentEquipment(
-                                  x.getShipmentID(),
-                                  si.getShippingInstructionID(),
-                                  shippingInstructionTO.getShipmentEquipments())
-                              .then(Mono.just(si)))
-                  .thenReturn(si);
-            })
-        .flatMap(
-            si -> {
-              if (shippingInstructionTO.getDocumentParties() == null) return Mono.just(si);
-              return documentPartyService
-                  .createDocumentPartiesByShippingInstructionID(
-                      si.getShippingInstructionID(), shippingInstructionTO.getDocumentParties())
-                  .then(Mono.just(si));
-            })
-        .flatMap(
-            si -> {
-              if (shippingInstructionTO.getReferences() == null) return Mono.just(si);
-              return referenceService
-                  .createReferencesByShippingInstructionIDAndTOs(
-                      si.getShippingInstructionID(), shippingInstructionTO.getReferences())
-                  .then(Mono.just(si));
+              shippingInstructionTO.setShippingInstructionID(si.getShippingInstructionID());
+              shippingInstructionTO.setDocumentStatus(si.getDocumentStatus());
+              shippingInstructionTO.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
+              shippingInstructionTO.setShippingInstructionUpdatedDateTime(si.getShippingInstructionUpdatedDateTime());
+              return Mono.when(
+                      insertLocationTO(
+                              shippingInstructionTO.getPlaceOfIssue(),
+                              shippingInstructionTO.getShippingInstructionID())
+                          .doOnNext(shippingInstructionTO::setPlaceOfIssue),
+                      insertDocumentPartyTOs(
+                              shippingInstructionTO.getDocumentParties(),
+                              shippingInstructionTO.getShippingInstructionID())
+                          .doOnNext(shippingInstructionTO::setDocumentParties),
+                      insertShipmentEquipmentTOs(
+                              shippingInstructionTO.getShipmentEquipments(), shippingInstructionTO)
+                          .doOnNext(shippingInstructionTO::setShipmentEquipments),
+                      insertReferenceTOs(
+                          shippingInstructionTO.getReferences(),
+                          shippingInstructionTO.getShippingInstructionID()))
+                  .thenReturn(shippingInstructionTO);
             })
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
-        .map(shippingInstructionMapper::shippingInstructionToShippingInstructionResponseTO);
+        .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
+  }
+
+  private Mono<List<ReferenceTO>> insertReferenceTOs(
+      List<ReferenceTO> references, String shippingInstructionID) {
+    if (references == null) return Mono.empty();
+    return referenceService.createReferencesByShippingInstructionIDAndTOs(
+        shippingInstructionID, references);
+  }
+
+  private Mono<List<ShipmentEquipmentTO>> insertShipmentEquipmentTOs(
+      List<ShipmentEquipmentTO> shipmentEquipments, ShippingInstructionTO shippingInstructionTO) {
+    if (shipmentEquipments == null) return Mono.empty();
+    String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
+    // TODO: we have a known bug here that needs to be addressed (if
+    // carrierBookingReference differs from each cargoItem)
+    return shipmentRepository
+        .findByCarrierBookingReference(carrierBookingReference)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "No shipment found with carrierBookingReference: " + carrierBookingReference)))
+        .flatMap(
+            x ->
+                shipmentEquipmentService.createShipmentEquipment(
+                    x.getShipmentID(),
+                    shippingInstructionTO.getShippingInstructionID(),
+                    shipmentEquipments));
+  }
+
+  private Mono<LocationTO> insertLocationTO(LocationTO placeOfIssue, String shippingInstructionID) {
+    if (placeOfIssue == null) return Mono.empty();
+    return locationService.createLocationByTO(
+        placeOfIssue,
+        poi -> shippingInstructionRepository.setPlaceOfIssueFor(poi, shippingInstructionID));
+  }
+
+  private Mono<List<DocumentPartyTO>> insertDocumentPartyTOs(
+      List<DocumentPartyTO> documentPartyTOs, String shippingInstructionID) {
+    if (documentPartyTOs == null) return Mono.empty();
+    return documentPartyService.createDocumentPartiesByShippingInstructionID(
+        shippingInstructionID, documentPartyTOs);
   }
 
   // TODO: fix once we know carrierBookingReference can be null (none on SI and no CargoItems)
@@ -126,8 +146,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return shippingInstructionTO.getCarrierBookingReference();
   }
 
-  private Mono<ShipmentEvent> createShipmentEvent(ShippingInstruction shippingInstruction) {
-    return shipmentEventFromShippingInstruction(shippingInstruction, null)
+  private Mono<ShipmentEvent> createShipmentEvent(ShippingInstructionTO shippingInstructionTO) {
+    return shipmentEventFromShippingInstructionTO(shippingInstructionTO, null)
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -135,18 +155,18 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     "Failed to create shipment event for ShippingInstruction.")));
   }
 
-  private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-      ShippingInstruction shippingInstruction, String reason) {
+  private Mono<ShipmentEvent> shipmentEventFromShippingInstructionTO(
+      ShippingInstructionTO shippingInstructionTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
-        ShipmentEventTypeCode.valueOf(shippingInstruction.getDocumentStatus().name()));
+        ShipmentEventTypeCode.valueOf(shippingInstructionTO.getDocumentStatus().name()));
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
     shipmentEvent.setCarrierBookingReference(null);
-    shipmentEvent.setDocumentID(shippingInstruction.getShippingInstructionID());
+    shipmentEvent.setDocumentID(shippingInstructionTO.getShippingInstructionID());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
-    shipmentEvent.setEventDateTime(shippingInstruction.getShippingInstructionUpdatedDateTime());
+    shipmentEvent.setEventDateTime(shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }

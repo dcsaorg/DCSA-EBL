@@ -266,8 +266,8 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
-      ArgumentCaptor<ShippingInstruction> argumentCaptor =
-          ArgumentCaptor.forClass(ShippingInstruction.class);
+      ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
@@ -288,7 +288,7 @@ class ShippingInstructionServiceImplTest {
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
 
                 verify(shippingInstructionMapper)
-                    .shippingInstructionToShippingInstructionResponseTO(argumentCaptor.capture());
+                    .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
                     shippingInstruction.getShippingInstructionID(),
                     argumentCaptor.getValue().getShippingInstructionID());
@@ -315,8 +315,8 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
-      ArgumentCaptor<ShippingInstruction> argumentCaptor =
-          ArgumentCaptor.forClass(ShippingInstruction.class);
+      ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
@@ -329,7 +329,7 @@ class ShippingInstructionServiceImplTest {
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
 
                 verify(shippingInstructionMapper)
-                    .shippingInstructionToShippingInstructionResponseTO(argumentCaptor.capture());
+                    .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
                     shippingInstruction.getShippingInstructionID(),
                     argumentCaptor.getValue().getShippingInstructionID());
