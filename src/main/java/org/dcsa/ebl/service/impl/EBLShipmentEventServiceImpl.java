@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,8 +60,8 @@ public class EBLShipmentEventServiceImpl extends GenericEventServiceImpl impleme
 
     @Override
     public Mono<Event> findById(UUID id) {
-        return Mono.<Event>empty()
-                .switchIfEmpty(getShipmentEventRelatedEntities(id))
-                .switchIfEmpty(Mono.error(new NotFoundException("No event was found with id: " + id)));
+        return this.getShipmentEventRelatedEntities(id)
+                .switchIfEmpty(Mono.error(new NotFoundException("No event was found with id: " + id)))
+                .cast(Event.class);
     }
 }
