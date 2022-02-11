@@ -306,7 +306,6 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Method should save a shallow shipping instruction and return shipping response")
     void testCreateShippingInstructionShallow() {
 
-      shippingInstructionTO.setCarrierBookingReference(null);
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
@@ -357,7 +356,6 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Failing to create a shipment event should result in error")
     void testShipmentEventFailedShouldResultInError() {
 
-      shippingInstructionTO.setCarrierBookingReference(null);
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
@@ -379,7 +377,50 @@ class ShippingInstructionServiceImplTest {
     }
 
     @Test
-    @DisplayName("Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
+    @DisplayName(
+        "Fail if ShippingInstruction contains no carrierBookingReference on SI and ShipmentEquipment is null")
+    void testCreateBookingShouldFailWithNoCarrierBookingReferenceAndNoShipmentEquipment() {
+
+      shippingInstructionTO.setCarrierBookingReference(null);
+      shippingInstructionTO.setShipmentEquipments(null);
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction or CargoItemTO level.",
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName(
+        "Fail if ShippingInstruction does not contain any carrierBookingReference on any level")
+    void testCreateBookingShouldFailWithNoCarrierBookingReference() {
+
+      shippingInstructionTO.setCarrierBookingReference(null);
+      cargoItemTO.setCarrierBookingReference(null);
+      shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
+      shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction or CargoItemTO level.",
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName(
+        "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
     void testCreateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
 
       StepVerifier.create(

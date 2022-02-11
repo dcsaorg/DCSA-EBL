@@ -13,6 +13,7 @@ import org.dcsa.ebl.model.base.AbstractShippingInstruction;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -114,22 +115,31 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
    */
   @JsonIgnore
   public void pushCarrierBookingReferenceIntoCargoItemsIfNecessary() {
-    if (this.getShipmentEquipments() == null) return;
+    if (this.carrierBookingReference != null && this.shipmentEquipments == null) return;
 
-    List<CargoItemTO> cargoItems = new ArrayList<>();
-    for (ShipmentEquipmentTO shipmentEquipmentTO : this.shipmentEquipments) {
-      cargoItems.addAll(shipmentEquipmentTO.getCargoItems());
+    if (this.carrierBookingReference == null
+        && ( this.shipmentEquipments == null || this.shipmentEquipments.stream()
+            .map(
+                x ->
+                    x.getCargoItems().stream()
+                        .allMatch(y -> y.getCarrierBookingReference() == null))
+            .collect(Collectors.toList())
+            .contains(true))) {
+      throw new IllegalStateException(
+              "CarrierBookingReference needs to be defined on either ShippingInstruction or CargoItemTO level.");
     }
 
     String centralBookingReference = this.getCarrierBookingReference();
     if (centralBookingReference != null) {
-      for (CargoItemTO cargoItemTO : cargoItems) {
-        String cargoBookingReference = cargoItemTO.getCarrierBookingReference();
-        if (cargoBookingReference != null) {
-          throw ConcreteRequestErrorMessageException.invalidParameter(
-              "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.");
+      for (ShipmentEquipmentTO shipmentEquipmentTO : this.shipmentEquipments) {
+        for (CargoItemTO cargoItemTO : shipmentEquipmentTO.getCargoItems()) {
+          String cargoBookingReference = cargoItemTO.getCarrierBookingReference();
+          if (cargoBookingReference != null) {
+            throw new IllegalStateException(
+                "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.");
+          }
+          cargoItemTO.setCarrierBookingReference(centralBookingReference);
         }
-        cargoItemTO.setCarrierBookingReference(centralBookingReference);
       }
       this.setCarrierBookingReference(null);
     }

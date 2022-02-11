@@ -53,12 +53,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     try {
       shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
     } catch (IllegalStateException e) {
-      return Mono.error(e);
+      return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
 
     OffsetDateTime now = OffsetDateTime.now();
-    ShippingInstruction shippingInstruction =
-        shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
+    ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
@@ -80,6 +79,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             si -> {
               if (shippingInstructionTO.getShipmentEquipments() == null) return Mono.just(si);
               String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
+              // TODO: we have a known bug here that needs to be addressed (if carrierBookingReference differs from each cargoItem)
               return shipmentRepository
                   .findByCarrierBookingReference(carrierBookingReference)
                   .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter("No shipment found with carrierBookingReference: " + carrierBookingReference)))
