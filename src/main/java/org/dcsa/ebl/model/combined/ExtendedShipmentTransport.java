@@ -4,12 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.model.*;
-import org.dcsa.core.events.model.enums.DCSATransportType;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.model.JoinedWithModel;
-import org.dcsa.core.model.ModelClass;
-//import org.dcsa.core.model.PrimaryModel;
-//import org.dcsa.core.model.ViaJoinAlias;
 import org.springframework.data.relational.core.sql.Join;
 
 @Data

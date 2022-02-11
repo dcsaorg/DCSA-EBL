@@ -5,16 +5,12 @@ import org.dcsa.core.events.model.DisplayedAddress;
 import org.dcsa.core.events.model.DocumentParty;
 import org.dcsa.core.events.repository.DisplayedAddressRepository;
 import org.dcsa.core.service.impl.ExtendedBaseServiceImpl;
-import org.dcsa.ebl.Util;
-import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.service.DisplayedAddressService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor

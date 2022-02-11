@@ -2,7 +2,6 @@ package org.dcsa.ebl.model.base;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import org.dcsa.core.model.GetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
@@ -10,7 +9,7 @@ import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Data
-public class AbstractParty implements GetId<String> {
+public class AbstractParty {
 
     @Id
     @JsonProperty("partyID")
