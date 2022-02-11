@@ -9,13 +9,9 @@ import org.dcsa.core.events.service.LocationService;
 import org.dcsa.core.events.service.VoyageService;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.ebl.Util;
+import org.dcsa.core.util.MappingUtils;
 import org.dcsa.ebl.model.Clause;
-import org.dcsa.ebl.model.TransportPlan;
-import org.dcsa.ebl.model.base.AbstractCharge;
 import org.dcsa.ebl.model.base.AbstractClause;
-import org.dcsa.ebl.model.base.AbstractShipmentLocation;
-import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.transferobjects.*;
 import org.dcsa.ebl.model.utils.MappingUtil;
 import org.dcsa.ebl.service.*;
@@ -26,7 +22,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -99,7 +94,7 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
       // Save all Clauses in one Bulk
       return Flux.fromIterable(clauseTOs)
           .map(clauseTO -> MappingUtil.instanceFrom(clauseTO, Clause::new, AbstractClause.class))
-          .buffer(Util.SQL_LIST_BUFFER_SIZE)
+          .buffer(MappingUtils.SQL_LIST_BUFFER_SIZE)
           .concatMap(
               clauses ->
                   clauseService

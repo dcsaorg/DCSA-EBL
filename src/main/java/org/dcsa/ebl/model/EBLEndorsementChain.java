@@ -3,7 +3,6 @@ package org.dcsa.ebl.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
@@ -14,7 +13,7 @@ import java.util.UUID;
 
 @NoArgsConstructor
 @Data
-public class EBLEndorsementChain extends AuditBase implements GetId<UUID> {
+public class EBLEndorsementChain extends AuditBase {
 
     @Id
     private UUID id;  /* TODO: Remove */

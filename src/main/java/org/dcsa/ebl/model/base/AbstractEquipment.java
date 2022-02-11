@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dcsa.core.events.model.enums.WeightUnit;
 import org.dcsa.core.model.AuditBase;
-import org.dcsa.core.model.GetId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 
@@ -14,18 +13,12 @@ import javax.validation.constraints.Size;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public abstract class AbstractEquipment extends AuditBase implements GetId<String> {
+public abstract class AbstractEquipment extends AuditBase {
 
     @Id
     @Column("equipment_reference")
     @Size(max = 15)
     private String equipmentReference;
-
-    @JsonIgnore
-    @Override
-    public String getId() {
-        return this.getEquipmentReference();
-    }
 
     @JsonProperty("ISOEquipmentCode")
     @Column("iso_equipment_code")
