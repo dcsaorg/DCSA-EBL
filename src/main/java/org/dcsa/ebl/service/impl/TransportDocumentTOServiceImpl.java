@@ -32,7 +32,6 @@ import java.util.Objects;
 @Service
 public class TransportDocumentTOServiceImpl implements TransportDocumentTOService {
   private final TransportDocumentService transportDocumentService;
-  private final ShippingInstructionTOService shippingInstructionTOService;
   private final ChargeService chargeService;
   private final ClauseService clauseService;
   private final LocationService locationService;
@@ -118,57 +117,58 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
   @Transactional
   @Override
   public Mono<TransportDocumentTO> findById(String transportDocumentReference) {
-    TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-
-    return Flux.concat(
-            transportDocumentService
-                .findById(transportDocumentReference)
-                .flatMapMany(
-                    transportDocument -> {
-                      if (transportDocument.getShippingInstructionID() == null) {
-                        return Mono.error(
-                            new IllegalStateException(
-                                "No ShippingInstruction connected to this TransportDocument - internal error!"));
-                      } else {
-                        return Flux.concat(
-                            shippingInstructionTOService
-                                .findById(transportDocument.getShippingInstructionID())
-                                .flatMapMany(
-                                    shippingInstructionTO -> {
-                                      transportDocumentTO.setShippingInstruction(
-                                          shippingInstructionTO);
-                                      String carrierBookingReference =
-                                          shippingInstructionTOService.getCarrierBookingReference(
-                                              shippingInstructionTO);
-                                      if (carrierBookingReference == null) {
-                                        return Flux.error(
-                                            new IllegalStateException(
-                                                "No CarrierBookingReference specified on ShippingInstruction:"
-                                                    + shippingInstructionTO
-                                                        .getShippingInstructionID()
-                                                    + " - internal error!"));
-                                      } else {
-                                        return Flux.concat(
-                                            updateTransportDocumentWithBookingInfo(
-                                                carrierBookingReference, transportDocumentTO),
-                                            updateTransportDocumentWithTransportPlan(
-                                                carrierBookingReference, transportDocumentTO));
-                                      }
-                                    }),
-                            transportDocument.getPlaceOfIssue() != null
-                                ? locationService
-                                    .findById(transportDocument.getPlaceOfIssue())
-                                    .doOnNext(transportDocumentTO::setPlaceOfIssueLocation)
-                                : Mono.empty());
-                      }
-                    }),
-            clauseService
-                .findAllByTransportDocumentReference(transportDocumentReference)
-                .map(
-                    clause -> MappingUtil.instanceFrom(clause, ClauseTO::new, AbstractClause.class))
-                .collectList()
-                .doOnNext(transportDocumentTO::setClauses))
-        .then(Mono.just(transportDocumentTO));
+//    TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
+//
+//    return Flux.concat(
+//            transportDocumentService
+//                .findById(transportDocumentReference)
+//                .flatMapMany(
+//                    transportDocument -> {
+//                      if (transportDocument.getShippingInstructionID() == null) {
+//                        return Mono.error(
+//                            new IllegalStateException(
+//                                "No ShippingInstruction connected to this TransportDocument - internal error!"));
+//                      } else {
+//                        return Flux.concat(
+//                            shippingInstructionTOService
+//                                .findById(transportDocument.getShippingInstructionID())
+//                                .flatMapMany(
+//                                    shippingInstructionTO -> {
+//                                      transportDocumentTO.setShippingInstruction(
+//                                          shippingInstructionTO);
+//                                      String carrierBookingReference =
+//                                          shippingInstructionTOService.getCarrierBookingReference(
+//                                              shippingInstructionTO);
+//                                      if (carrierBookingReference == null) {
+//                                        return Flux.error(
+//                                            new IllegalStateException(
+//                                                "No CarrierBookingReference specified on ShippingInstruction:"
+//                                                    + shippingInstructionTO
+//                                                        .getShippingInstructionID()
+//                                                    + " - internal error!"));
+//                                      } else {
+//                                        return Flux.concat(
+//                                            updateTransportDocumentWithBookingInfo(
+//                                                carrierBookingReference, transportDocumentTO),
+//                                            updateTransportDocumentWithTransportPlan(
+//                                                carrierBookingReference, transportDocumentTO));
+//                                      }
+//                                    }),
+//                            transportDocument.getPlaceOfIssue() != null
+//                                ? locationService
+//                                    .findById(transportDocument.getPlaceOfIssue())
+//                                    .doOnNext(transportDocumentTO::setPlaceOfIssueLocation)
+//                                : Mono.empty());
+//                      }
+//                    }),
+//            clauseService
+//                .findAllByTransportDocumentReference(transportDocumentReference)
+//                .map(
+//                    clause -> MappingUtil.instanceFrom(clause, ClauseTO::new, AbstractClause.class))
+//                .collectList()
+//                .doOnNext(transportDocumentTO::setClauses))
+//        .then(Mono.just(transportDocumentTO));
+    return Mono.empty();
   }
 
   private Mono<Void> updateTransportDocumentWithCharges(TransportDocumentTO transportDocumentTO, boolean isChargesDisplayed) {

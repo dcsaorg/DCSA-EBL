@@ -1,10 +1,13 @@
 package org.dcsa.ebl.service;
 
-import org.dcsa.core.service.ExtendedBaseService;
-import org.dcsa.ebl.model.ShippingInstruction;
+import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
+import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
+import reactor.core.publisher.Mono;
 
-import java.util.UUID;
+public interface ShippingInstructionService {
+  Mono<ShippingInstructionTO> findById(String shippingInstructionID);
 
-public interface ShippingInstructionService extends ExtendedBaseService<ShippingInstruction, String> {
+  Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO);
 
+  Mono<ShippingInstructionTO> replaceOriginal(String shippingInstructionID, ShippingInstructionTO update);
 }
