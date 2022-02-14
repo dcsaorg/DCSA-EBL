@@ -8,10 +8,10 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ShippingInstructionMapper {
-    @Mapping(source = "freightPayableAt", target = "placeOfIssue.id", ignore = true)
+    @Mapping(source = "placeOfIssueID", target = "placeOfIssue.id", ignore = true)
     ShippingInstructionTO shippingInstructionToDTO(ShippingInstruction shippingInstruction);
 
-    @Mapping(source = "placeOfIssue", target = "freightPayableAt", ignore = true)
+    @Mapping(source = "placeOfIssue", target = "placeOfIssueID", ignore = true)
     ShippingInstruction dtoToShippingInstruction(ShippingInstructionTO shippingInstructionTO);
 
     ShippingInstructionResponseTO shippingInstructionToShippingInstructionResponseTO(ShippingInstruction shippingInstruction);

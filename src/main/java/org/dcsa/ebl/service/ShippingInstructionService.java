@@ -9,5 +9,5 @@ public interface ShippingInstructionService {
 
   Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO);
 
-  Mono<ShippingInstructionTO> replaceOriginal(String shippingInstructionID, ShippingInstructionTO update);
+  Mono<ShippingInstructionResponseTO> updateShippingInstructionByCarrierBookingReference(String shippingInstructionID, ShippingInstructionTO update);
 }

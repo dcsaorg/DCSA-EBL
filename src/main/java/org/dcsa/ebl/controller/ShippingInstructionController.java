@@ -34,9 +34,9 @@ public class ShippingInstructionController {
   }
 
   @PutMapping(path = "/{shippingInstructionID}")
-  public Mono<ShippingInstructionTO> update(
+  public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByCarrierBookingReference(shippingInstructionID, shippingInstructionTO);
   }
 }

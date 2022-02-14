@@ -22,6 +22,7 @@ import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.EBL_DOCUMEN
 public abstract class AbstractShippingInstruction extends AuditBase {
 
   @Id
+  @Size(max = 100)
   @Column("id")
   private String shippingInstructionID;
 

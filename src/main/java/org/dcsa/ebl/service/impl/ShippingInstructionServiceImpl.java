@@ -1,6 +1,8 @@
 package org.dcsa.ebl.service.impl;
 
+import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
@@ -9,6 +11,7 @@ import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
+import org.dcsa.core.exception.UpdateException;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -21,7 +24,10 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Function;
 
 @RequiredArgsConstructor
 @Service
@@ -69,8 +75,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             si -> {
               shippingInstructionTO.setShippingInstructionID(si.getShippingInstructionID());
               shippingInstructionTO.setDocumentStatus(si.getDocumentStatus());
-              shippingInstructionTO.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
-              shippingInstructionTO.setShippingInstructionUpdatedDateTime(si.getShippingInstructionUpdatedDateTime());
+              shippingInstructionTO.setShippingInstructionCreatedDateTime(
+                  si.getShippingInstructionCreatedDateTime());
+              shippingInstructionTO.setShippingInstructionUpdatedDateTime(
+                  si.getShippingInstructionUpdatedDateTime());
               return Mono.when(
                       insertLocationTO(
                               shippingInstructionTO.getPlaceOfIssue(),
@@ -172,8 +180,42 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   @Override
-  public Mono<ShippingInstructionTO> replaceOriginal(
-      String shippingInstructionID, ShippingInstructionTO update) {
-    return null;
+  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByCarrierBookingReference(
+      String shippingInstructionID, final ShippingInstructionTO shippingInstructionRequest) {
+
+    shippingInstructionRequest.setShippingInstructionID(UUID.randomUUID().toString());
+
+    return shippingInstructionRepository
+        .findShippingInstructionByShippingInstructionID(shippingInstructionID)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "No Shipping Instruction found with ID: " + shippingInstructionID)))
+        .flatMap(checkUpdateShippingInstructionStatus)
+        .flatMap(
+            si -> {
+              ShippingInstruction shippingInstruction =
+                  shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
+              shippingInstruction.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+              return shippingInstructionRepository.save(shippingInstruction).thenReturn(si);
+            })
+        .flatMap(
+            x ->
+                Mono.just(
+                    shippingInstructionMapper.shippingInstructionToShippingInstructionResponseTO(
+                        x)));
   }
+
+  private final Function<ShippingInstruction, Mono<ShippingInstruction>>
+      checkUpdateShippingInstructionStatus =
+          shippingInstruction -> {
+            if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU) {
+              return Mono.just(shippingInstruction);
+            }
+            return Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "DocumentStatus needs to be set to "
+                        + ShipmentEventTypeCode.PENU
+                        + " when updating Shipping Instruction"));
+          };
 }
