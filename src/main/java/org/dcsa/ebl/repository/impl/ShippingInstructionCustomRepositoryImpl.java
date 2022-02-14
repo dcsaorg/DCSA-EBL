@@ -91,10 +91,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         log.debug("populateCarrierBookingReferences");
 
         return summaries
-                .reduce(
-                        new ArrayList<ShippingInstructionSummaryTO>(),
-                        (list, value) -> { list.add(value); return list; }
-                )
+                .collectList()
                 .map(shippingInstructions -> findCarrierBookingReferences(
                         shippingInstructions.stream().map(si -> si.getShippingInstructionID()).collect(Collectors.toList())
                     ).map(map -> shippingInstructions.stream()
@@ -142,9 +139,9 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
                             )
                 )
                 .all()
-                .reduce(
-                        new HashMap<>(),
-                        (map, value) -> { map.computeIfAbsent(value.shippingInstructionId, k -> new ArrayList<>()).add(value.carrierBookingReference); return map; }
+                .collect(
+                        HashMap::new,
+                        (map, value) -> map.computeIfAbsent(value.shippingInstructionId, k -> new ArrayList<>()).add(value.carrierBookingReference)
                 );
     }
 
