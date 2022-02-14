@@ -41,7 +41,7 @@ spring:
         jwt:
           issuer-uri: https://dcsa.eu.auth0.com/
   webflux:
-    base-path: /v1
+    base-path: /v2
 
 springdoc:
   api-docs:
@@ -60,3 +60,15 @@ logging:
   level:
     dk: DEBUG
 
+---
+# running locally on developers machine (also unit tests)
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: info
+    org.springframework.web: info
+    org.dcsa: debug
