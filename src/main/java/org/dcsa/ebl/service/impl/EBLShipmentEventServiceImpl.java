@@ -54,7 +54,7 @@ public class EBLShipmentEventServiceImpl extends GenericEventServiceImpl impleme
                             if (event.getEventType() == EventType.SHIPMENT) {
                                 return shipmentEventService.loadRelatedEntities((ShipmentEvent) event);
                             }
-                            return Mono.empty();
+                            return Mono.error(new IllegalStateException("Unexpected value: " + event.getEventType()));
                         });
     }
 
