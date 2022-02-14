@@ -1,23 +1,14 @@
 package org.dcsa.ebl.controller;
 
-import org.dcsa.core.events.model.Address;
 import org.dcsa.core.events.model.Reference;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.enums.*;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.PartyContactDetailsTO;
-import org.dcsa.core.events.model.transferobjects.PartyTO;
-import org.dcsa.core.events.model.transferobjects.ReferenceTO;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.service.EBLShipmentEventService;
-import org.dcsa.ebl.service.impl.EBLShipmentEventServiceImpl;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,11 +22,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -169,6 +157,24 @@ public class EventControllerTest {
     }
 
     @Test
+    @DisplayName("Get events should throw bad request for incorrect shipmentEventTypeCode subset.")
+    void testEventsShouldFailForIncorrectShipmentEventTypeCodeNotSubset() {
+        webTestClient
+                .get()
+                .uri(
+                        uriBuilder ->
+                                uriBuilder
+                                        .path("/events")
+                                        .queryParam("shipmentEventTypeCode", "CONF","RELS")
+                                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+
+    @Test
     @DisplayName("Get events should throw bad request for incorrect documentTypeCode format.")
     void testEventsShouldFailForIncorrectDocumentTypeCode() {
         webTestClient
@@ -178,6 +184,22 @@ public class EventControllerTest {
                                 uriBuilder
                                         .path("/events")  // SRM -- correct generally try test
                                         .queryParam("documentTypeCode", "ABCD,DUMMY")
+                                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+    @Test
+    @DisplayName("Get events should throw bad request for incorrect DocumentTypeCode subset.")
+    void testEventsShouldFailForIncorrectDocumentTypeCodeSubset() {
+        webTestClient
+                .get()
+                .uri(
+                        uriBuilder ->
+                                uriBuilder
+                                        .path("/events")
+                                        .queryParam("shipmentEventTypeCode", "VGM")
                                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
@@ -271,25 +293,6 @@ public class EventControllerTest {
                 .jsonPath("$.[0].eventID")
                 .isEqualTo(shipmentEvent.getEventID().toString())
                 .jsonPath("$.[0].eventType")
-                .isEqualTo(shipmentEvent.getEventType().toString());
-    }
-    @Test
-    @DisplayName("Get events/{id} should return a shipment events for valid request.")
-    void testEventsWithIDShouldReturnShipmentEvent() {
-
-        Mockito.when(eBLShipmentEventService.findById(Mockito.any())).thenReturn(Mono.just(shipmentEvent));
-
-        webTestClient
-                .get()
-                .uri("/events/{id}", shipmentEvent.getEventID())
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .jsonPath("$.eventID")
-                .isEqualTo(shipmentEvent.getEventID().toString())
-                .jsonPath("$.eventType")
                 .isEqualTo(shipmentEvent.getEventType().toString());
     }
 
