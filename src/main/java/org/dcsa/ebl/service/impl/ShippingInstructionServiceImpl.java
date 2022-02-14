@@ -1,17 +1,14 @@
 package org.dcsa.ebl.service.impl;
 
-import com.fasterxml.jackson.databind.deser.std.UUIDDeserializer;
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.*;
-import org.dcsa.core.events.repository.ShipmentRepository;
+import org.dcsa.core.events.repository.*;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
-import org.dcsa.core.exception.UpdateException;
 import org.dcsa.ebl.model.ShippingInstruction;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -20,11 +17,11 @@ import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -42,6 +39,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   // Repositories
   private final ShipmentRepository shipmentRepository;
+  private final DocumentPartyRepository documentPartyRepository;
+  private final ReferenceRepository referenceRepository;
+  private final CargoItemRepository cargoItemRepository;
+  private final SealRepository sealRepository;
+  private final EquipmentRepository equipmentRepository;
+  private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
+  private final ShipmentEquipmentRepository shipmentEquipmentRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -100,6 +104,63 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
+  @Override
+  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByCarrierBookingReference(
+      String shippingInstructionID, final ShippingInstructionTO shippingInstructionRequest) {
+
+    shippingInstructionRequest.setShippingInstructionID(UUID.randomUUID().toString());
+
+    return shippingInstructionRepository
+        .findShippingInstructionByShippingInstructionID(shippingInstructionID)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "No Shipping Instruction found with ID: " + shippingInstructionID)))
+        .flatMap(checkUpdateShippingInstructionStatus)
+        .flatMap(
+            si -> {
+              ShippingInstruction shippingInstruction =
+                  shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
+              shippingInstruction.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+              return shippingInstructionRepository.save(shippingInstruction).thenReturn(si);
+            })
+        .flatMap(
+            si ->
+                Mono.when(
+                        locationService
+                            .resolveLocationByTO(
+                                si.getPlaceOfIssueID(),
+                                shippingInstructionRequest.getPlaceOfIssue(),
+                                placeOfIssue ->
+                                    shippingInstructionRepository.setPlaceOfIssueFor(
+                                        placeOfIssue, si.getShippingInstructionID()))
+                            .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
+                        resolveShipmentEquipmentsForShippingInstructionID(
+                                shippingInstructionRequest.getShipmentEquipments(),
+                                shippingInstructionRequest)
+                            .doOnNext(shippingInstructionRequest::setShipmentEquipments),
+                        resolveDocumentPartiesForShippingInstructionID(
+                                si.getShippingInstructionID(),
+                                shippingInstructionRequest.getDocumentParties())
+                            .doOnNext(shippingInstructionRequest::setDocumentParties),
+                        resolveReferencesForShippingInstructionID(
+                                si.getShippingInstructionID(),
+                                shippingInstructionRequest.getReferences())
+                            .doOnNext(shippingInstructionRequest::setReferences))
+                    .thenReturn(shippingInstructionRequest))
+        .flatMap(siTO -> shipmentEventFromShippingInstructionTO(siTO, null).thenReturn(siTO))
+        .flatMap(
+            siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
+  }
+
+  private Mono<List<ReferenceTO>> resolveReferencesForShippingInstructionID(
+      String shippingInstructionID, List<ReferenceTO> referenceTOs) {
+    if (referenceTOs == null) return Mono.empty();
+    return referenceRepository
+        .deleteByShippingInstructionID(shippingInstructionID)
+        .then(insertReferenceTOs(referenceTOs, shippingInstructionID));
+  }
+
   private Mono<List<ReferenceTO>> insertReferenceTOs(
       List<ReferenceTO> references, String shippingInstructionID) {
     if (references == null) return Mono.empty();
@@ -107,12 +168,48 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstructionID, references);
   }
 
+  private Mono<List<ShipmentEquipmentTO>> resolveShipmentEquipmentsForShippingInstructionID(List<ShipmentEquipmentTO> shipmentEquipments, ShippingInstructionTO shippingInstructionTO) {
+    return cargoItemRepository
+        .findAllByShippingInstructionID(shippingInstructionTO.getShippingInstructionID())
+        .flatMap(
+            cargoItems ->
+                Flux.fromIterable(cargoItems)
+                    .flatMap(
+                        cargoItem ->
+                            Mono.when(
+                                    sealRepository.deleteAllByShipmentEquipmentID(
+                                        cargoItem.getShipmentEquipmentID()),
+                                    activeReeferSettingsRepository.deleteByShipmentEquipmentID(
+                                        cargoItem.getShipmentEquipmentID()))
+                                .thenReturn(cargoItem))
+                    .flatMap(
+                        cargoItem ->
+                            cargoItemRepository
+                                .deleteById(cargoItem.getId())
+                                .then(
+                                    shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(
+                                        cargoItem.getShipmentEquipmentID())))
+                    .flatMap(
+                        shipmentEquipment ->
+                            equipmentRepository
+                                .deleteAllByEquipmentReference(
+                                    shipmentEquipment.getEquipmentReference())
+                                .thenReturn(shipmentEquipment))
+                    .flatMap(
+                        shipmentEquipment ->
+                            shipmentEquipmentRepository
+                                .deleteShipmentEquipmentByShipmentID(
+                                    shipmentEquipment.getShipmentID())
+                                .thenReturn(new ShipmentEquipmentTO()))
+                    .collectList()).flatMap(x -> insertShipmentEquipmentTOs(shipmentEquipments, shippingInstructionTO));
+  }
+
   private Mono<List<ShipmentEquipmentTO>> insertShipmentEquipmentTOs(
       List<ShipmentEquipmentTO> shipmentEquipments, ShippingInstructionTO shippingInstructionTO) {
     if (shipmentEquipments == null) return Mono.empty();
     String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
-    // TODO: we have a known bug here that needs to be addressed (if
-    // carrierBookingReference differs from each cargoItem)
+    // TODO: we have a known bug here that needs to be addressed.
+    //  carrierBookingReference can differ from each cargoItem.
     return shipmentRepository
         .findByCarrierBookingReference(carrierBookingReference)
         .switchIfEmpty(
@@ -132,6 +229,15 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return locationService.createLocationByTO(
         placeOfIssue,
         poi -> shippingInstructionRepository.setPlaceOfIssueFor(poi, shippingInstructionID));
+  }
+
+  private Mono<List<DocumentPartyTO>> resolveDocumentPartiesForShippingInstructionID(
+      String shippingInstructionID, List<DocumentPartyTO> documentPartyTOs) {
+
+    // this will create orphan parties
+    return documentPartyRepository
+        .deleteByShippingInstructionID(shippingInstructionID)
+        .then(insertDocumentPartyTOs(documentPartyTOs, shippingInstructionID));
   }
 
   private Mono<List<DocumentPartyTO>> insertDocumentPartyTOs(
@@ -177,33 +283,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shipmentEvent.setEventDateTime(shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
-  }
-
-  @Override
-  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByCarrierBookingReference(
-      String shippingInstructionID, final ShippingInstructionTO shippingInstructionRequest) {
-
-    shippingInstructionRequest.setShippingInstructionID(UUID.randomUUID().toString());
-
-    return shippingInstructionRepository
-        .findShippingInstructionByShippingInstructionID(shippingInstructionID)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.invalidParameter(
-                    "No Shipping Instruction found with ID: " + shippingInstructionID)))
-        .flatMap(checkUpdateShippingInstructionStatus)
-        .flatMap(
-            si -> {
-              ShippingInstruction shippingInstruction =
-                  shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
-              shippingInstruction.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
-              return shippingInstructionRepository.save(shippingInstruction).thenReturn(si);
-            })
-        .flatMap(
-            x ->
-                Mono.just(
-                    shippingInstructionMapper.shippingInstructionToShippingInstructionResponseTO(
-                        x)));
   }
 
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>

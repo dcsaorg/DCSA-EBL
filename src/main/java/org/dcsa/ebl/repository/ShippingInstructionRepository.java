@@ -6,8 +6,6 @@ import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 public interface ShippingInstructionRepository
     extends ExtendedRepository<ShippingInstruction, String> {
 
