@@ -30,12 +30,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
   private final ClauseService clauseService;
   private final BookingRepository bookingRepository;
 
-  @Transactional
-  @Override
-  public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
-      return Mono.empty();
-  }
-
   /**
    * Checks if TransportDocument differs from Booking with regards to ServiceType, ShipmentTerms and
    * ContractService. Sets the above mentioned values from Booking on TransportDocument
