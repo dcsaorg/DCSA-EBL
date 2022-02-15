@@ -20,12 +20,17 @@ import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import reactor.core.publisher.Flux;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 
 @RequiredArgsConstructor
 @Service
@@ -51,7 +56,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   @Transactional
   @Override
-  public Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
+  public Mono<ShippingInstructionResponseTO> createShippingInstruction(
+      ShippingInstructionTO shippingInstructionTO) {
 
     try {
       shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
@@ -60,13 +66,15 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     }
 
     OffsetDateTime now = OffsetDateTime.now();
-    ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
+    ShippingInstruction shippingInstruction =
+        shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionTO);
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
-    return shippingInstructionRepository
-        .save(shippingInstruction)
+    return createShipmentEvent(shippingInstruction)
+        .thenReturn(shippingInstruction)
+        .flatMap(shippingInstructionRepository::save)
         .flatMap(
             si -> {
               if (shippingInstructionTO.getPlaceOfIssue() == null) return Mono.just(si);
@@ -82,10 +90,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             si -> {
               if (shippingInstructionTO.getShipmentEquipments() == null) return Mono.just(si);
               String carrierBookingReference = getCarrierBookingReference(shippingInstructionTO);
-              // TODO: we have a known bug here that needs to be addressed (if carrierBookingReference differs from each cargoItem)
+              // TODO: we have a known bug here that needs to be addressed (if
+              // carrierBookingReference differs from each cargoItem)
+              // https://dcsa.atlassian.net/browse/DDT-854
               return shipmentRepository
                   .findByCarrierBookingReference(carrierBookingReference)
-                  .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter("No shipment found with carrierBookingReference: " + carrierBookingReference)))
+                  .switchIfEmpty(
+                      Mono.error(
+                          ConcreteRequestErrorMessageException.invalidParameter(
+                              "No shipment found with carrierBookingReference: "
+                                  + carrierBookingReference)))
                   .flatMap(
                       x ->
                           shipmentEquipmentService
@@ -112,11 +126,75 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                       si.getShippingInstructionID(), shippingInstructionTO.getReferences())
                   .then(Mono.just(si));
             })
-        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
+        .flatMap(
+            si -> {
+              List<String> validationResult = validateShippingInstruction(shippingInstructionTO);
+              Mono<ShipmentEvent> shipmentEvent;
+              if (!validationResult.isEmpty()) {
+                si.setDocumentStatus(ShipmentEventTypeCode.PENU);
+                shipmentEvent = createShipmentEvent(si, String.join("\n", validationResult));
+              } else {
+                si.setDocumentStatus(ShipmentEventTypeCode.PENC);
+                shipmentEvent = createShipmentEvent(si);
+              }
+              return shipmentEvent.thenReturn(si);
+            })
         .map(shippingInstructionMapper::shippingInstructionToShippingInstructionResponseTO);
   }
 
+  List<String> validateShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
+    List<String> validationErrors = new ArrayList<>();
+
+    //Check if number of copies and number of originals are set properly for a non-electronic shipping instruction
+    if (Objects.nonNull(shippingInstructionTO.getIsElectronic())
+        && !shippingInstructionTO.getIsElectronic()) {
+      if (Objects.isNull(shippingInstructionTO.getNumberOfCopies())) {
+        validationErrors.add(
+            "number of copies is required for non electronic shipping instructions.");
+      }
+      if (Objects.isNull(shippingInstructionTO.getNumberOfOriginals())) {
+        validationErrors.add(
+            "number of originals is required for non electronic shipping instructions.");
+      }
+    }
+
+    Supplier<Stream<ShipmentEquipmentTO>> shipmentEquipmentTOStream = () -> Stream.ofNullable(shippingInstructionTO.getShipmentEquipments())
+      .flatMap(shipmentEquipmentTOS -> Stream.ofNullable(shipmentEquipmentTOS.stream()))
+      .flatMap(Function.identity());
+
+    //Check if carrierBooking reference is only set on one place, either shipping instruction or cargo item
+    // ToDo needs refactoring in: https://dcsa.atlassian.net/browse/DDT-854
+    shipmentEquipmentTOStream.get()
+        .flatMap(shipmentEquipmentTO -> shipmentEquipmentTO.getCargoItems().stream())
+        .map(CargoItemTO::getCarrierBookingReference)
+        .forEach(
+            carrierBookingReferenceOnCargoItem -> {
+              if (Objects.nonNull(carrierBookingReferenceOnCargoItem)
+                  && Objects.nonNull(shippingInstructionTO.getCarrierBookingReference())) {
+                validationErrors.add(
+                    "Carrier Booking Reference present in both shipping instruction as well as cargo items.");
+              } else if (Objects.isNull(carrierBookingReferenceOnCargoItem)
+                  && Objects.isNull(shippingInstructionTO.getCarrierBookingReference())) {
+                validationErrors.add(
+                    "Carrier Booking Reference not present on shipping instruction.");
+              }
+            });
+
+    //Check if equipment tare weight is set on shipper owned equipment
+    shipmentEquipmentTOStream.get()
+      .forEach(shipmentEquipmentTO -> {
+        if (shipmentEquipmentTO.getIsShipperOwned()
+          && Objects.isNull(shipmentEquipmentTO.getEquipment().getTareWeight())) {
+          validationErrors.add(
+            "equipment tare weight is required for shipper owned equipment.");
+        }
+      });
+
+    return validationErrors;
+  }
+
   // TODO: fix once we know carrierBookingReference can be null (none on SI and no CargoItems)
+  // https://dcsa.atlassian.net/browse/DDT-854
   String getCarrierBookingReference(ShippingInstructionTO shippingInstructionTO) {
     if (shippingInstructionTO.getCarrierBookingReference() == null) {
       List<CargoItemTO> cargoItems = new ArrayList<>();
@@ -129,13 +207,18 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return shippingInstructionTO.getCarrierBookingReference();
   }
 
-  private Mono<ShipmentEvent> createShipmentEvent(ShippingInstruction shippingInstruction) {
-    return shipmentEventFromShippingInstruction(shippingInstruction, null)
+  private Mono<ShipmentEvent> createShipmentEvent(
+      ShippingInstruction shippingInstruction, String reason) {
+    return shipmentEventFromShippingInstruction(shippingInstruction, reason)
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "Failed to create shipment event for ShippingInstruction.")));
+  }
+
+  private Mono<ShipmentEvent> createShipmentEvent(ShippingInstruction shippingInstruction) {
+    return createShipmentEvent(shippingInstruction, null);
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
