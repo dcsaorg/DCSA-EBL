@@ -199,7 +199,6 @@ class ShippingInstructionServiceImplTest {
 
     cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
-    cargoItemTO.setCarrierBookingReference("XYZ12345");
     cargoItemTO.setHsCode("x".repeat(10));
     cargoItemTO.setDescriptionOfGoods("Some description of the goods!");
     cargoItemTO.setNumberOfPackages(2);
@@ -252,8 +251,6 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Method should save shipping instruction and return shipping response")
     void testCreateShippingInstructionWithEverything() {
 
-      shippingInstructionTO.setCarrierBookingReference(null);
-
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
       when(shipmentRepository.findByCarrierBookingReference(any())).thenReturn(Mono.just(shipment));
@@ -269,6 +266,9 @@ class ShippingInstructionServiceImplTest {
       ArgumentCaptor<ShippingInstruction> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstruction.class);
 
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
           .assertNext(
@@ -281,9 +281,26 @@ class ShippingInstructionServiceImplTest {
                 verify(referenceService)
                     .createReferencesByShippingInstructionIDAndTOs(any(), any());
 
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    "Received",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    "Pending Confirmation",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+
                 assertEquals(
                     shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
-                assertEquals("Received", b.getDocumentStatus().getValue());
+                assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
 
@@ -303,6 +320,80 @@ class ShippingInstructionServiceImplTest {
     }
 
     @Test
+    @DisplayName("Method should save shipping instruction and return shipping response when carrierBookingReference is set on cargoItem")
+    void testCreateShippingInstructionWithCarrierBookingReferenceOnCargoItem() {
+      shippingInstructionTO.setCarrierBookingReference(null);
+      cargoItemTO.setCarrierBookingReference("carrierBookingRequestReference");
+
+      when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
+      when(shipmentRepository.findByCarrierBookingReference(any())).thenReturn(Mono.just(shipment));
+      when(ShipmentEquipmentService.createShipmentEquipment(any(), any(), any()))
+        .thenReturn(Mono.just(List.of(shipmentEquipmentTO)));
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
+        .thenReturn(Mono.just(List.of(documentPartyTO)));
+      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
+        .thenReturn(Mono.just(List.of(referenceTO)));
+      when(shipmentEventService.create(any()))
+        .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+
+      ArgumentCaptor<ShippingInstruction> argumentCaptor =
+        ArgumentCaptor.forClass(ShippingInstruction.class);
+
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+        ArgumentCaptor.forClass(ShipmentEvent.class);
+
+      StepVerifier.create(
+          shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+        .assertNext(
+          b -> {
+            verify(locationService).createLocationByTO(any(), any());
+            verify(shipmentRepository).findByCarrierBookingReference(any());
+            verify(ShipmentEquipmentService).createShipmentEquipment(any(), any(), any());
+            verify(documentPartyService)
+              .createDocumentPartiesByShippingInstructionID(any(), any());
+            verify(referenceService)
+              .createReferencesByShippingInstructionIDAndTOs(any(), any());
+
+            verify(shipmentEventService, times(2))
+              .create(argumentCaptorShipmentEvent.capture());
+            assertEquals(
+              "Received",
+              argumentCaptorShipmentEvent
+                .getAllValues()
+                .get(0)
+                .getShipmentEventTypeCode()
+                .getValue());
+            assertEquals(
+              "Pending Confirmation",
+              argumentCaptorShipmentEvent
+                .getAllValues()
+                .get(1)
+                .getShipmentEventTypeCode()
+                .getValue());
+
+            assertEquals(
+              shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+            assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
+            assertNotNull(b.getShippingInstructionCreatedDateTime());
+            assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+            verify(shippingInstructionMapper)
+              .shippingInstructionToShippingInstructionResponseTO(argumentCaptor.capture());
+            assertEquals(
+              shippingInstruction.getShippingInstructionID(),
+              argumentCaptor.getValue().getShippingInstructionID());
+            assertEquals(
+              shippingInstruction.getPlaceOfIssueID(),
+              argumentCaptor.getValue().getPlaceOfIssueID());
+            assertEquals(
+              shippingInstruction.getDocumentStatus(),
+              argumentCaptor.getValue().getDocumentStatus());
+          })
+        .verifyComplete();
+    }
+
+    @Test
     @DisplayName("Method should save a shallow shipping instruction and return shipping response")
     void testCreateShippingInstructionShallow() {
 
@@ -318,15 +409,107 @@ class ShippingInstructionServiceImplTest {
       ArgumentCaptor<ShippingInstruction> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstruction.class);
 
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
           .assertNext(
               b -> {
                 assertEquals(
                     shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
-                assertEquals("Received", b.getDocumentStatus().getValue());
+                assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    "Received",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    "Pending Confirmation",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+
+                verify(shippingInstructionMapper)
+                    .shippingInstructionToShippingInstructionResponseTO(argumentCaptor.capture());
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(),
+                    argumentCaptor.getValue().getShippingInstructionID());
+                assertEquals(
+                    shippingInstruction.getPlaceOfIssueID(),
+                    argumentCaptor.getValue().getPlaceOfIssueID());
+                assertEquals(
+                    shippingInstruction.getDocumentStatus(),
+                    argumentCaptor.getValue().getDocumentStatus());
+
+                verify(locationService, never()).createLocationByTO(any(), any());
+                verify(shipmentRepository, never()).findByCarrierBookingReference(any());
+                verify(ShipmentEquipmentService, never())
+                    .createShipmentEquipment(any(), any(), any());
+                verify(documentPartyService, never())
+                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                verify(referenceService, never())
+                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+              })
+          .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Method should save a shallow shipping with validation errors resulting in PENU")
+    void testCreateShippingInstructionResultingInPENU() {
+
+      shippingInstructionTO.setPlaceOfIssue(null);
+      shippingInstructionTO.setDocumentParties(null);
+      shippingInstructionTO.setReferences(null);
+      shippingInstructionTO.setShipmentEquipments(null);
+      shippingInstructionTO.setIsElectronic(false);
+      shippingInstructionTO.setNumberOfCopies(null);
+
+      when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+      when(shipmentEventService.create(any()))
+          .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+
+      ArgumentCaptor<ShippingInstruction> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstruction.class);
+
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .assertNext(
+              b -> {
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                assertEquals("Pending Update", b.getDocumentStatus().getValue());
+                assertNotNull(b.getShippingInstructionCreatedDateTime());
+                assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    "Received",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    "Pending Update",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
 
                 verify(shippingInstructionMapper)
                     .shippingInstructionToShippingInstructionResponseTO(argumentCaptor.capture());
@@ -361,7 +544,6 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setShipmentEquipments(null);
 
-      when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
 
       StepVerifier.create(
@@ -423,6 +605,8 @@ class ShippingInstructionServiceImplTest {
         "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
     void testCreateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
 
+      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
           .expectErrorSatisfies(
@@ -433,6 +617,105 @@ class ShippingInstructionServiceImplTest {
                     throwable.getMessage());
               })
           .verify();
+    }
+  }
+
+  @Nested
+  @DisplayName("Tests for the method validateShippingInstruction(#ShippingInstructionTO)")
+  class ValidateShippingInstruction {
+
+    @Test
+    @DisplayName(
+        "Test validateShipping Instruction with valid shipping instruction should result in no validation errors")
+    void testValidShippingInstruction() {
+      List<String> validationResult =
+          shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(0, validationResult.size());
+    }
+
+    @Test
+    @DisplayName("Test validateShipping Instruction with invalid number of copies")
+    void testInvalidNumberOfCopiesShippingInstruction() {
+      shippingInstructionTO.setIsElectronic(false);
+      shippingInstructionTO.setNumberOfCopies(null);
+      shippingInstructionTO.setNumberOfOriginals(1);
+      List<String> validationResult =
+          shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(1, validationResult.size());
+      assertEquals(
+          "number of copies is required for non electronic shipping instructions.",
+          validationResult.get(0));
+    }
+
+    @Test
+    @DisplayName("Test validateShippingInstruction with no carrierBookingReferences")
+    void testWithoutCarrierBookingReferences() {
+      shippingInstructionTO.setCarrierBookingReference(null);
+      cargoItemTO.setCarrierBookingReference(null);
+      List<String> validationResult = shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(1, validationResult.size());
+      assertEquals("Carrier Booking Reference not present on shipping instruction.", validationResult.get(0));
+    }
+
+    @Test
+    @DisplayName("Test validateShippingInstruction with carrierBookingReference defined on both shipping instruction as well as cargoItems")
+    void testWithDuplicateCarrierBookingReference() {
+      shippingInstructionTO.setCarrierBookingReference("CarrierBookingReference");
+      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+      List<String> validationResult = shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(1, validationResult.size());
+      assertEquals("Carrier Booking Reference present in both shipping instruction as well as cargo items.", validationResult.get(0));
+    }
+
+    @Test
+    @DisplayName("Test validateShippingInstruction with invalid number of originals")
+    void testInvalidNumberOfOriginalsShippingInstruction() {
+      shippingInstructionTO.setIsElectronic(false);
+      shippingInstructionTO.setNumberOfOriginals(null);
+      shippingInstructionTO.setNumberOfCopies(1);
+      List<String> validationResult =
+          shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(1, validationResult.size());
+      assertEquals(
+          "number of originals is required for non electronic shipping instructions.",
+          validationResult.get(0));
+    }
+
+    @Test
+    @DisplayName("Test validateShippingInstruction with invalid equipment tare weight")
+    void testInvalidEquipmentTareWeight() {
+      shippingInstructionTO.setCarrierBookingReference("CarrierBookingRequestReference");
+      shipmentEquipmentTO.setIsShipperOwned(true);
+      shipmentEquipmentTO.getEquipment().setTareWeight(null);
+      List<String> validationResult =
+          shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(1, validationResult.size());
+      assertEquals(
+          "equipment tare weight is required for shipper owned equipment.",
+          validationResult.get(0));
+    }
+
+    @Test
+    @DisplayName("Test validateShippingInstruction with multiple invalid fields")
+    void TestInvalidShippingInstruction() {
+      shipmentEquipmentTO.setIsShipperOwned(true);
+      shipmentEquipmentTO.getEquipment().setTareWeight(null);
+      shippingInstructionTO.setIsElectronic(false);
+      shippingInstructionTO.setNumberOfOriginals(null);
+      shippingInstructionTO.setNumberOfCopies(null);
+
+      List<String> validationResult =
+          shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
+      assertEquals(3, validationResult.size());
+      assertEquals(
+          "number of copies is required for non electronic shipping instructions.",
+          validationResult.get(0));
+      assertEquals(
+          "number of originals is required for non electronic shipping instructions.",
+          validationResult.get(1));
+      assertEquals(
+          "equipment tare weight is required for shipper owned equipment.",
+          validationResult.get(2));
     }
   }
 }
