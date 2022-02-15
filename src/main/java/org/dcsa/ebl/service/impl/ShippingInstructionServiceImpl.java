@@ -76,9 +76,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
-    return createShipmentEvent(shippingInstruction)
-        .thenReturn(shippingInstruction)
-        .flatMap(shippingInstructionRepository::save)
+    return shippingInstructionRepository.save(shippingInstruction)
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               shippingInstructionTO.setShippingInstructionID(si.getShippingInstructionID());

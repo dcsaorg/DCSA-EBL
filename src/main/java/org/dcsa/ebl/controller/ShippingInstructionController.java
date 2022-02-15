@@ -34,6 +34,7 @@ public class ShippingInstructionController {
   }
 
   @PutMapping(path = "/{shippingInstructionID}")
+  @ResponseStatus(HttpStatus.OK)
   public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
