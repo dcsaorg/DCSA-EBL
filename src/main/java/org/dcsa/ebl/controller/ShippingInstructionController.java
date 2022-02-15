@@ -37,6 +37,6 @@ public class ShippingInstructionController {
   public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.updateShippingInstructionByCarrierBookingReference(shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(shippingInstructionID, shippingInstructionTO);
   }
 }

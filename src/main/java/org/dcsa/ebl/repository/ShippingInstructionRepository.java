@@ -7,7 +7,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Mono;
 
 public interface ShippingInstructionRepository
-    extends ExtendedRepository<ShippingInstruction, String> {
+    extends ExtendedRepository<ShippingInstruction, String>, ShippingInstructionCustomRepository {
 
   @Modifying
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")
