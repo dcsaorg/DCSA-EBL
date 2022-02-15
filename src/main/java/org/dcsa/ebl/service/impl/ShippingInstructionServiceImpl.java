@@ -17,7 +17,6 @@ import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -76,7 +75,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
-    return shippingInstructionRepository.save(shippingInstruction)
+    return shippingInstructionRepository
+        .save(shippingInstruction)
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
@@ -103,19 +103,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           shippingInstructionTO.getShippingInstructionID()))
                   .thenReturn(shippingInstructionTO);
             })
-        .flatMap(
-            si -> {
-              List<String> validationResult = validateShippingInstruction(shippingInstructionTO);
-              Mono<ShipmentEvent> shipmentEvent;
-              if (!validationResult.isEmpty()) {
-                si.setDocumentStatus(ShipmentEventTypeCode.PENU);
-                shipmentEvent = createShipmentEvent(si, String.join("\n", validationResult));
-              } else {
-                si.setDocumentStatus(ShipmentEventTypeCode.PENC);
-                shipmentEvent = createShipmentEvent(si);
-              }
-              return shipmentEvent.thenReturn(si);
-            })
+        .flatMap(createShipmentEventFromDocumentStatus)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -130,6 +118,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "No Shipping Instruction found with ID: " + shippingInstructionID)))
         .flatMap(checkUpdateShippingInstructionStatus)
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               ShippingInstruction shippingInstruction =
@@ -172,7 +161,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .doOnNext(shippingInstructionRequest::setReferences))
                   .thenReturn(shippingInstructionRequest);
             })
-        .flatMap(siTO -> createShipmentEvent(siTO).thenReturn(siTO))
+        .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
   }
@@ -370,6 +359,21 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "Failed to create shipment event for ShippingInstruction.")));
   }
+
+  private final Function<ShippingInstructionTO, Mono<ShippingInstructionTO>>
+      createShipmentEventFromDocumentStatus =
+          si -> {
+            List<String> validationResult = validateShippingInstruction(si);
+            Mono<ShipmentEvent> shipmentEvent;
+            if (!validationResult.isEmpty()) {
+              si.setDocumentStatus(ShipmentEventTypeCode.PENU);
+              shipmentEvent = createShipmentEvent(si, String.join("\n", validationResult));
+            } else {
+              si.setDocumentStatus(ShipmentEventTypeCode.PENC);
+              shipmentEvent = createShipmentEvent(si);
+            }
+            return shipmentEvent.thenReturn(si);
+          };
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
       ShippingInstruction shippingInstruction, String reason) {
