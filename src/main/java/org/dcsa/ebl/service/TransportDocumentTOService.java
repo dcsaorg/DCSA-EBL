@@ -7,7 +7,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface TransportDocumentTOService {
-    Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO);
     Mono<TransportDocumentTO> findById(String transportDocumentReference);
     Flux<TransportDocument> findAllExtended(final ExtendedRequest<TransportDocument> extendedRequest);
 }

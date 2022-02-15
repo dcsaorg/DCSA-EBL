@@ -27,20 +27,8 @@ import java.util.List;
 @Service
 public class TransportDocumentTOServiceImpl implements TransportDocumentTOService {
   private final TransportDocumentService transportDocumentService;
-  private final ChargeService chargeService;
   private final ClauseService clauseService;
-  private final LocationService locationService;
   private final BookingRepository bookingRepository;
-  private final ShipmentLocationService shipmentLocationService;
-  private final ExtendedShipmentTransportService extendedShipmentTransportService;
-  private final ShipmentService shipmentService;
-  private final VoyageService voyageService;
-
-  @Transactional
-  @Override
-  public Mono<TransportDocumentTO> create(TransportDocumentTO transportDocumentTO) {
-      return Mono.empty();
-  }
 
   /**
    * Checks if TransportDocument differs from Booking with regards to ServiceType, ShipmentTerms and

@@ -1,4 +1,5 @@
 version: '3.5'
+
 services:
     dcsa-ebl:
         build:
@@ -18,4 +19,3 @@ services:
             DCSA-Information-Model/datamodel/
         ports:
             - 5432:5432
-

@@ -17,13 +17,11 @@ import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
@@ -106,7 +104,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   @Override
-  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByCarrierBookingReference(
+  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionID(
       String shippingInstructionID, ShippingInstructionTO shippingInstructionRequest) {
 
     return shippingInstructionRepository
@@ -178,36 +176,35 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstructionID, references);
   }
 
-  private Mono<List<ShipmentEquipmentTO>> resolveShipmentEquipmentsForShippingInstructionID(List<ShipmentEquipmentTO> shipmentEquipments, ShippingInstructionTO shippingInstructionTO) {
+  private Mono<List<ShipmentEquipmentTO>> resolveShipmentEquipmentsForShippingInstructionID(
+      List<ShipmentEquipmentTO> shipmentEquipments, ShippingInstructionTO shippingInstructionTO) {
     return cargoItemRepository
         .findAllByShippingInstructionID(shippingInstructionTO.getShippingInstructionID())
         .flatMap(
-            cargoItems -> Mono.when(
-                                sealRepository.deleteAllByShipmentEquipmentID(
-                                    cargoItems.getShipmentEquipmentID()),
-                                activeReeferSettingsRepository.deleteByShipmentEquipmentID(
-                                    cargoItems.getShipmentEquipmentID()))
-                            .thenReturn(cargoItems))
-                  .flatMap(
-                      cargoItem ->
-                          shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(
-                              cargoItem.getShipmentEquipmentID()))
-                  .flatMap(
-                      cargoItem ->
-                          cargoItemRepository.deleteById(cargoItem.getId()).thenReturn(cargoItem))
-                  .flatMap(
-                      shipmentEquipment ->
-                          equipmentRepository
-                              .deleteAllByEquipmentReference(
-                                  shipmentEquipment.getEquipmentReference())
-                              .thenReturn(shipmentEquipment))
-                  .flatMap(
-                      shipmentEquipment ->
-                          shipmentEquipmentRepository
-                              .deleteShipmentEquipmentByShipmentID(
-                                  shipmentEquipment.getShipmentID())
-                              .thenReturn(new ShipmentEquipmentTO()))
-                  .collectList()
+            cargoItems ->
+                Mono.when(
+                        sealRepository.deleteAllByShipmentEquipmentID(
+                            cargoItems.getShipmentEquipmentID()),
+                        activeReeferSettingsRepository.deleteByShipmentEquipmentID(
+                            cargoItems.getShipmentEquipmentID()))
+                    .thenReturn(cargoItems))
+        .flatMap(
+            cargoItem ->
+                shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(
+                    cargoItem.getShipmentEquipmentID()))
+        .flatMap(
+            cargoItem -> cargoItemRepository.deleteById(cargoItem.getId()).thenReturn(cargoItem))
+        .flatMap(
+            shipmentEquipment ->
+                equipmentRepository
+                    .deleteAllByEquipmentReference(shipmentEquipment.getEquipmentReference())
+                    .thenReturn(shipmentEquipment))
+        .flatMap(
+            shipmentEquipment ->
+                shipmentEquipmentRepository
+                    .deleteShipmentEquipmentByShipmentID(shipmentEquipment.getShipmentID())
+                    .thenReturn(new ShipmentEquipmentTO()))
+        .collectList()
         .flatMap(x -> insertShipmentEquipmentTOs(shipmentEquipments, shippingInstructionTO));
   }
 
@@ -302,15 +299,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
-            return Mono.just(shippingInstruction);
-            //            if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU)
-            // {
-            //              return Mono.just(shippingInstruction);
-            //            }
-            //            return Mono.error(
-            //                ConcreteRequestErrorMessageException.invalidParameter(
-            //                    "DocumentStatus needs to be set to "
-            //                        + ShipmentEventTypeCode.PENU
-            //                        + " when updating Shipping Instruction"));
+            if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU) {
+              return Mono.just(shippingInstruction);
+            }
+            return Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "DocumentStatus needs to be set to "
+                        + ShipmentEventTypeCode.PENU
+                        + " when updating Shipping Instruction"));
           };
 }
