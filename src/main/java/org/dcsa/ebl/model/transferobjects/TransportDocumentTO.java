@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
 import org.dcsa.core.events.model.Location;
 import org.dcsa.ebl.model.TransportPlan;
 import org.dcsa.ebl.model.base.AbstractTransportDocument;
@@ -48,7 +49,7 @@ public class TransportDocumentTO extends AbstractTransportDocument {
     private List<ChargeTO> charges;
 
     @Valid
-    private List<ClauseTO> clauses;
+    private List<CarrierClauseTO> clauses;
 
     @Valid
     private TransportPlan transportPlan;
