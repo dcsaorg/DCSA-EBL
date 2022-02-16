@@ -112,6 +112,12 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   public Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionID(
       String shippingInstructionID, ShippingInstructionTO shippingInstructionRequest) {
 
+    try {
+      shippingInstructionRequest.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+    } catch (IllegalStateException e) {
+      return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
+    }
+
     return shippingInstructionRepository
         .findShippingInstructionByShippingInstructionID(shippingInstructionID)
         .switchIfEmpty(

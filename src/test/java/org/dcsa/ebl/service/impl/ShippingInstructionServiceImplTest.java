@@ -5,7 +5,7 @@ import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.mapper.*;
 import org.dcsa.core.events.model.mappers.LocationMapper;
 import org.dcsa.core.events.model.transferobjects.*;
-import org.dcsa.core.events.repository.ShipmentRepository;
+import org.dcsa.core.events.repository.*;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.ShippingInstruction;
@@ -21,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -38,6 +39,15 @@ class ShippingInstructionServiceImplTest {
 
   @Mock ShippingInstructionRepository shippingInstructionRepository;
   @Mock ShipmentRepository shipmentRepository;
+  @Mock CargoItemRepository cargoItemRepository;
+  @Mock DocumentPartyRepository documentPartyRepository;
+  @Mock ReferenceRepository referenceRepository;
+  @Mock SealRepository sealRepository;
+  @Mock ActiveReeferSettingsRepository activeReeferSettingsRepository;
+  @Mock ShipmentEquipmentRepository shipmentEquipmentRepository;
+  @Mock EquipmentRepository equipmentRepository;
+  @Mock DisplayedAddressRepository displayedAddressRepository;
+  @Mock CargoLineItemRepository cargoLineItemRepository;
 
   @Mock LocationService locationService;
   @Mock ReferenceService referenceService;
@@ -80,6 +90,8 @@ class ShippingInstructionServiceImplTest {
   ModeOfTransport modeOfTransport;
   Shipment shipment;
   ShipmentEvent shipmentEvent;
+  ShipmentEquipment shipmentEquipment;
+  CargoItem cargoItem;
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
@@ -144,7 +156,7 @@ class ShippingInstructionServiceImplTest {
 
     documentParty = new DocumentParty();
     documentParty.setId(UUID.fromString("3d9542f8-c362-4fa5-8902-90e30d87f1d4"));
-    documentParty.setPartyID("d04fb8c6-eb9c-474d-9cf7-86aa6bfcc2a2");
+    documentParty.setPartyID(party.getId());
     documentParty.setPartyFunction(PartyFunction.DDS);
     documentParty.setIsToBeNotified(true);
     documentParty.setShipmentID(shipment.getShipmentID());
@@ -166,6 +178,27 @@ class ShippingInstructionServiceImplTest {
     displayedAddress.setDocumentPartyID(documentParty.getId());
     displayedAddress.setAddressLine("Javastraat");
     displayedAddress.setAddressLineNumber(1);
+
+    Equipment equipment = new Equipment();
+    equipment.setEquipmentReference("equipment reference");
+
+    shipmentEquipment = new ShipmentEquipment();
+    shipmentEquipment.setId(UUID.randomUUID());
+    shipmentEquipment.setShipmentID(shipment.getShipmentID());
+    shipmentEquipment.setIsShipperOwned(false);
+    shipmentEquipment.setCargoGrossWeightUnit(WeightUnit.KGM);
+    shipmentEquipment.setCargoGrossWeight(21f);
+    shipmentEquipment.setEquipmentReference(equipment.getEquipmentReference());
+
+    cargoItem = new CargoItem();
+    cargoItem.setId(UUID.randomUUID());
+    cargoItem.setShipmentID(shipment.getShipmentID());
+    cargoItem.setHsCode("x".repeat(10));
+    cargoItem.setDescriptionOfGoods("Some description of the goods!");
+    cargoItem.setNumberOfPackages(2);
+    cargoItem.setPackageCode("XYZ");
+    cargoItem.setShipmentEquipmentID(shipmentEquipment.getId());
+    cargoItem.setShippingInstructionID(shippingInstruction.getShippingInstructionID());
 
     shipmentEvent = new ShipmentEvent();
     shipmentEvent.setEventID(UUID.randomUUID());
@@ -223,6 +256,8 @@ class ShippingInstructionServiceImplTest {
 
     documentPartyTO = new DocumentPartyTO();
     documentPartyTO.setParty(partyMapper.partyToDTO(party));
+    documentPartyTO.setPartyFunction(PartyFunction.DDR);
+    documentPartyTO.setDisplayedAddress(List.of("displayedAddress"));
 
     referenceTO = new ReferenceTO();
     referenceTO.setReferenceType(reference.getReferenceType());
@@ -627,8 +662,365 @@ class ShippingInstructionServiceImplTest {
   }
 
   @Nested
+  @DisplayName(
+      "Tests for the method updateShippingInstructionByShippingInstructionID(#ShippingInstructionTO)")
+  class UpdateShippingInstructionTest {
+
+    @Test
+    @DisplayName("Method should update existing shipping instruction and return shipping response")
+    void testUpdateShippingInstructionWithEverything() {
+
+      shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.PENU);
+
+      // saves
+      when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+      when(locationService.resolveLocationByTO(any(), any(), any())).thenReturn(Mono.just(locationTO));
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.just(List.of(documentPartyTO)));
+      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any())).thenReturn(Mono.just(List.of(referenceTO)));
+      when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+
+      // finds
+      when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+      when(shipmentRepository.findByCarrierBookingReference(any())).thenReturn(Mono.just(shipment));
+      when(ShipmentEquipmentService.createShipmentEquipment(any(), any(), any())).thenReturn(Mono.just(List.of(shipmentEquipmentTO)));
+      when(documentPartyRepository.findByShippingInstructionID(any()))
+          .thenReturn(Flux.just(documentParty));
+      when(shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(any()))
+          .thenReturn(Mono.just(shipmentEquipment));
+      when(cargoItemRepository.findAllByShippingInstructionID(any()))
+          .thenReturn(Flux.just(cargoItem));
+
+      // deletes
+      when(cargoItemRepository.deleteById(any(UUID.class))).thenReturn(Mono.empty());
+      when(referenceRepository.deleteByShippingInstructionID(any())).thenReturn(Mono.empty());
+      when(sealRepository.deleteAllByShipmentEquipmentID(any())).thenReturn(Mono.empty());
+      when(activeReeferSettingsRepository.deleteByShipmentEquipmentID(any()))
+          .thenReturn(Mono.empty());
+      when(equipmentRepository.deleteAllByEquipmentReference(any())).thenReturn(Mono.empty());
+      when(shipmentEquipmentRepository.deleteShipmentEquipmentByShipmentID(any()))
+          .thenReturn(Mono.empty());
+      when(displayedAddressRepository.deleteAllByDocumentPartyID(any())).thenReturn(Mono.empty());
+      when(cargoLineItemRepository.deleteByCargoItemID(any())).thenReturn(Mono.empty());
+      when(documentPartyRepository.deleteByShippingInstructionID(any())).thenReturn(Mono.empty());
+
+      ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstructionTO.class);
+
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
+                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .assertNext(
+              b -> {
+                verify(locationService).resolveLocationByTO(any(), any(), any());
+                verify(shipmentRepository).findByCarrierBookingReference(any());
+                verify(ShipmentEquipmentService).createShipmentEquipment(any(), any(), any());
+                verify(documentPartyService)
+                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                verify(referenceService)
+                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    ShipmentEventTypeCode.PENU.getValue(),
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    ShipmentEventTypeCode.PENC.getValue(),
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
+                assertNotNull(b.getShippingInstructionCreatedDateTime());
+                assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+                verify(shippingInstructionMapper)
+                    .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(),
+                    argumentCaptor.getValue().getShippingInstructionID());
+                assertEquals(
+                    shippingInstruction.getPlaceOfIssueID(),
+                    argumentCaptor.getValue().getPlaceOfIssueID());
+                assertEquals(
+                    ShipmentEventTypeCode.PENC, argumentCaptor.getValue().getDocumentStatus());
+                assertNotNull(argumentCaptor.getValue().getPlaceOfIssue());
+                assertNotNull(argumentCaptor.getValue().getDocumentParties());
+                assertNotNull(argumentCaptor.getValue().getReferences());
+                assertNotNull(argumentCaptor.getValue().getShipmentEquipments());
+              })
+          .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Method should update an existing shallow shipping instruction and return shipping response")
+    void testUpdateShippingInstructionShallow() {
+
+      shippingInstructionTO.setPlaceOfIssue(null);
+      shippingInstructionTO.setDocumentParties(null);
+      shippingInstructionTO.setReferences(null);
+      shippingInstructionTO.setShipmentEquipments(null);
+
+        shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.PENU);
+
+        // saves
+        when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+        when(locationService.resolveLocationByTO(any(), any(), any())).thenReturn(Mono.just(locationTO));
+        when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+
+        // finds
+        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+        when(documentPartyRepository.findByShippingInstructionID(any()))
+                .thenReturn(Flux.just(documentParty));
+        when(shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(any()))
+                .thenReturn(Mono.just(shipmentEquipment));
+        when(cargoItemRepository.findAllByShippingInstructionID(any()))
+                .thenReturn(Flux.just(cargoItem));
+
+        // deletes
+        when(cargoItemRepository.deleteById(any(UUID.class))).thenReturn(Mono.empty());
+        when(sealRepository.deleteAllByShipmentEquipmentID(any())).thenReturn(Mono.empty());
+        when(activeReeferSettingsRepository.deleteByShipmentEquipmentID(any()))
+                .thenReturn(Mono.empty());
+        when(equipmentRepository.deleteAllByEquipmentReference(any())).thenReturn(Mono.empty());
+        when(shipmentEquipmentRepository.deleteShipmentEquipmentByShipmentID(any()))
+                .thenReturn(Mono.empty());
+        when(displayedAddressRepository.deleteAllByDocumentPartyID(any())).thenReturn(Mono.empty());
+        when(cargoLineItemRepository.deleteByCargoItemID(any())).thenReturn(Mono.empty());
+        when(documentPartyRepository.deleteByShippingInstructionID(any())).thenReturn(Mono.empty());
+
+      ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstructionTO.class);
+
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .assertNext(
+              b -> {
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
+                assertNotNull(b.getShippingInstructionCreatedDateTime());
+                assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    ShipmentEventTypeCode.PENU.getValue(),
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    ShipmentEventTypeCode.PENC.getValue(),
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+
+                verify(shippingInstructionMapper)
+                    .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(),
+                    argumentCaptor.getValue().getShippingInstructionID());
+                assertEquals(
+                    shippingInstruction.getPlaceOfIssueID(),
+                    argumentCaptor.getValue().getPlaceOfIssueID());
+                assertEquals(
+                    ShipmentEventTypeCode.PENC, argumentCaptor.getValue().getDocumentStatus());
+
+                verify(locationService, never()).createLocationByTO(any(), any());
+                verify(shipmentRepository, never()).findByCarrierBookingReference(any());
+                verify(ShipmentEquipmentService, never())
+                    .createShipmentEquipment(any(), any(), any());
+                verify(documentPartyService, never())
+                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                verify(referenceService, never())
+                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+              })
+          .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Method should update an existing shallow shipping with validation errors resulting in PENU")
+    void testUpdateShippingInstructionResultingInPENU() {
+
+      shippingInstructionTO.setPlaceOfIssue(null);
+      shippingInstructionTO.setDocumentParties(null);
+      shippingInstructionTO.setReferences(null);
+      shippingInstructionTO.setShipmentEquipments(null);
+      shippingInstructionTO.setIsElectronic(false);
+      shippingInstructionTO.setNumberOfCopies(null);
+
+        // saves
+        when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+        when(locationService.resolveLocationByTO(any(), any(), any())).thenReturn(Mono.empty());
+        when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+
+        // finds
+        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+        when(documentPartyRepository.findByShippingInstructionID(any()))
+                .thenReturn(Flux.just(documentParty));
+        when(shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(any()))
+                .thenReturn(Mono.just(shipmentEquipment));
+        when(cargoItemRepository.findAllByShippingInstructionID(any()))
+                .thenReturn(Flux.just(cargoItem));
+
+        // deletes
+        when(cargoItemRepository.deleteById(any(UUID.class))).thenReturn(Mono.empty());
+        when(sealRepository.deleteAllByShipmentEquipmentID(any())).thenReturn(Mono.empty());
+        when(activeReeferSettingsRepository.deleteByShipmentEquipmentID(any()))
+                .thenReturn(Mono.empty());
+        when(equipmentRepository.deleteAllByEquipmentReference(any())).thenReturn(Mono.empty());
+        when(shipmentEquipmentRepository.deleteShipmentEquipmentByShipmentID(any()))
+                .thenReturn(Mono.empty());
+        when(displayedAddressRepository.deleteAllByDocumentPartyID(any())).thenReturn(Mono.empty());
+        when(cargoLineItemRepository.deleteByCargoItemID(any())).thenReturn(Mono.empty());
+        when(documentPartyRepository.deleteByShippingInstructionID(any())).thenReturn(Mono.empty());
+
+      ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
+          ArgumentCaptor.forClass(ShippingInstructionTO.class);
+
+      ArgumentCaptor<ShipmentEvent> argumentCaptorShipmentEvent =
+          ArgumentCaptor.forClass(ShipmentEvent.class);
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .assertNext(
+              b -> {
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                assertEquals("Pending Update", b.getDocumentStatus().getValue());
+                assertNotNull(b.getShippingInstructionCreatedDateTime());
+                assertNotNull(b.getShippingInstructionUpdatedDateTime());
+
+                verify(shipmentEventService, times(2))
+                    .create(argumentCaptorShipmentEvent.capture());
+                assertEquals(
+                    "Received",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(0)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+                assertEquals(
+                    "Pending Update",
+                    argumentCaptorShipmentEvent
+                        .getAllValues()
+                        .get(1)
+                        .getShipmentEventTypeCode()
+                        .getValue());
+
+                verify(shippingInstructionMapper)
+                    .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
+                assertEquals(
+                    shippingInstruction.getShippingInstructionID(),
+                    argumentCaptor.getValue().getShippingInstructionID());
+                assertEquals(
+                    shippingInstruction.getPlaceOfIssueID(),
+                    argumentCaptor.getValue().getPlaceOfIssueID());
+                assertEquals(
+                    ShipmentEventTypeCode.PENU, argumentCaptor.getValue().getDocumentStatus());
+
+                verify(locationService, never()).createLocationByTO(any(), any());
+                verify(shipmentRepository, never()).findByCarrierBookingReference(any());
+                verify(ShipmentEquipmentService, never())
+                    .createShipmentEquipment(any(), any(), any());
+                verify(documentPartyService, never())
+                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                verify(referenceService, never())
+                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                assertNull(argumentCaptor.getValue().getPlaceOfIssue());
+                assertNull(argumentCaptor.getValue().getDocumentParties());
+                assertNull(argumentCaptor.getValue().getReferences());
+                assertNull(argumentCaptor.getValue().getShipmentEquipments());
+              })
+          .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Failing to create a shipment event should result in error")
+    void testShipmentEventFailedShouldResultInError() {
+
+      shippingInstructionTO.setPlaceOfIssue(null);
+      shippingInstructionTO.setDocumentParties(null);
+      shippingInstructionTO.setReferences(null);
+      shippingInstructionTO.setShipmentEquipments(null);
+
+      when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
+      when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "Failed to create shipment event for ShippingInstruction.",
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName(
+        "Fail if ShippingInstruction ID does not exist")
+    void testUpdateBookingShouldFailWithNoCarrierBookingReferenceAndNoShipmentEquipment() {
+
+      shippingInstructionTO.setShipmentEquipments(null);
+
+        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                        "No Shipping Instruction found with ID: " + shippingInstruction.getShippingInstructionID(),
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName(
+        "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
+    void testUpdateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
+
+      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.",
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+  }
+
+  @Nested
   @DisplayName("Tests for the method validateShippingInstruction(#ShippingInstructionTO)")
-  class ValidateShippingInstruction {
+  class ValidShippingInstructionTest {
 
     @Test
     @DisplayName(
