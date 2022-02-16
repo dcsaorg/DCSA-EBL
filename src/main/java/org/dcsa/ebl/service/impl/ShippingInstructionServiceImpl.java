@@ -48,6 +48,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final EquipmentRepository equipmentRepository;
   private final ActiveReeferSettingsRepository activeReeferSettingsRepository;
   private final ShipmentEquipmentRepository shipmentEquipmentRepository;
+  private final CargoLineItemRepository cargoLineItemRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -195,22 +196,30 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     .thenReturn(cargoItems))
         .flatMap(
             cargoItem ->
-                shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(
-                    cargoItem.getShipmentEquipmentID()))
+                shipmentEquipmentRepository
+                    .findShipmentEquipmentByShipmentID(cargoItem.getShipmentEquipmentID())
+                    .flatMap(
+                        shipmentEquipment ->
+                            equipmentRepository
+                                .deleteAllByEquipmentReference(
+                                    shipmentEquipment.getEquipmentReference())
+                                .thenReturn(shipmentEquipment))
+                    .flatMap(
+                        shipmentEquipment ->
+                            shipmentEquipmentRepository
+                                .deleteShipmentEquipmentByShipmentID(
+                                    shipmentEquipment.getShipmentID())
+                                .thenReturn(new ShipmentEquipmentTO()))
+                    .thenReturn(cargoItem))
+        .flatMap(
+            cargoItem ->
+                cargoLineItemRepository
+                    .deleteByCargoItemID(cargoItem.getId())
+                    .thenReturn(cargoItem))
         .flatMap(
             cargoItem -> cargoItemRepository.deleteById(cargoItem.getId()).thenReturn(cargoItem))
-        .flatMap(
-            shipmentEquipment ->
-                equipmentRepository
-                    .deleteAllByEquipmentReference(shipmentEquipment.getEquipmentReference())
-                    .thenReturn(shipmentEquipment))
-        .flatMap(
-            shipmentEquipment ->
-                shipmentEquipmentRepository
-                    .deleteShipmentEquipmentByShipmentID(shipmentEquipment.getShipmentID())
-                    .thenReturn(new ShipmentEquipmentTO()))
         .collectList()
-        .flatMap(x -> insertShipmentEquipmentTOs(shipmentEquipments, shippingInstructionTO));
+        .flatMap(ignored -> insertShipmentEquipmentTOs(shipmentEquipments, shippingInstructionTO));
   }
 
   private Mono<List<ShipmentEquipmentTO>> insertShipmentEquipmentTOs(
@@ -242,7 +251,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   private Mono<List<DocumentPartyTO>> resolveDocumentPartiesForShippingInstructionID(
       String shippingInstructionID, List<DocumentPartyTO> documentPartyTOs) {
-
     // this will create orphan parties
     return documentPartyRepository
         .findByShippingInstructionID(shippingInstructionID)
@@ -317,7 +325,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     "equipment tare weight is required for shipper owned equipment.");
               }
             });
-
     return validationErrors;
   }
 
@@ -394,6 +401,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
+            if (2 == 2) return Mono.just(shippingInstruction);
             if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU) {
               return Mono.just(shippingInstruction);
             }
