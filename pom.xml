@@ -19,7 +19,7 @@
 		<java.version>11</java.version>
 		<rest-assured.version>4.3.1</rest-assured.version>
 		<groovy.version>3.0.2</groovy.version>
-		<dcsa.events.version>0.0.54</dcsa.events.version>
+		<dcsa.events.version>0.0.56</dcsa.events.version>
 		<dcsa.core.tag/>
 		<dcsa.event.tag/>
 		<dcsa.artifacttype>-SNAPSHOT</dcsa.artifacttype>
@@ -85,28 +85,11 @@
 
 	<repositories>
 		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-		</repository>
-		<repository>
-			<id>spring-libs-milestone</id>
-			<name>Spring Milestone Maven Repository</name>
-			<url>https://oss.jfrog.org/artifactory/oss-snapshot-local/</url>
-		</repository>
-		<repository>
 			<id>github</id>
 			<name>GitHub dcsaorg Apache Maven Packages</name>
 			<url>https://maven.pkg.github.com/dcsaorg/DCSA-Core</url>
 		</repository>
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>https://repo.spring.io/milestone</url>
-		</pluginRepository>
-	</pluginRepositories>
 	<distributionManagement>
 		<repository>
 			<id>github</id>
