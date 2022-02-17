@@ -1,5 +1,6 @@
 package org.dcsa.ebl.model.base;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -25,13 +26,16 @@ public abstract class AbstractShippingInstruction extends AuditBase {
   @Column("id")
   private String shippingInstructionID;
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
   @Column("document_status")
   private ShipmentEventTypeCode documentStatus;
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @Column("created_date_time")
   private OffsetDateTime shippingInstructionCreatedDateTime;
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @Column("updated_date_time")
   private OffsetDateTime shippingInstructionUpdatedDateTime;
 
