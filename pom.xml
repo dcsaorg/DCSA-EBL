@@ -88,10 +88,6 @@
 			<id>github</id>
 			<name>GitHub dcsaorg Apache Maven Packages</name>
 			<url>https://maven.pkg.github.com/dcsaorg/DCSA-Core</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
 	<distributionManagement>
