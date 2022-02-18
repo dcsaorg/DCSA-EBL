@@ -5,16 +5,12 @@ import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.Charge;
 import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.core.events.service.LocationService;
-import org.dcsa.core.events.service.VoyageService;
 import org.dcsa.core.exception.CreateException;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
-import org.dcsa.core.util.MappingUtils;
-import org.dcsa.ebl.model.Clause;
-import org.dcsa.ebl.model.base.AbstractClause;
-import org.dcsa.ebl.model.transferobjects.*;
-import org.dcsa.ebl.model.utils.MappingUtil;
-import org.dcsa.ebl.service.*;
+import org.dcsa.ebl.model.transferobjects.ChargeTO;
+import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
+import org.dcsa.ebl.service.TransportDocumentService;
+import org.dcsa.ebl.service.TransportDocumentTOService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -27,7 +23,6 @@ import java.util.List;
 @Service
 public class TransportDocumentTOServiceImpl implements TransportDocumentTOService {
   private final TransportDocumentService transportDocumentService;
-  private final ClauseService clauseService;
   private final BookingRepository bookingRepository;
 
   /**
@@ -70,30 +65,6 @@ public class TransportDocumentTOServiceImpl implements TransportDocumentTOServic
       } else {
           return Flux.empty();
       }
-    }
-  }
-
-  private Flux<Void> createClauses(TransportDocumentTO transportDocumentTO) {
-    List<ClauseTO> clauseTOs = transportDocumentTO.getClauses();
-    if (clauseTOs == null || clauseTOs.isEmpty()) {
-      transportDocumentTO.setClauses(Collections.emptyList());
-      return Flux.empty();
-    } else {
-      // Save all Clauses in one Bulk
-      return Flux.fromIterable(clauseTOs)
-          .map(clauseTO -> MappingUtil.instanceFrom(clauseTO, Clause::new, AbstractClause.class))
-          .buffer(MappingUtils.SQL_LIST_BUFFER_SIZE)
-          .concatMap(
-              clauses ->
-                  clauseService
-                      .createAll(clauses)
-                      // Make sure many-many relations are created
-                      .concatMap(
-                          clause ->
-                              clauseService.createTransportDocumentClauseRelation(
-                                  clause.getId(),
-                                  transportDocumentTO.getTransportDocumentReference()))
-                      .then());
     }
   }
 
