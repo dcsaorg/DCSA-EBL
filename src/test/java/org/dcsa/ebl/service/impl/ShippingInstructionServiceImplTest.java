@@ -680,7 +680,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
-      when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
       when(shipmentRepository.findByCarrierBookingReference(any())).thenReturn(Mono.just(shipment));
       when(ShipmentEquipmentService.createShipmentEquipment(any(), any(), any())).thenReturn(Mono.just(List.of(shipmentEquipmentTO)));
       when(documentPartyRepository.findByShippingInstructionID(any()))
@@ -780,7 +780,7 @@ class ShippingInstructionServiceImplTest {
         when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
         // finds
-        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+        when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
         when(documentPartyRepository.findByShippingInstructionID(any()))
                 .thenReturn(Flux.just(documentParty));
         when(shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(any()))
@@ -860,6 +860,8 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Method should update an existing shallow shipping with validation errors resulting in PENU")
     void testUpdateShippingInstructionResultingInPENU() {
 
+      shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.PENU);
+
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
@@ -873,7 +875,7 @@ class ShippingInstructionServiceImplTest {
         when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
         // finds
-        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+        when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
         when(documentPartyRepository.findByShippingInstructionID(any()))
                 .thenReturn(Flux.just(documentParty));
         when(shipmentEquipmentRepository.findShipmentEquipmentByShipmentID(any()))
@@ -900,7 +902,8 @@ class ShippingInstructionServiceImplTest {
           ArgumentCaptor.forClass(ShipmentEvent.class);
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
+                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
           .assertNext(
               b -> {
                 assertEquals(
@@ -912,7 +915,7 @@ class ShippingInstructionServiceImplTest {
                 verify(shipmentEventService, times(2))
                     .create(argumentCaptorShipmentEvent.capture());
                 assertEquals(
-                    "Received",
+                    ShipmentEventTypeCode.PENU.getValue(),
                     argumentCaptorShipmentEvent
                         .getAllValues()
                         .get(0)
@@ -957,13 +960,15 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Failing to create a shipment event should result in error")
     void testShipmentEventFailedShouldResultInError() {
 
+        shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.PENU);
+
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setShipmentEquipments(null);
 
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
-      when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
 
       StepVerifier.create(
               shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
@@ -984,7 +989,7 @@ class ShippingInstructionServiceImplTest {
 
       shippingInstructionTO.setShipmentEquipments(null);
 
-        when(shippingInstructionRepository.findShippingInstructionByShippingInstructionID(any())).thenReturn(Mono.empty());
+        when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
 
         StepVerifier.create(
               shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(shippingInstruction.getShippingInstructionID(), shippingInstructionTO))

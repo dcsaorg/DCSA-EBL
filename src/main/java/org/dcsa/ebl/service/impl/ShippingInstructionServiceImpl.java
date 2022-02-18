@@ -119,7 +119,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     }
 
     return shippingInstructionRepository
-        .findShippingInstructionByShippingInstructionID(shippingInstructionID)
+        .findById(shippingInstructionID)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
@@ -407,7 +407,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
-            if (2 == 2) return Mono.just(shippingInstruction);
             if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU) {
               return Mono.just(shippingInstruction);
             }

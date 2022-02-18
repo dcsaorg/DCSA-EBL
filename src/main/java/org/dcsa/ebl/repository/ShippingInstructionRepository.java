@@ -12,6 +12,4 @@ public interface ShippingInstructionRepository
   @Modifying
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")
   Mono<Boolean> setPlaceOfIssueFor(String placeOfIssue, String id);
-
-  Mono<ShippingInstruction> findShippingInstructionByShippingInstructionID(String ShippingInstructionID);
 }
