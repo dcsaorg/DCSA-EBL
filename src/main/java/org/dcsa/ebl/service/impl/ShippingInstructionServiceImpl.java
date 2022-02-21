@@ -16,6 +16,7 @@ import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -189,7 +190,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                               shippingInstructionRequest.getShipmentEquipments(),
                               shippingInstructionRequest)
                           .doOnNext(shippingInstructionRequest::setShipmentEquipments),
-                      documentPartyService.resolveDocumentPartiesForShippingInstructionID(
+                      documentPartyService
+                          .resolveDocumentPartiesForShippingInstructionID(
                               si.getShippingInstructionID(),
                               shippingInstructionRequest.getDocumentParties())
                           .doOnNext(shippingInstructionRequest::setDocumentParties),
