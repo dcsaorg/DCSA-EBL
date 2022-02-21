@@ -5,20 +5,18 @@ import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.exception.GetException;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.core.validator.EnumSubset;
 import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
-import org.dcsa.ebl.service.TransportDocumentTOService;
+import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +25,7 @@ public class TransportDocumentController {
 
     private final ExtendedParameters extendedParameters;
 
-    private final TransportDocumentTOService transportDocumentTOService;
+    private final TransportDocumentService transportDocumentService;
 
     private final R2dbcDialect r2dbcDialect;
 
@@ -42,13 +40,22 @@ public class TransportDocumentController {
             return Flux.error(e);
         }
 
-        return transportDocumentTOService.findAllExtended(extendedRequest).doOnComplete(
+        return transportDocumentService.findAllExtended(extendedRequest).doOnComplete(
                 () -> extendedRequest.insertHeaders(response, request)
         );
     }
 
     @GetMapping(path="{transportDocumentReference}")
     public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentReference) {
-        return transportDocumentTOService.findById(transportDocumentReference);
+        return transportDocumentService.findByTransportDocumentReference(transportDocumentReference);
     }
+
+  @PutMapping(path = "{transportDocumentReference}")
+  public Mono<TransportDocumentTO> updateTransportDocumentReference(
+          @PathVariable String transportDocumentReference,
+          @RequestBody @EnumSubset(anyOf = {"APPR"}) String documentStatus) { // Need shipmentEventTypeCode as class to validate
+
+    return transportDocumentService.ApproveTransportDocument(transportDocumentReference);
+  }
+
 }
