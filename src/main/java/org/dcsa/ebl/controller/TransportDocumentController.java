@@ -8,6 +8,7 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.validator.EnumSubset;
 import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
+import org.dcsa.ebl.model.transferobjects.shipmentEventTypeCodeRequestTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.http.MediaType;
@@ -53,8 +54,8 @@ public class TransportDocumentController {
   @PutMapping(path = "{transportDocumentReference}")
   public Mono<TransportDocumentTO> updateTransportDocumentReference(
           @PathVariable String transportDocumentReference,
-          @RequestBody @EnumSubset(anyOf = {"APPR"}) String documentStatus) { // Need shipmentEventTypeCode as class to validate
-
+          @RequestBody @EnumSubset(anyOf = {"APPR"}) shipmentEventTypeCodeRequestTO documentStatus) {
+        // Need shipmentEventTypeCodeRequestTO as class to validate RequestBody
     return transportDocumentService.ApproveTransportDocument(transportDocumentReference);
   }
 

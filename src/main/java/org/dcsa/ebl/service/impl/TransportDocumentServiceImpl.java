@@ -79,32 +79,28 @@ public class TransportDocumentServiceImpl extends ExtendedBaseServiceImpl<Transp
 
                             return shipmentService
                                     .findByShippingInstructionID(TdTO.getShippingInstructionID())
-                                    .collectList()
                                     .doOnNext(
-                                            shipmentTOs -> {
-                                                shipmentTOs.forEach(
-                                                        shipmentTO ->
-                                                                getBooking(
-                                                                        shipmentTO.getCarrierBookingReference(),
-                                                                        TdTO.getShippingInstructionID())
-                                                                        .flatMap(
-                                                                                b -> {
-                                                                                    BookingTO bookingTO = shipmentTO.getBooking();
-                                                                                    bookingTO.setDocumentStatus(ShipmentEventTypeCode.CMPL);
-                                                                                    bookingTO.setBookingRequestUpdatedDateTime(now);
-                                                                                    String carrierBookingRequestReference =
-                                                                                            bookingTO.getCarrierBookingRequestReference();
-                                                                                    return bookingRepository
-                                                                                            .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
-                                                                                                    ShipmentEventTypeCode.CMPL,
-                                                                                                    carrierBookingRequestReference,
-                                                                                                    now)
-                                                                                            .thenReturn(bookingTO);
-                                                                                })
-                                                                        .doOnNext(shipmentTO::setBooking));
-                                            })
-                                    .flatMapMany(Flux::fromIterable)
-                                    .collectList()
+                                            shipmentTOs -> shipmentTOs.forEach(
+                                                    shipmentTO ->
+                                                            getBooking(
+                                                                    shipmentTO.getCarrierBookingReference(),
+                                                                    TdTO.getShippingInstructionID())
+                                                                    .flatMap(
+                                                                            b -> {
+                                                                                BookingTO bookingTO = shipmentTO.getBooking();
+                                                                                bookingTO.setDocumentStatus(ShipmentEventTypeCode.CMPL);
+                                                                                bookingTO.setBookingRequestUpdatedDateTime(now);
+                                                                                String carrierBookingRequestReference =
+                                                                                        bookingTO.getCarrierBookingRequestReference();
+                                                                                return bookingRepository
+                                                                                        .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
+                                                                                                ShipmentEventTypeCode.CMPL,
+                                                                                                carrierBookingRequestReference,
+                                                                                                now)
+                                                                                        .thenReturn(bookingTO);
+                                                                            })
+                                                                    .doOnNext(shipmentTO::setBooking)
+                                            ))
                                     .doOnNext(shippingInstructionTO::setShipments)
                                     .flatMap(
                                             ignored -> {
