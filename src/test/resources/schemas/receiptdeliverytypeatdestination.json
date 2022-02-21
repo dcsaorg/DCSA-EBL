@@ -1,0 +1,12 @@
+{
+  "maxLength": 3,
+  "type": "string",
+  "description": "Indicates the type of service offered at Destination. Options are defined in the Receipt/Delivery entity.\n",
+  "example": "CY",
+  "enum": [
+    "CY",
+    "SD",
+    "CFS"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

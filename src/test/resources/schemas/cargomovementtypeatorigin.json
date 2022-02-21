@@ -1,0 +1,12 @@
+{
+  "maxLength": 3,
+  "type": "string",
+  "description": "Refers to the shipment term at the loading of the cargo into the container. Options are defined in the Cargo Movement Type entity.\n",
+  "example": "FCL",
+  "enum": [
+    "FCL",
+    "LCL",
+    "BB"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

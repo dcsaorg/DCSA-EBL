@@ -1,0 +1,17 @@
+{
+  "type": "string",
+  "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder\u2019s Reference)\n- SI (Shipper\u2019s Reference)\n- PO (Purchase Order Reference)\n- CR (Customer\u2019s Reference)\n- AAO (Consignee\u2019s Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
+  "example": "FF",
+  "enum": [
+    "FF",
+    "SI",
+    "PO",
+    "CR",
+    "AAO",
+    "ECR",
+    "CSI",
+    "BPR",
+    "BID"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,27 @@
+{
+  "required": [
+    "referenceType",
+    "referenceValue"
+  ],
+  "type": "object",
+  "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "referenceType": {
+          "$ref": "referenceType.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "referenceValue": {
+          "$ref": "referenceValue.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

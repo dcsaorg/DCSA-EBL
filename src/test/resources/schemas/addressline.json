@@ -1,0 +1,7 @@
+{
+  "maxLength": 250,
+  "type": "string",
+  "description": "A single address line.",
+  "example": "Kronprincessegade 54",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,7 @@
+{
+  "maxLength": 35,
+  "type": "string",
+  "description": "Information provided by the shipper to identify whether pricing for the shipment has been agreed via a contract or a quotation reference. Mandatory if service contract (owner) is not provided.\n",
+  "example": "DKK",
+  "$schema": "http://json-schema.org/schema#"
+}

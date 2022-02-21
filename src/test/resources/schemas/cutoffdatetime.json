@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "Actual cut-off time\n",
+  "format": "date-time",
+  "example": "2019-11-12T07:41:00+08:30",
+  "$schema": "http://json-schema.org/schema#"
+}

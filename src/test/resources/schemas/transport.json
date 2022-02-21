@@ -1,0 +1,129 @@
+{
+  "required": [
+    "dischargeLocation",
+    "loadLocation",
+    "plannedArrivalDate",
+    "plannedDepartureDate",
+    "transportPlanSequenceNumber",
+    "transportPlanStage"
+  ],
+  "type": "object",
+  "description": "A list of transports sorted by ShipmentTransport sequenceNumber",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "transportPlanStage": {
+          "$ref": "transportPlanStage.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "transportPlanStageSequenceNumber": {
+          "$ref": "transportPlanStageSequenceNumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "loadLocation": {
+          "allOf": [
+            {
+              "$ref": "location.json"
+            },
+            {
+              "example": {
+                "UNLocationCode": "NLRTM"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "dischargeLocation": {
+          "allOf": [
+            {
+              "$ref": "location.json"
+            },
+            {
+              "example": {
+                "UNLocationCode": "DEDUS"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "plannedDepartureDate": {
+          "$ref": "plannedDepartureDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "plannedArrivalDate": {
+          "$ref": "plannedArrivalDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "modeOfTransport": {
+          "$ref": "modeOfTransport.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "vesselName": {
+          "$ref": "vesselName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "vesselIMONumber": {
+          "$ref": "vesselIMONumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "importVoyageNumber": {
+          "$ref": "importVoyageNumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "exportVoyageNumber": {
+          "$ref": "exportVoyageNumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "isUnderShippersResponsibility": {
+          "$ref": "isUnderShippersResponsibility.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

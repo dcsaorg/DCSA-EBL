@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Code for the event classifier. Values can vary depending on eventType\n",
+  "$schema": "http://json-schema.org/schema#"
+}

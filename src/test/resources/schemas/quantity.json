@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "The amount of unit for this charge item.",
+  "example": 34.4,
+  "$schema": "http://json-schema.org/schema#"
+}

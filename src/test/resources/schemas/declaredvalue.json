@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper.",
+  "example": 1231.1,
+  "$schema": "http://json-schema.org/schema#"
+}

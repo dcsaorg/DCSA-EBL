@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The content of the clause.",
+  "$schema": "http://json-schema.org/schema#"
+}

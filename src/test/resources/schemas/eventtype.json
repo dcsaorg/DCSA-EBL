@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "The Event Type of the object - to be used as a discriminator.\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+  "$schema": "http://json-schema.org/schema#"
+}

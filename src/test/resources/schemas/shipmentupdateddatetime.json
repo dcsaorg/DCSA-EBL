@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "Last date and time when the Shipment was updated.\n",
+  "format": "date-time",
+  "example": "2021-09-03T09:03:00+02:00",
+  "$schema": "http://json-schema.org/schema#"
+}

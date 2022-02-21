@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "Number of requested equipment units\n",
+  "example": 3,
+  "$schema": "http://json-schema.org/schema#"
+}

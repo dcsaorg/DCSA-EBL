@@ -1,0 +1,43 @@
+{
+  "required": [
+    "transports"
+  ],
+  "type": "object",
+  "description": "Shipment\n",
+  "allOf": [
+    {
+      "$ref": "shipmentSummary.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "booking": {
+          "allOf": [
+            {
+              "$ref": "bookingResponse.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "$ref": "transports.json"
+    },
+    {
+      "$ref": "shipmentCutOffTimes.json"
+    },
+    {
+      "$ref": "shipmentLocations.json"
+    },
+    {
+      "$ref": "confirmedEquipments.json"
+    },
+    {
+      "$ref": "charges.json"
+    },
+    {
+      "$ref": "carrierClauses.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

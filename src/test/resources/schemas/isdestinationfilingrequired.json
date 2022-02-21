@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Indicates whether the shipper will perform the AMS/ACI filing directly or not. Mandatory if AMS/ACI filing is required\n",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

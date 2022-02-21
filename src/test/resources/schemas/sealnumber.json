@@ -1,0 +1,6 @@
+{
+  "maxLength": 15,
+  "type": "string",
+  "description": "Identifies a seal affixed to the container.",
+  "$schema": "http://json-schema.org/schema#"
+}

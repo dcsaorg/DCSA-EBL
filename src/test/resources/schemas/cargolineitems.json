@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "cargoLineItems": {
+      "type": "array",
+      "items": {
+        "$ref": "cargoLineItem.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

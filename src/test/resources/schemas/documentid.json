@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "description": "The id of the object defined by the documentTypeCode.\n",
+  "example": "the-id-of-the-documentTypeCode",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "shipmentCutOffTimes": {
+      "type": "array",
+      "items": {
+        "$ref": "shipmentCutOffTime.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

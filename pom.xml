@@ -62,6 +62,12 @@
       <version>${restassured.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <scope>test</scope>
+      <version>${restassured.version}</version>
+    </dependency>
 	</dependencies>
 
 	<build>

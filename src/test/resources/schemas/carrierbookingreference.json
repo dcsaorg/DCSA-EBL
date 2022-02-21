@@ -1,0 +1,7 @@
+{
+  "maxLength": 35,
+  "type": "string",
+  "description": "A set of unique characters provided by carrier to identify a booking.",
+  "example": "ABC709951",
+  "$schema": "http://json-schema.org/schema#"
+}

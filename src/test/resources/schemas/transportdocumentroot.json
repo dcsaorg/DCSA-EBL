@@ -1,0 +1,105 @@
+{
+  "required": [
+    "transportDocumentReference"
+  ],
+  "type": "object",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "transportDocumentReference": {
+          "$ref": "transportDocumentReference.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "transportDocumentCreatedDateTime": {
+          "$ref": "transportDocumentCreatedDateTime.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "transportDocumentUpdatedDateTime": {
+          "$ref": "transportDocumentUpdatedDateTime.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "issueDate": {
+          "$ref": "issueDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shippedOnBoardDate": {
+          "$ref": "shippedOnBoardDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "receivedForShipmentDate": {
+          "$ref": "receivedForShipmentDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "numberOfOriginals": {
+          "$ref": "issuedNumberOfOriginals.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "issuerCode": {
+          "$ref": "issuerCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "issuerCodeListProvider": {
+          "$ref": "issuerCodeListProvider.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "declaredValueCurrency": {
+          "$ref": "declaredValueCurrency.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "declaredValue": {
+          "$ref": "declaredValue.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "numberOfRiderPages": {
+          "$ref": "numberOfRiderPages.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

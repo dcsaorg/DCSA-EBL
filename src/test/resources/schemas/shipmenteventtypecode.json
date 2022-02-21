@@ -1,0 +1,25 @@
+{
+  "type": "string",
+  "description": "The status of the document in the process. Possible values are\n- RECE (Received)\n- DRFT (Drafted)\n- PENA (Pending Approval)\n- PENU (Pending Update)\n- PENC (Pending Confirmation)\n- CONF (Confirmed)\n- REJE (Rejected)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- SUBM (Submitted)\n- VOID (Void)\n- REQS (Requested)\n- CMPL (Completed)\n- HOLD (On Hold)\n- RELS (Released)\n- CANC (Cancelled)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>\n",
+  "example": "DRFT",
+  "enum": [
+    "RECE",
+    "DRFT",
+    "PENA",
+    "PENU",
+    "PENC",
+    "CONF",
+    "REJE",
+    "APPR",
+    "ISSU",
+    "SURR",
+    "SUBM",
+    "VOID",
+    "REQS",
+    "CMPL",
+    "HOLD",
+    "RELS",
+    "CANC"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

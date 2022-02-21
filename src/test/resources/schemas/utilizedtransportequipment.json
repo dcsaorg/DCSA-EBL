@@ -1,0 +1,119 @@
+{
+  "required": [
+    "cargoGrossWeight",
+    "cargoGrossWeightUnit",
+    "cargoItems",
+    "equipment",
+    "isShipperOwned"
+  ],
+  "type": "object",
+  "description": "Specifies the container assigned to a shipment (`equipment`), all its content (`cargoItems`), the `seals` used and possible `reefer` settings\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "equipment": {
+          "$ref": "equipment.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cargoGrossWeightUnit": {
+          "$ref": "weightUnit.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cargoGrossWeight": {
+          "$ref": "cargoGrossWeight.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "isShipperOwned": {
+          "$ref": "isShipperOwned.json"
+        }
+      }
+    },
+    {
+      "$ref": "cargoItems.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "activeReeferSettings": {
+          "type": "object",
+          "description": "specifies the settings for an active reefer container used to a shipment.",
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "temperatureMin": {
+                  "$ref": "temperatureMin.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "temperatureMax": {
+                  "$ref": "temperatureMax.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "temperatureUnit": {
+                  "$ref": "temperatureUnit.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "humidityMin": {
+                  "$ref": "humidityMin.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "humidityMax": {
+                  "$ref": "humidityMax.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ventilationMin": {
+                  "$ref": "ventilationMin.json"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ventilationMax": {
+                  "$ref": "ventilationMax.json"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "$ref": "seals.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

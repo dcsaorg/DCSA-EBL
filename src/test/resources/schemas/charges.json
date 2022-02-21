@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "charges": {
+      "type": "array",
+      "items": {
+        "$ref": "charge.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

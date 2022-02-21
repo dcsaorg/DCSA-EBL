@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "commodities": {
+      "type": "array",
+      "items": {
+        "$ref": "commodity.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

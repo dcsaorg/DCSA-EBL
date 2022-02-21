@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "references": {
+      "type": "array",
+      "items": {
+        "$ref": "reference.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

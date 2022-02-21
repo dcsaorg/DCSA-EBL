@@ -1,0 +1,7 @@
+{
+  "maxLength": 500,
+  "type": "string",
+  "description": "The public key used for a digital signature.",
+  "example": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFzaW",
+  "$schema": "http://json-schema.org/schema#"
+}

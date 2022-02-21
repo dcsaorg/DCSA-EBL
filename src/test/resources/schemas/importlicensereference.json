@@ -1,0 +1,7 @@
+{
+  "maxLength": 35,
+  "type": "string",
+  "description": "A certificate, issued by countries exercising import controls, that permits importation of the articles stated in the license. Reference number assigned by an issuing authority to an Import License. The import license number must be valid at time of arrival. Required if import license required is \u2018True\u2019.\n",
+  "example": "ABC123123",
+  "$schema": "http://json-schema.org/schema#"
+}

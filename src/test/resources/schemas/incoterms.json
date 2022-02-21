@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "Transport obligations, costs and risks as agreed between buyer and seller.\n",
+  "example": "DAP",
+  "enum": [
+    "FCA (Free Carrier)",
+    "FOB (Free on Board)"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

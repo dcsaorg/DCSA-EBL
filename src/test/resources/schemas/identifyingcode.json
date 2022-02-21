@@ -1,0 +1,34 @@
+{
+  "required": [
+    "DCSAResponsibleAgencyCode",
+    "partyCode"
+  ],
+  "type": "object",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "DCSAResponsibleAgencyCode": {
+          "$ref": "DCSAResponsibleAgencyCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "partyCode": {
+          "$ref": "partyCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "codeListName": {
+          "$ref": "codeListName.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

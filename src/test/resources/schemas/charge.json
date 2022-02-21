@@ -1,0 +1,72 @@
+{
+  "required": [
+    "calculationBasis",
+    "chargeType",
+    "currencyAmount",
+    "currencyCode",
+    "paymentTermCode",
+    "quantity",
+    "unitPrice"
+  ],
+  "type": "object",
+  "description": "addresses the monetary value of freight and other service charges for a transport document.\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "chargeType": {
+          "$ref": "chargeType.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "currencyAmount": {
+          "$ref": "currencyAmount.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "currencyCode": {
+          "$ref": "currencyCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "paymentTermCode": {
+          "$ref": "paymentTermCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "calculationBasis": {
+          "$ref": "calculationBasis.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "unitPrice": {
+          "$ref": "unitPrice.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "quantity": {
+          "$ref": "quantity.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

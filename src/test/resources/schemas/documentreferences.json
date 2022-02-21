@@ -1,0 +1,36 @@
+{
+  "type": "array",
+  "description": "An optional list of key-value (`documentReferenceType`-`documentReferenceValue`) pairs representing links to objects relevant to the event. The `documentReferenceType`-field is used to describe where the `documentReferenceValue`-field is pointing to.\n",
+  "example": [
+    {
+      "documentReferenceType": "BKG",
+      "documentReferenceValue": "ABC123123123"
+    },
+    {
+      "documentReferenceType": "TRD",
+      "documentReferenceValue": "85943567-eedb-98d3-f4ed-aed697474ed4"
+    }
+  ],
+  "items": {
+    "type": "object",
+    "properties": {
+      "documentReferenceType": {
+        "type": "string",
+        "description": "Describes where the documentReferenceValue is pointing to:\n- CBR (Carrier Booking Request Reference)\n- BKG (Carrier Booking Reference)\n- SHI (Shipping Instruction ID)\n- TRD (Transport Document)\n",
+        "example": "BKG",
+        "enum": [
+          "CBR",
+          "BKG",
+          "SHI",
+          "TRD"
+        ]
+      },
+      "documentReferenceValue": {
+        "type": "string",
+        "description": "The value of the identifier the documentReferenceType is describing",
+        "example": "123e4567-e89b-12d3-a456-426614174000"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

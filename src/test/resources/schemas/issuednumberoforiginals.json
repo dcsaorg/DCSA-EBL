@@ -1,0 +1,6 @@
+{
+  "type": "integer",
+  "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n",
+  "example": 4,
+  "$schema": "http://json-schema.org/schema#"
+}

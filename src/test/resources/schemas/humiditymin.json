@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "Indicates the minimum humidity setting on the container in percent.",
+  "example": "8E+1",
+  "$schema": "http://json-schema.org/schema#"
+}

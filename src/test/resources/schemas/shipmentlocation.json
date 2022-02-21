@@ -1,0 +1,30 @@
+{
+  "required": [
+    "location",
+    "shipmentLocationTypeCode"
+  ],
+  "type": "object",
+  "description": "maps the relationship between Shipment and Location, e.g., the place of receipt and the places of delivery for a specific shipment.",
+  "allOf": [
+    {
+      "$ref": "shipmentLocationNoLocationType.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentLocationTypeCode": {
+          "$ref": "shipmentLocationTypeCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventDateTime": {
+          "$ref": "eventLocationDateTime.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

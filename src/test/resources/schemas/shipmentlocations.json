@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "shipmentLocations": {
+      "type": "array",
+      "items": {
+        "$ref": "shipmentLocation.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

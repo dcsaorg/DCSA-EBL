@@ -1,0 +1,81 @@
+{
+  "required": [
+    "commodities"
+  ],
+  "type": "object",
+  "description": "The deep structure of the booking\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "invoicePayableAt": {
+          "anyOf": [
+            {
+              "$ref": "addressLocation.json"
+            },
+            {
+              "$ref": "unLocationLocation.json"
+            },
+            {
+              "$ref": "facilityLocation.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "invoicePayableAt": {
+          "description": "General purpose object to capture location-related data, the location can be specified in **any** of the following ways: `UN Location Code`, a `Facility` or an `Address`.\n",
+          "example": {
+            "locationName": "Eiffel Tower",
+            "UNLocationCode": "FRPAR"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "placeOfIssue": {
+          "allOf": [
+            {
+              "$ref": "location.json"
+            },
+            {
+              "example": {
+                "locationName": "Eiffel Tower",
+                "latitude": "48.8585500",
+                "longitude": "2.294492036",
+                "UNLocationCode": "FRPAR"
+              }
+            },
+            {
+              "description": "The location where the original transport document (bill of lading) will be issued.\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "$ref": "commodities.json"
+    },
+    {
+      "$ref": "valueAddedServiceRequests.json"
+    },
+    {
+      "$ref": "references.json"
+    },
+    {
+      "$ref": "requestedEquipments.json"
+    },
+    {
+      "$ref": "documentParties.json"
+    },
+    {
+      "$ref": "shipmentLocations.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

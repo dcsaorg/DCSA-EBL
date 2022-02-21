@@ -1,0 +1,36 @@
+{
+  "required": [
+    "isShipperOwned",
+    "requestedEquipmentSizeType",
+    "requestedEquipmentUnits"
+  ],
+  "type": "object",
+  "description": "The requested equipments for the booking\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "requestedEquipmentSizeType": {
+          "$ref": "ISOEquipmentCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "requestedEquipmentUnits": {
+          "$ref": "requestedEquipmentUnits.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "isShipperOwned": {
+          "$ref": "isShipperOwned.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

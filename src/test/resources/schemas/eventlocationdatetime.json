@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "A date when the event is taking place at the location\n",
+  "format": "date-time",
+  "example": "2021-11-03T10:23:00+01:00",
+  "$schema": "http://json-schema.org/schema#"
+}

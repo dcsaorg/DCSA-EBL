@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Indicator whether mode of transportation for pre-carriage (e.g. truck, barge, rail) is under shipper's responsibility\n",
+  "example": false,
+  "$schema": "http://json-schema.org/schema#"
+}

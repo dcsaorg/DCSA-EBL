@@ -1,0 +1,35 @@
+{
+  "required": [
+    "sealNumber",
+    "sealType"
+  ],
+  "type": "object",
+  "description": "addresses the seal-related information associated with the shipment equipment. A seal is put on a shipment equipment once it is loaded. This seal is meant to stay on until the shipment equipment reaches its final destination.",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "sealNumber": {
+          "$ref": "sealNumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sealSource": {
+          "$ref": "sealSource.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "sealType": {
+          "$ref": "sealType.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

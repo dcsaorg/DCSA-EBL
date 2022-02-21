@@ -1,0 +1,6 @@
+{
+  "maxLength": 20,
+  "type": "string",
+  "description": "Free text field describing the charge type to apply\n",
+  "$schema": "http://json-schema.org/schema#"
+}

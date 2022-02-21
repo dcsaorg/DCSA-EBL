@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "The unique identifier for the event (the message - not the source).\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+  "format": "uuid",
+  "example": "3cecb101-7a1a-43a4-9d62-e88a131651e2",
+  "$schema": "http://json-schema.org/schema#"
+}

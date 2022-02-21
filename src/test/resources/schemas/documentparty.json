@@ -1,0 +1,51 @@
+{
+  "required": [
+    "isToBeNotified",
+    "party",
+    "partyFunction"
+  ],
+  "type": "object",
+  "description": "stores the parties involved in the transport document.",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "party": {
+          "allOf": [
+            {
+              "$ref": "party.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "partyFunction": {
+          "$ref": "partyFunction.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "displayedAddress": {
+          "type": "array",
+          "items": {
+            "$ref": "addressLine.json"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "isToBeNotified": {
+          "$ref": "isToBeNotified.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

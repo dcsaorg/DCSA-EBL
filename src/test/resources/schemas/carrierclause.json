@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "description": "comprises clauses, added by the carrier to the Transport Document, which are subject to local rules/guidelines or certain mandatory information required to be shared with the customer. Usually printed below the cargo description.\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "clauseContent": {
+          "$ref": "clauseContent.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

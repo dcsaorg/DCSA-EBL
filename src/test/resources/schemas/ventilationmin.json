@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "Indicates the minimum ventilation setting on the container in CBM/Hr.",
+  "example": 266,
+  "$schema": "http://json-schema.org/schema#"
+}

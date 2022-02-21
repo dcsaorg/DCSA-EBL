@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "Indicates the minimum temperature setting on the container.",
+  "example": -18.1,
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "The provider used for identifying the issuer Code\n",
+  "example": "NMFTA",
+  "enum": [
+    "SMDG",
+    "NMFTA"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,34 @@
+{
+  "required": [
+    "name"
+  ],
+  "type": "object",
+  "description": "Contact information for a Party\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "name.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "phone": {
+          "$ref": "phone.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "email": {
+          "$ref": "email.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "transports": {
+      "type": "array",
+      "items": {
+        "$ref": "transport.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

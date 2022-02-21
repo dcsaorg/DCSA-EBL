@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "description": "The mode of transport as defined by DCSA.\n",
+  "enum": [
+    "VESSEL",
+    "RAIL",
+    "TRUCK",
+    "BARGE"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

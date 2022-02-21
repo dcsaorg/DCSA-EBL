@@ -1,0 +1,14 @@
+{
+  "type": "string",
+  "description": "Code for the cut-off time\n- DCO (Documentation cut-off)\n- VCO (VGM cut-off)\n- FCO (FCL delivery cut-off)\n- LCO (LCL delivery cut-off)\n- ECP (Empty container pick-up date and time)\n- EFC (Earliest full-container delivery date)\n- AFD (AMS Filing Due date)\n",
+  "enum": [
+    "DCO",
+    "VCO",
+    "FCO",
+    "LCO",
+    "ECP",
+    "EFC",
+    "AFD"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

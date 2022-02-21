@@ -1,0 +1,59 @@
+{
+  "required": [
+    "carrierBookingReference",
+    "shipmentCreatedDateTime"
+  ],
+  "type": "object",
+  "description": "Shipment 'metadata'\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "carrierBookingReference": {
+          "$ref": "carrierBookingReference.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "carrierBookingRequestReference": {
+          "$ref": "carrierBookingRequestReference.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "documentStatus": {
+          "$ref": "bookingDocumentStatus.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentCreatedDateTime": {
+          "$ref": "shipmentCreatedDateTime.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentUpdatedDateTime": {
+          "$ref": "shipmentUpdatedDateTime.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "termsAndConditions": {
+          "$ref": "termsAndConditions.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

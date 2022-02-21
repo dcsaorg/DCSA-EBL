@@ -1,0 +1,18 @@
+{
+  "required": [
+    "valueAddedServiceCode"
+  ],
+  "type": "object",
+  "description": "Type of goods in the booking, defined by its commodity type\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "valueAddedServiceCode": {
+          "$ref": "valueAddedServiceCode.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

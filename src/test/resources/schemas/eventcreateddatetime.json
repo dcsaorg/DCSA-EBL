@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "The timestamp of when the event was created.\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+  "format": "date-time",
+  "example": "2021-01-09T14:12:56+01:00",
+  "$schema": "http://json-schema.org/schema#"
+}

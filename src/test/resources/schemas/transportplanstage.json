@@ -1,0 +1,11 @@
+{
+  "type": "string",
+  "description": "Code qualifying a specific stage of transport e.g. pre-carriage, main carriage transport or on-carriage transport\n- PRC (Pre-Carriage)\n- MNC (Main Carriage Transport)\n- ONC (On-Carriage Transport)\n",
+  "example": "PRC",
+  "enum": [
+    "PRC",
+    "MNC",
+    "ONC"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,28 @@
+{
+  "required": [
+    "eventCreatedDateTime"
+  ],
+  "type": "object",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "eventID": {
+          "$ref": "eventID.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventCreatedDateTime": {
+          "$ref": "eventCreatedDateTime.json"
+        }
+      }
+    },
+    {
+      "$ref": "baseEventBody.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

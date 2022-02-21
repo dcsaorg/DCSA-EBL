@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Specifies whether the Transport document is a received for shipment, or shipped onboard.",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

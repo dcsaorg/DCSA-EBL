@@ -1,0 +1,31 @@
+{
+  "required": [
+    "address"
+  ],
+  "type": "object",
+  "description": "An interfrace used to express a location using an `Address` object\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "locationName": {
+          "$ref": "locationName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Address related information",
+          "allOf": [
+            {
+              "$ref": "address.json"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

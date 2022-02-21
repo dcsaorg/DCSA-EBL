@@ -1,0 +1,36 @@
+{
+  "title": "shipmentLocation",
+  "type": "object",
+  "description": "maps the relationship between Shipment and Location, e.g., the place of receipt and the places of delivery for a specific shipment.",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "location": {
+          "allOf": [
+            {
+              "$ref": "location.json"
+            },
+            {
+              "example": {
+                "locationName": "Eiffel Tower",
+                "latitude": "48.8585500",
+                "longitude": "2.294492036",
+                "UNLocationCode": "FRPAR"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "displayedName": {
+          "$ref": "displayedName.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}
