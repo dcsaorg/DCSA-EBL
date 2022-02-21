@@ -1,0 +1,26 @@
+{
+  "required": [
+    "UNLocationCode"
+  ],
+  "type": "object",
+  "description": "An interfrace used to express a location using a `Un Location Code`\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "locationName": {
+          "$ref": "locationName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "UNLocationCode": {
+          "$ref": "UNLocationCode.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

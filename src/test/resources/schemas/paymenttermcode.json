@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "Indicates whether freight & charges are due for payment before the shipment is effected, practically before the transport document is released to shipper (Prepaid) or before the shipment is finalized meaning cargo released to consignee (Collect)\n- PRE (Prepaid)\n- COL (Collect)\n",
+  "example": "PRE",
+  "enum": [
+    "PRE",
+    "COL"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

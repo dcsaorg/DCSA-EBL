@@ -1,0 +1,7 @@
+{
+  "maxLength": 100,
+  "type": "string",
+  "description": "Code to identify the party as provided by the agency\n",
+  "example": "MSK",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "confirmedEquipments": {
+      "type": "array",
+      "items": {
+        "$ref": "confirmedEquipment.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

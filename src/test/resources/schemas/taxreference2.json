@@ -1,0 +1,7 @@
+{
+  "maxLength": 20,
+  "type": "string",
+  "description": "Optional second identifying number of the consignee or shipper (Individual or entity) used for tax purposes.",
+  "example": "CVR-25645774",
+  "$schema": "http://json-schema.org/schema#"
+}

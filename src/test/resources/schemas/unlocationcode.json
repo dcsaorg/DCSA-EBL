@@ -1,0 +1,7 @@
+{
+  "maxLength": 5,
+  "type": "string",
+  "description": "The UN Location code specifying where the place is located.",
+  "example": "FRPAR",
+  "$schema": "http://json-schema.org/schema#"
+}

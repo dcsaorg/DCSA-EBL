@@ -1,0 +1,7 @@
+{
+  "maxLength": 65,
+  "type": "string",
+  "description": "The state/region of the party\u2019s address.",
+  "example": "N/A",
+  "$schema": "http://json-schema.org/schema#"
+}

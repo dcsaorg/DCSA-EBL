@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "description": "The entire Shipping Instruction object with all nested objects including the confirmed booking(s).\n",
+  "allOf": [
+    {
+      "$ref": "shippingInstructionRefStatus.json"
+    },
+    {
+      "$ref": "shippingInstructionRequest.json"
+    },
+    {
+      "$ref": "shipments.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

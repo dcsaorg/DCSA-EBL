@@ -1,0 +1,7 @@
+{
+  "maxLength": 15,
+  "type": "string",
+  "description": "The unique identifier for the equipment, which should follow the BIC ISO Container Identification Number where possible.\nAccording to ISO 6346, a container identification code consists of a 4-letter prefix and a 7-digit number (composed of a 3-letter owner code, a category identifier, a serial number, and a check-digit). If a container does not comply with ISO 6346, it is suggested to follow Recommendation #2 \u201cContainer with non-ISO identification\u201d from SMDG.\n",
+  "example": "APZU4812090",
+  "$schema": "http://json-schema.org/schema#"
+}

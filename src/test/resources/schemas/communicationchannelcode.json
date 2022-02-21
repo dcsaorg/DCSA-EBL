@@ -1,0 +1,12 @@
+{
+  "maxLength": 2,
+  "type": "string",
+  "description": "Specifying which communication channel is to be used for this booking e.g.\n- EI (EDI transmission)\n- EM (Email)\n- AO (API)\n",
+  "example": "AO",
+  "enum": [
+    "EI",
+    "EM",
+    "AO"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

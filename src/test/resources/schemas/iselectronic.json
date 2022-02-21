@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "An indicator whether the transport document is electronically transferred.",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

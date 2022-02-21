@@ -1,0 +1,17 @@
+{
+  "maxLength": 3,
+  "type": "string",
+  "description": "The code to identify the type of information documentID points to. Can be one of the following values\n- BOK (Booking - deprecated use BKG instead)\n- BKG (Booking)\n- SHI (Shipping Instruction)\n- VGM (Verified Gross Mass)\n- SRM (Shipment Release Message)\n- TRD (Transport Document)\n- ARN (Arrival Notice)\n\n<b>Deprecated</b> - use documentTypeCode instead\n",
+  "example": "SHI",
+  "deprecated": true,
+  "enum": [
+    "BOK",
+    "BKG",
+    "SHI",
+    "VGM",
+    "SRM",
+    "TRD",
+    "ARN"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

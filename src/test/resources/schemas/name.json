@@ -1,0 +1,7 @@
+{
+  "maxLength": 100,
+  "type": "string",
+  "description": "Name of the contact",
+  "example": "Henrik",
+  "$schema": "http://json-schema.org/schema#"
+}

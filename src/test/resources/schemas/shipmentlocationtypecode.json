@@ -1,0 +1,24 @@
+{
+  "type": "string",
+  "description": "Links to the Location Type Code defined by DCSA.\n- PRE (Place of Receipt)\n- POL (Port of Loading)\n- POD (Port of Discharge)\n- PDE (Place of Delivery)\n- PCF (Pre-carriage From)\n- PSR (Pre-carriage under shipper\u2019s responsibility)\n- OIR (Onward In-land Routing)\n- DRL (Depot release location)\n- ORI (Origin of goods)\n- IEL (Container intermediate export stop off location)\n- PTP (Prohibited transshipment port)\n- RTP (Requested transshipment port)\n- FCD (Full container drop-off location)\n- ECP (Empty container pick-up date and time)\n- IPA (Invoice payable at)\n- FDE (Final destination)\n",
+  "example": "PRE",
+  "enum": [
+    "PRE",
+    "POL",
+    "POD",
+    "PDE",
+    "PCF",
+    "PSR",
+    "OIR",
+    "DRL",
+    "ORI",
+    "IEL",
+    "PTP",
+    "RTP",
+    "FCD",
+    "ECP",
+    "IPA",
+    "FDE"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

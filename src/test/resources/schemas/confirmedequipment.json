@@ -1,0 +1,27 @@
+{
+  "required": [
+    "confirmedEquipmentSizeType",
+    "confirmedEquipmentUnits"
+  ],
+  "type": "object",
+  "description": "The confirmed equipments for the booking\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "confirmedEquipmentSizeType": {
+          "$ref": "ISOEquipmentCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "confirmedEquipmentUnits": {
+          "$ref": "confirmedEquipmentUnits.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

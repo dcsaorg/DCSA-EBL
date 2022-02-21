@@ -1,0 +1,7 @@
+{
+  "maxLength": 50,
+  "type": "string",
+  "description": "The code specifying the measure unit used for the corresponding unit price for this cost, such as per day, per ton, per square metre.",
+  "example": "Per day",
+  "$schema": "http://json-schema.org/schema#"
+}

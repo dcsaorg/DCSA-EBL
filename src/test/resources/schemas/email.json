@@ -1,0 +1,7 @@
+{
+  "maxLength": 100,
+  "type": "string",
+  "description": "E-mail address for the contact",
+  "example": "info@dcsa.org",
+  "$schema": "http://json-schema.org/schema#"
+}

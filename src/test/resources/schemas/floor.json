@@ -1,0 +1,7 @@
+{
+  "maxLength": 50,
+  "type": "string",
+  "description": "The floor of the party\u2019s street number.",
+  "example": "5. sal",
+  "$schema": "http://json-schema.org/schema#"
+}

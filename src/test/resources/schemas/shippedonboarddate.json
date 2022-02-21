@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document.",
+  "format": "date",
+  "example": "2020-12-12",
+  "$schema": "http://json-schema.org/schema#"
+}

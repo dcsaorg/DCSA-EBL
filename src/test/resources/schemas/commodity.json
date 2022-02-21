@@ -1,0 +1,60 @@
+{
+  "required": [
+    "cargoGrossWeight",
+    "cargoGrossWeightUnit",
+    "commodityType"
+  ],
+  "type": "object",
+  "description": "Type of goods in the booking, defined by its commodity type\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "commodityType": {
+          "$ref": "commodityType.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "HSCode": {
+          "$ref": "HSCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cargoGrossWeight": {
+          "$ref": "cargoGrossWeight.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cargoGrossWeightUnit": {
+          "$ref": "weightUnit.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "exportLicenseIssueDate": {
+          "$ref": "exportLicenseIssueDate.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "exportLicenseExpiryDate": {
+          "$ref": "exportLicenseExpiryDate.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

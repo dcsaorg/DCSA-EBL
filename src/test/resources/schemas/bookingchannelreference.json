@@ -1,0 +1,7 @@
+{
+  "maxLength": 20,
+  "type": "string",
+  "description": "Identification number provided by the platform/channel used for booking request/confirmation, ex: Inttra booking reference, or GTNexus, other. Conditional on booking channel being used\n",
+  "example": "ABC12313",
+  "$schema": "http://json-schema.org/schema#"
+}

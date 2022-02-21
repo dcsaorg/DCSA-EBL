@@ -1,0 +1,5 @@
+{
+  "type": "string",
+  "description": "Carrier general terms and conditions for the booking.\n",
+  "$schema": "http://json-schema.org/schema#"
+}

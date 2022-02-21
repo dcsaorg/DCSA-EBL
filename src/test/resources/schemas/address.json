@@ -1,0 +1,71 @@
+{
+  "type": "object",
+  "description": "An object for storing address related information\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "addressName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "street": {
+          "$ref": "streetName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "streetNumber": {
+          "$ref": "streetNumber.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "floor": {
+          "$ref": "floor.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "postCode": {
+          "$ref": "postCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "city": {
+          "$ref": "cityName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "stateRegion": {
+          "$ref": "stateRegion.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "country": {
+          "$ref": "country.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

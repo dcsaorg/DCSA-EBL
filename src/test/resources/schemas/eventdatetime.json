@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "The local date and time, where the event took place or when the event will take place, in ISO 8601 format.",
+  "format": "date-time",
+  "example": "2019-11-12T07:41:00+08:30",
+  "$schema": "http://json-schema.org/schema#"
+}

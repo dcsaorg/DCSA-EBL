@@ -1,0 +1,7 @@
+{
+  "maxLength": 10,
+  "type": "string",
+  "description": "The post code of the party\u2019s address.",
+  "example": "1306",
+  "$schema": "http://json-schema.org/schema#"
+}

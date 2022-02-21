@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "The monetary value of all freight and other service charges for a transport document, with a maximum of 2-digit decimals.",
+  "example": 1012.12,
+  "$schema": "http://json-schema.org/schema#"
+}

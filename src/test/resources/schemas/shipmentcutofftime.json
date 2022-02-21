@@ -1,0 +1,27 @@
+{
+  "required": [
+    "cutOffDateTime",
+    "cutOffDateTimeCode"
+  ],
+  "type": "object",
+  "description": "Cut off times\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "cutOffDateTimeCode": {
+          "$ref": "cutOffDateTimeCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "cutOffDateTime": {
+          "$ref": "cutOffDateTime.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

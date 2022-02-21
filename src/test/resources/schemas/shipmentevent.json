@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "baseEvent.json"
+    },
+    {
+      "$ref": "baseShipmentEvent.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

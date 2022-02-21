@@ -179,7 +179,7 @@ class ShippingInstructionControllerTest {
             .body(BodyInserters.fromValue(invalidShippingInstructionTO))
             .exchange();
 
-    checkStatus400.apply(exchange);
+    checkStatus400.andThen(validateResponse).apply(exchange);
   }
 
   @Test
@@ -223,7 +223,7 @@ class ShippingInstructionControllerTest {
                     .body(BodyInserters.fromValue(invalidShippingInstructionTO))
                     .exchange();
 
-    checkStatus400.apply(exchange);
+    checkStatus400.andThen(validateResponse).apply(exchange);
   }
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus200 =
@@ -238,11 +238,15 @@ class ShippingInstructionControllerTest {
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus400 =
       (exchange) -> exchange.expectStatus().isBadRequest();
 
+  private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec> validateResponse =
+    (exchange) -> exchange.expectBody().consumeWith(JsonSchemaValidator::validateAgainstJsonSchema);
+
   private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec>
       checkShippingInstructionResponseTOJsonSchema =
           (exchange) ->
               exchange
                   .expectBody()
+                .consumeWith(JsonSchemaValidator::validateAgainstJsonSchema)
                   .consumeWith(System.out::println)
                   .jsonPath("$.shippingInstructionID")
                   .hasJsonPath()

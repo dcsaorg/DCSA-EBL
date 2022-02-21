@@ -1,0 +1,19 @@
+{
+  "required": [
+    "shippingInstructionID"
+  ],
+  "type": "object",
+  "description": "A 'shallow' representation of the Shipping Instruction. This version of the Shipping Instruction does not contain nested objects. For a 'rich' version of the Shipping Instruction please use the `GET` endPoint.\n",
+  "allOf": [
+    {
+      "$ref": "shippingInstructionRefStatus.json"
+    },
+    {
+      "$ref": "shippingInstructionShallow.json"
+    },
+    {
+      "$ref": "carrierBookingReferences.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

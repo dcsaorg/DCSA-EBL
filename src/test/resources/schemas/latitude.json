@@ -1,0 +1,7 @@
+{
+  "maxLength": 10,
+  "type": "string",
+  "description": "Geographic coordinate that specifies the north\u2013south position of a point on the Earth&apos;s surface.",
+  "example": "48.8585500",
+  "$schema": "http://json-schema.org/schema#"
+}

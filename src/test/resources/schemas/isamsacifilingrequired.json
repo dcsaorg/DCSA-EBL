@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Customs filing for US (AMS) or Canadian (ACI) customs\n",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

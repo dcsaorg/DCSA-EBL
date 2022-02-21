@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "Celsius (CEL) or Fahrenheit (FAH).",
+  "example": "CEL",
+  "enum": [
+    "CEL",
+    "FAH"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,8 @@
+{
+  "maxLength": 6,
+  "type": "string",
+  "description": "The code used for identifying the specific facility. This code does <b>not</b> include the UN Location Code.\n",
+  "nullable": false,
+  "example": "ADT",
+  "$schema": "http://json-schema.org/schema#"
+}

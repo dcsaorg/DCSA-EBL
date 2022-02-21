@@ -1,0 +1,36 @@
+{
+  "required": [
+    "eventClassifierCode",
+    "eventDateTime",
+    "eventType"
+  ],
+  "type": "object",
+  "description": "The Event entity is described as a generalization of all the specific event categories. An event always takes place in relation to a shipment and can additionally be linked to a transport or an equipment\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "eventType": {
+          "$ref": "eventType.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventClassifierCode": {
+          "$ref": "eventClassifierCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventDateTime": {
+          "$ref": "eventDateTime.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

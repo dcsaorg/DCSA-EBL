@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "The unit of measure which can be expressed in imperial or metric terms",
+  "example": "KGM",
+  "enum": [
+    "KGM",
+    "LBR"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

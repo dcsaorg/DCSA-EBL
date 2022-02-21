@@ -1,0 +1,7 @@
+{
+  "maxLength": 30,
+  "type": "string",
+  "description": "Phone number for the contact",
+  "example": "+45 33364660",
+  "$schema": "http://json-schema.org/schema#"
+}

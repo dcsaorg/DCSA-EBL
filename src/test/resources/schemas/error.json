@@ -1,0 +1,73 @@
+{
+  "required": [
+    "errorDateTime",
+    "errors",
+    "httpMethod",
+    "requestUri",
+    "statusCode",
+    "statusCodeText"
+  ],
+  "type": "object",
+  "properties": {
+    "httpMethod": {
+      "type": "string",
+      "description": "The http request method type e.g. GET, POST\n",
+      "example": "POST",
+      "enum": [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTION",
+        "PATCH"
+      ]
+    },
+    "requestUri": {
+      "type": "string",
+      "description": "The request URI as it was sent\n",
+      "format": "uri",
+      "example": "https://dcsa.org/dcsa/tnt/v1/events"
+    },
+    "statusCode": {
+      "type": "integer",
+      "description": "The HTTP status code\n",
+      "example": 400
+    },
+    "statusCodeText": {
+      "type": "string",
+      "description": "The textual representation of the status code\n",
+      "example": "Bad Request"
+    },
+    "errorMessage": {
+      "maxLength": 200,
+      "type": "string",
+      "description": "Other error information\n",
+      "example": "The supplied data could not be accepted"
+    },
+    "providerCorrelationID": {
+      "type": "string",
+      "description": "A unique identifier for the transaction, e.g. a UUID\n",
+      "example": "4426d965-0dd8-4005-8c63-dc68b01c4962"
+    },
+    "errorDateTime": {
+      "type": "string",
+      "description": "The date and time (in ISO 8601 format) the error occurred.\n",
+      "format": "date-time",
+      "example": "2019-11-12T07:41:00+08:30"
+    },
+    "errors": {
+      "minItems": 1,
+      "type": "array",
+      "description": "List of detailed errors, e.g. fields that could not pass validation\n",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "detailedError.json"
+          }
+        ]
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

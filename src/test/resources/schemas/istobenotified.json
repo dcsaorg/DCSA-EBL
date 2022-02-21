@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Used to decide whether the party will be notified of the arrival of the cargo.",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Indication whether the shipper agrees to load part of the shipment in case where not all of the cargo is delivered within cut-off.\n",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

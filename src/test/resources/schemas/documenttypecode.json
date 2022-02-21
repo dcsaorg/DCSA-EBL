@@ -1,0 +1,20 @@
+{
+  "maxLength": 3,
+  "type": "string",
+  "description": "The code to identify the type of information documentID points to. Can be one of the following values\n- CBR (Carrier Booking Request Reference)\n- BKG (Booking)\n- SHI (Shipping Instruction)\n- SRM (Shipment Release Message)\n- TRD (Transport Document)\n- ARN (Arrival Notice)\n- VGM (Verified Gross Mass)\n- CAS (Cargo Survey)\n- CUS (Customs Inspection)\n- DGD (Dangerous Goods Declaration)\n- OOG (Out of Gauge)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/documenttypecodes.csv\">GitHub</a>\n",
+  "example": "SHI",
+  "enum": [
+    "CBR",
+    "BKG",
+    "SHI",
+    "SRM",
+    "TRD",
+    "ARN",
+    "VGM",
+    "CAS",
+    "CUS",
+    "DGD",
+    "OOG"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

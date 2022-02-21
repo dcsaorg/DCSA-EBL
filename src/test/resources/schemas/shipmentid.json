@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "The identifier for a shipment",
+  "format": "uuid",
+  "example": "c32d56f3-a4a5-4964-bb49-abd168b06160",
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Information provided by the shipper whether an export declaration is required for this particular shipment/commodity/destination.\n",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Indicates if an alternate equipment type can be provided by the carrier.\n",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

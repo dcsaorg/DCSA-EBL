@@ -1,0 +1,6 @@
+{
+  "maxLength": 250,
+  "type": "string",
+  "description": "The address of the Party to be displayed on the transport document.",
+  "$schema": "http://json-schema.org/schema#"
+}

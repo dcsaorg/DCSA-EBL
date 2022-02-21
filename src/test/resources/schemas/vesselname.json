@@ -1,0 +1,7 @@
+{
+  "maxLength": 35,
+  "type": "string",
+  "description": "The name of the Vessel given by the Vessel Operator and registered with IMO.\n",
+  "example": "King of the Seas",
+  "$schema": "http://json-schema.org/schema#"
+}

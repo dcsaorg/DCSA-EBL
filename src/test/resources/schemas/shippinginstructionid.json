@@ -1,0 +1,7 @@
+{
+  "maxLength": 100,
+  "type": "string",
+  "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n",
+  "example": "e0559d83-00e2-438e-afd9-fdd610c1a008",
+  "$schema": "http://json-schema.org/schema#"
+}

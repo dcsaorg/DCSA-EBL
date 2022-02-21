@@ -1,0 +1,7 @@
+{
+  "maxLength": 75,
+  "type": "string",
+  "description": "The country of the party\u2019s address.",
+  "example": "Denmark",
+  "$schema": "http://json-schema.org/schema#"
+}

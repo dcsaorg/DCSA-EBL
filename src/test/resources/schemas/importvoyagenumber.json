@@ -1,0 +1,7 @@
+{
+  "maxLength": 50,
+  "type": "string",
+  "description": "The vessel operator-specific identifier of the import Voyage.",
+  "example": "2103N",
+  "$schema": "http://json-schema.org/schema#"
+}

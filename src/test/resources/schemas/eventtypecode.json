@@ -1,0 +1,8 @@
+{
+  "maxLength": 4,
+  "type": "string",
+  "description": "Deprecated - Unique identifier for Event Type Code. This has been replaced by Specialized eventTypeCodes: shipmentEventTypeCode, transportEventTypeCode, equipmentEventTypeCode and opertaionsEventType\n",
+  "example": "ARRI",
+  "deprecated": true,
+  "$schema": "http://json-schema.org/schema#"
+}

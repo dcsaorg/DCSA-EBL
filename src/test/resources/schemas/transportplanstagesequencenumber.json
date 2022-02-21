@@ -1,0 +1,6 @@
+{
+  "type": "number",
+  "description": "Sequence number of the transport plan stage\n",
+  "example": 5,
+  "$schema": "http://json-schema.org/schema#"
+}

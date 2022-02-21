@@ -1,0 +1,6 @@
+{
+  "type": "string",
+  "description": "The planned date of departure.\n",
+  "format": "date",
+  "$schema": "http://json-schema.org/schema#"
+}

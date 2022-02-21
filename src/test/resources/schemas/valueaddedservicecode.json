@@ -1,0 +1,13 @@
+{
+  "type": "string",
+  "description": "Code of the value added service\n- SCON (Smart containers)\n- CINS (Cargo insurance)\n- SIOT (Smart IoT devices)\n- CDECL (Customs declaration)\n- SGUAR (Shipping guarantee)\n- UPPY (Upfront payment)\n",
+  "enum": [
+    "SCON",
+    "CINS",
+    "SIOT",
+    "CDECL",
+    "SGUAR",
+    "UPPY"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

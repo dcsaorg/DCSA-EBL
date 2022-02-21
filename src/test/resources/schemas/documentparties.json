@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "documentParties": {
+      "type": "array",
+      "items": {
+        "$ref": "documentParty.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

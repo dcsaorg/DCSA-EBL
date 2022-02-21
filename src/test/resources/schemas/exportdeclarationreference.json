@@ -1,0 +1,7 @@
+{
+  "maxLength": 35,
+  "type": "string",
+  "description": "A government document permitting designated goods to be shipped out of the country.  Reference number assigned by an issuing authority to an Export License. The export license must be valid at time of departure. Required if Export declaration required is \u2018True\u2019.\n",
+  "example": "ABC123123",
+  "$schema": "http://json-schema.org/schema#"
+}

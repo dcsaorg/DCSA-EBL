@@ -1,0 +1,37 @@
+{
+  "required": [
+    "message",
+    "reason"
+  ],
+  "type": "object",
+  "properties": {
+    "errorCode": {
+      "maximum": 7999,
+      "minimum": "7E+3",
+      "type": "integer",
+      "description": "Standard error code see http://dcsa.org/error-codes (to be created). Examples: 7003 \u2013 out or range value, 7004 -  invalid type\n",
+      "example": 7003
+    },
+    "field": {
+      "type": "string",
+      "description": "The field that caused the error, e.g. a failed validation\n",
+      "example": "facilityCode"
+    },
+    "value": {
+      "type": "string",
+      "description": "The value that of the field that caused the error\n",
+      "example": "SG SIN WHS"
+    },
+    "reason": {
+      "type": "string",
+      "description": "High level error message\n",
+      "example": "invalidQuery"
+    },
+    "message": {
+      "type": "string",
+      "description": "Additional information as to why the error occured\n",
+      "example": "Spaces not allowed in facility code"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

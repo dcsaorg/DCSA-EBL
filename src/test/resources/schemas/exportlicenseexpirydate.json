@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "Expiry date of the export license applicable to the booking.\n\nMandatory to provide in booking request for specific commodities.\n",
+  "format": "date",
+  "example": "2021-05-21",
+  "$schema": "http://json-schema.org/schema#"
+}

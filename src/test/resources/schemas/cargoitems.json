@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "cargoItems": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$ref": "cargoItem.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

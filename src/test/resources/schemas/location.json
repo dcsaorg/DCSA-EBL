@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "description": "General purpose object to capture location-related data, the location can be specified in **any** of the following ways: `geoLocation` (lat+long), `UN Location Code`, a `Facility` or an `Address`.\n\nIf multiple ways are used - then they all have to point to the same location!\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "locationName": {
+          "$ref": "locationName.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "$ref": "latitude.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "longitude": {
+          "$ref": "longitude.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "UNLocationCode": {
+          "$ref": "UNLocationCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "facilityCode": {
+          "$ref": "facilityCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "facilityCodeListProvider": {
+          "$ref": "facilityCodeListProvider.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "address": {
+          "description": "Address related information",
+          "allOf": [
+            {
+              "$ref": "address.json"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

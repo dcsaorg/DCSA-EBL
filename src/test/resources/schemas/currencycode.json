@@ -1,0 +1,7 @@
+{
+  "maxLength": 3,
+  "type": "string",
+  "description": "The currency for the charge, using a 3-character code (ISO 4217).",
+  "example": "DKK",
+  "$schema": "http://json-schema.org/schema#"
+}

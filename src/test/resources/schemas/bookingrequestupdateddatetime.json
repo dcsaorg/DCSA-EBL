@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "description": "Last date and time when the booking request was updated\n",
+  "format": "date-time",
+  "example": "2021-11-03T09:41:00+08:30",
+  "$schema": "http://json-schema.org/schema#"
+}

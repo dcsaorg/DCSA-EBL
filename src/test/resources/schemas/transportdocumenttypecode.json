@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "Specifies the type of the transport document\n- BOL (Bill of Lading)\n- SWB (Sea Waybill)\n",
+  "example": "SWB",
+  "enum": [
+    "BOL",
+    "SWB"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

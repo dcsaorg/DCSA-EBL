@@ -1,0 +1,144 @@
+{
+  "required": [
+    "documentID",
+    "documentTypeCode",
+    "shipmentEventTypeCode"
+  ],
+  "type": "object",
+  "description": "The shipment event entity is a specialization of the event entity to support specification of data that only applies to a shipment event.\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "eventType": {
+          "type": "string",
+          "example": "SHIPMENT",
+          "enum": [
+            "SHIPMENT"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventDateTime": {
+          "description": "Value for eventDateTime must be the same value as eventCreatedDateTime\n"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventClassifierCode": {
+          "type": "string",
+          "description": "Code for the event classifier can be\n- ACT (Actual)\n- PLN (Planned)\n- EST (Estimated)\n",
+          "example": "ACT",
+          "enum": [
+            "ACT",
+            "PLN",
+            "EST"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentEventTypeCode": {
+          "$ref": "shipmentEventTypeCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "documentID": {
+          "$ref": "documentID.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "documentTypeCode": {
+          "$ref": "documentTypeCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentInformationTypeCode": {
+          "$ref": "shipmentInformationType.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "$ref": "reason.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventTypeCode": {
+          "$ref": "eventTypeCode.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "eventTypeCode": {
+          "type": "string",
+          "description": "Unique identifier for Event Type Code. For shipment events this can be\n- RECE (Received)\n- CONF (Confirmed)\n- ISSU (Issued)\n- APPR (Approved)\n- SUBM (Submitted)\n- SURR (Surrendered)\n- REJE (Rejected)\n- PENA (Pending approval)\n\nDeprecated - use shipmentEventTypeCode instead\n",
+          "example": "RECE",
+          "deprecated": true,
+          "enum": [
+            "RECE",
+            "CONF",
+            "ISSU",
+            "APPR",
+            "SUBM",
+            "SURR",
+            "REJE",
+            "PENA"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentID": {
+          "$ref": "shipmentID.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shipmentID": {
+          "description": "ID uniquely identifying a shipment.\n\nDeprecated - this is replaced by documentID which can contain different values depending on the value of the documentTypeCode field\n",
+          "deprecated": true
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "documentReferences": {
+          "$ref": "documentReferences.json"
+        }
+      }
+    },
+    {
+      "$ref": "references.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

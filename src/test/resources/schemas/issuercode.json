@@ -1,0 +1,7 @@
+{
+  "maxLength": 4,
+  "type": "string",
+  "description": "The code used for identifying the specific issuer.\n",
+  "example": "MMCU",
+  "$schema": "http://json-schema.org/schema#"
+}

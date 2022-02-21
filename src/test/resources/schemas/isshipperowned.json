@@ -1,0 +1,6 @@
+{
+  "type": "boolean",
+  "description": "Indicates whether the container is shipper owned (SOC).",
+  "example": true,
+  "$schema": "http://json-schema.org/schema#"
+}

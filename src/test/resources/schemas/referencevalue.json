@@ -1,0 +1,6 @@
+{
+  "maxLength": 100,
+  "type": "string",
+  "description": "The actual value of the reference.",
+  "$schema": "http://json-schema.org/schema#"
+}

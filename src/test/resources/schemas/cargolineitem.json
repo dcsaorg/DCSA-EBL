@@ -1,0 +1,27 @@
+{
+  "required": [
+    "cargoLineItemID",
+    "shippingMarks"
+  ],
+  "type": "object",
+  "description": "identifies the specific details of packages within a cargo item.\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "cargoLineItemID": {
+          "$ref": "cargoLineItemID.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "shippingMarks": {
+          "$ref": "shippingMarks.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

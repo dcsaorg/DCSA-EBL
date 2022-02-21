@@ -1,0 +1,49 @@
+{
+  "required": [
+    "bookingRequestCreatedDateTime",
+    "bookingRequestUpdatedDateTime",
+    "carrierBookingRequestReference",
+    "documentStatus"
+  ],
+  "type": "object",
+  "description": "The `carrierBookingRequestReference` along with the `documentStatus` is returned\n",
+  "allOf": [
+    {
+      "type": "object",
+      "properties": {
+        "carrierBookingRequestReference": {
+          "$ref": "carrierBookingRequestReference.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "documentStatus": {
+          "allOf": [
+            {
+              "$ref": "bookingDocumentStatus.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "bookingRequestCreatedDateTime": {
+          "$ref": "bookingRequestCreatedDateTime.json"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "properties": {
+        "bookingRequestUpdatedDateTime": {
+          "$ref": "bookingRequestUpdatedDateTime.json"
+        }
+      }
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

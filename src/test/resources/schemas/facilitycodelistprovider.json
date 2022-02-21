@@ -1,0 +1,10 @@
+{
+  "type": "string",
+  "description": "The provider used for identifying the facility Code\n",
+  "example": "SMDG",
+  "enum": [
+    "BIC",
+    "SMDG"
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

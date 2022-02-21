@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "description": "includes the information requested in a booking, service terms and types as well as the assigned booking reference by the carrier.\n",
+  "allOf": [
+    {
+      "$ref": "bookingSummary.json"
+    },
+    {
+      "$ref": "bookingDeep.json"
+    }
+  ],
+  "$schema": "http://json-schema.org/schema#"
+}

@@ -1,0 +1,658 @@
+{
+  "oneOf": [
+    {
+      "$ref": "carrierBookingReference.json"
+    },
+    {
+      "$ref": "eblDocumentStatus.json"
+    },
+    {
+      "$ref": "shippingInstructionSummary.json"
+    },
+    {
+      "$ref": "shippingInstructionRefStatus.json"
+    },
+    {
+      "$ref": "shippingInstructionID.json"
+    },
+    {
+      "$ref": "shippingInstructionCreatedDateTime.json"
+    },
+    {
+      "$ref": "shippingInstructionUpdatedDateTime.json"
+    },
+    {
+      "$ref": "shippingInstructionShallow.json"
+    },
+    {
+      "$ref": "transportDocumentTypeCode.json"
+    },
+    {
+      "$ref": "isShippedOnboardType.json"
+    },
+    {
+      "$ref": "numberOfCopies.json"
+    },
+    {
+      "$ref": "requestedNumberOfOriginals.json"
+    },
+    {
+      "$ref": "isElectronic.json"
+    },
+    {
+      "$ref": "isToOrder.json"
+    },
+    {
+      "$ref": "areChargesDisplayedOnOriginals.json"
+    },
+    {
+      "$ref": "areChargesDisplayedOnCopies.json"
+    },
+    {
+      "$ref": "displayedName.json"
+    },
+    {
+      "$ref": "carrierBookingReferences.json"
+    },
+    {
+      "$ref": "error.json"
+    },
+    {
+      "$ref": "detailedError.json"
+    },
+    {
+      "$ref": "shippingInstructionRequest.json"
+    },
+    {
+      "$ref": "shippingInstructionDeep.json"
+    },
+    {
+      "$ref": "location.json"
+    },
+    {
+      "$ref": "locationName.json"
+    },
+    {
+      "$ref": "latitude.json"
+    },
+    {
+      "$ref": "longitude.json"
+    },
+    {
+      "$ref": "UNLocationCode.json"
+    },
+    {
+      "$ref": "facilityCode.json"
+    },
+    {
+      "$ref": "facilityCodeListProvider.json"
+    },
+    {
+      "$ref": "address.json"
+    },
+    {
+      "$ref": "addressName.json"
+    },
+    {
+      "$ref": "streetName.json"
+    },
+    {
+      "$ref": "streetNumber.json"
+    },
+    {
+      "$ref": "floor.json"
+    },
+    {
+      "$ref": "postCode.json"
+    },
+    {
+      "$ref": "cityName.json"
+    },
+    {
+      "$ref": "stateRegion.json"
+    },
+    {
+      "$ref": "country.json"
+    },
+    {
+      "$ref": "utilizedTransportEquipments.json"
+    },
+    {
+      "$ref": "utilizedTransportEquipment.json"
+    },
+    {
+      "$ref": "equipment.json"
+    },
+    {
+      "$ref": "equipmentReference.json"
+    },
+    {
+      "$ref": "ISOEquipmentCode.json"
+    },
+    {
+      "$ref": "tareWeight.json"
+    },
+    {
+      "$ref": "weightUnit.json"
+    },
+    {
+      "$ref": "cargoGrossWeight.json"
+    },
+    {
+      "$ref": "isShipperOwned.json"
+    },
+    {
+      "$ref": "cargoItems.json"
+    },
+    {
+      "$ref": "cargoItem.json"
+    },
+    {
+      "$ref": "cargoLineItems.json"
+    },
+    {
+      "$ref": "cargoLineItem.json"
+    },
+    {
+      "$ref": "cargoLineItemID.json"
+    },
+    {
+      "$ref": "shippingMarks.json"
+    },
+    {
+      "$ref": "descriptionOfGoods.json"
+    },
+    {
+      "$ref": "HSCode.json"
+    },
+    {
+      "$ref": "weight.json"
+    },
+    {
+      "$ref": "volume.json"
+    },
+    {
+      "$ref": "volumeUnit.json"
+    },
+    {
+      "$ref": "numberOfPackages.json"
+    },
+    {
+      "$ref": "packageCode.json"
+    },
+    {
+      "$ref": "references.json"
+    },
+    {
+      "$ref": "reference.json"
+    },
+    {
+      "$ref": "referenceType.json"
+    },
+    {
+      "$ref": "referenceValue.json"
+    },
+    {
+      "$ref": "temperatureMin.json"
+    },
+    {
+      "$ref": "temperatureMax.json"
+    },
+    {
+      "$ref": "temperatureUnit.json"
+    },
+    {
+      "$ref": "humidityMin.json"
+    },
+    {
+      "$ref": "humidityMax.json"
+    },
+    {
+      "$ref": "ventilationMin.json"
+    },
+    {
+      "$ref": "ventilationMax.json"
+    },
+    {
+      "$ref": "seals.json"
+    },
+    {
+      "$ref": "seal.json"
+    },
+    {
+      "$ref": "sealNumber.json"
+    },
+    {
+      "$ref": "sealSource.json"
+    },
+    {
+      "$ref": "sealType.json"
+    },
+    {
+      "$ref": "documentParties.json"
+    },
+    {
+      "$ref": "documentParty.json"
+    },
+    {
+      "$ref": "party.json"
+    },
+    {
+      "$ref": "partyName.json"
+    },
+    {
+      "$ref": "taxReference1.json"
+    },
+    {
+      "$ref": "taxReference2.json"
+    },
+    {
+      "$ref": "publicKey.json"
+    },
+    {
+      "$ref": "eblParty.json"
+    },
+    {
+      "$ref": "partyContactDetail.json"
+    },
+    {
+      "$ref": "name.json"
+    },
+    {
+      "$ref": "phone.json"
+    },
+    {
+      "$ref": "email.json"
+    },
+    {
+      "$ref": "identifyingCode.json"
+    },
+    {
+      "$ref": "DCSAResponsibleAgencyCode.json"
+    },
+    {
+      "$ref": "partyCode.json"
+    },
+    {
+      "$ref": "codeListName.json"
+    },
+    {
+      "$ref": "partyFunction.json"
+    },
+    {
+      "$ref": "addressLine.json"
+    },
+    {
+      "$ref": "isToBeNotified.json"
+    },
+    {
+      "$ref": "shippingInstructionResponse.json"
+    },
+    {
+      "$ref": "shipments.json"
+    },
+    {
+      "$ref": "shipment.json"
+    },
+    {
+      "$ref": "shipmentSummary.json"
+    },
+    {
+      "$ref": "carrierBookingRequestReference.json"
+    },
+    {
+      "$ref": "bookingDocumentStatus.json"
+    },
+    {
+      "$ref": "shipmentCreatedDateTime.json"
+    },
+    {
+      "$ref": "shipmentUpdatedDateTime.json"
+    },
+    {
+      "$ref": "termsAndConditions.json"
+    },
+    {
+      "$ref": "bookingResponse.json"
+    },
+    {
+      "$ref": "bookingSummary.json"
+    },
+    {
+      "$ref": "bookingRefStatus.json"
+    },
+    {
+      "$ref": "bookingRequestCreatedDateTime.json"
+    },
+    {
+      "$ref": "bookingRequestUpdatedDateTime.json"
+    },
+    {
+      "$ref": "bookingShallow.json"
+    },
+    {
+      "$ref": "receiptDeliveryTypeAtOrigin.json"
+    },
+    {
+      "$ref": "receiptDeliveryTypeAtDestination.json"
+    },
+    {
+      "$ref": "cargoMovementTypeAtOrigin.json"
+    },
+    {
+      "$ref": "cargoMovementTypeAtDestination.json"
+    },
+    {
+      "$ref": "serviceContractReference.json"
+    },
+    {
+      "$ref": "paymentTermCode.json"
+    },
+    {
+      "$ref": "isPartialLoadAllowed.json"
+    },
+    {
+      "$ref": "isExportDeclarationRequired.json"
+    },
+    {
+      "$ref": "exportDeclarationReference.json"
+    },
+    {
+      "$ref": "isImportLicenseRequired.json"
+    },
+    {
+      "$ref": "importLicenseReference.json"
+    },
+    {
+      "$ref": "submissionDateTime.json"
+    },
+    {
+      "$ref": "isAMSACIFilingRequired.json"
+    },
+    {
+      "$ref": "isDestinationFilingRequired.json"
+    },
+    {
+      "$ref": "contractQuotationReference.json"
+    },
+    {
+      "$ref": "expectedDepartureDate.json"
+    },
+    {
+      "$ref": "expectedArrivalDateAtFinalDestinationStart.json"
+    },
+    {
+      "$ref": "expectedArrivalDateAtFinalDestinationEnd.json"
+    },
+    {
+      "$ref": "transportDocumentReference.json"
+    },
+    {
+      "$ref": "bookingChannelReference.json"
+    },
+    {
+      "$ref": "incoTerms.json"
+    },
+    {
+      "$ref": "communicationChannelCode.json"
+    },
+    {
+      "$ref": "isEquipmentSubstitutionAllowed.json"
+    },
+    {
+      "$ref": "vesselName.json"
+    },
+    {
+      "$ref": "vesselIMONumber.json"
+    },
+    {
+      "$ref": "exportVoyageNumber.json"
+    },
+    {
+      "$ref": "modeOfTransport.json"
+    },
+    {
+      "$ref": "bookingDeep.json"
+    },
+    {
+      "$ref": "addressLocation.json"
+    },
+    {
+      "$ref": "unLocationLocation.json"
+    },
+    {
+      "$ref": "facilityLocation.json"
+    },
+    {
+      "$ref": "commodities.json"
+    },
+    {
+      "$ref": "commodity.json"
+    },
+    {
+      "$ref": "commodityType.json"
+    },
+    {
+      "$ref": "exportLicenseIssueDate.json"
+    },
+    {
+      "$ref": "exportLicenseExpiryDate.json"
+    },
+    {
+      "$ref": "valueAddedServiceRequests.json"
+    },
+    {
+      "$ref": "valueAddedServiceRequest.json"
+    },
+    {
+      "$ref": "valueAddedServiceCode.json"
+    },
+    {
+      "$ref": "requestedEquipments.json"
+    },
+    {
+      "$ref": "requestedEquipment.json"
+    },
+    {
+      "$ref": "requestedEquipmentUnits.json"
+    },
+    {
+      "$ref": "shipmentLocations.json"
+    },
+    {
+      "$ref": "shipmentLocation.json"
+    },
+    {
+      "$ref": "shipmentLocationNoLocationType.json"
+    },
+    {
+      "$ref": "shipmentLocationTypeCode.json"
+    },
+    {
+      "$ref": "eventLocationDateTime.json"
+    },
+    {
+      "$ref": "transports.json"
+    },
+    {
+      "$ref": "transport.json"
+    },
+    {
+      "$ref": "transportPlanStage.json"
+    },
+    {
+      "$ref": "transportPlanStageSequenceNumber.json"
+    },
+    {
+      "$ref": "plannedDepartureDate.json"
+    },
+    {
+      "$ref": "plannedArrivalDate.json"
+    },
+    {
+      "$ref": "importVoyageNumber.json"
+    },
+    {
+      "$ref": "isUnderShippersResponsibility.json"
+    },
+    {
+      "$ref": "shipmentCutOffTimes.json"
+    },
+    {
+      "$ref": "shipmentCutOffTime.json"
+    },
+    {
+      "$ref": "cutOffDateTimeCode.json"
+    },
+    {
+      "$ref": "cutOffDateTime.json"
+    },
+    {
+      "$ref": "confirmedEquipments.json"
+    },
+    {
+      "$ref": "confirmedEquipment.json"
+    },
+    {
+      "$ref": "confirmedEquipmentUnits.json"
+    },
+    {
+      "$ref": "charges.json"
+    },
+    {
+      "$ref": "charge.json"
+    },
+    {
+      "$ref": "chargeType.json"
+    },
+    {
+      "$ref": "currencyAmount.json"
+    },
+    {
+      "$ref": "currencyCode.json"
+    },
+    {
+      "$ref": "calculationBasis.json"
+    },
+    {
+      "$ref": "unitPrice.json"
+    },
+    {
+      "$ref": "quantity.json"
+    },
+    {
+      "$ref": "carrierClauses.json"
+    },
+    {
+      "$ref": "carrierClause.json"
+    },
+    {
+      "$ref": "clauseContent.json"
+    },
+    {
+      "$ref": "shippingInstruction.json"
+    },
+    {
+      "$ref": "transportDocumentSummary.json"
+    },
+    {
+      "$ref": "transportDocumentRoot.json"
+    },
+    {
+      "$ref": "transportDocumentCreatedDateTime.json"
+    },
+    {
+      "$ref": "transportDocumentUpdatedDateTime.json"
+    },
+    {
+      "$ref": "issueDate.json"
+    },
+    {
+      "$ref": "shippedOnBoardDate.json"
+    },
+    {
+      "$ref": "receivedForShipmentDate.json"
+    },
+    {
+      "$ref": "issuedNumberOfOriginals.json"
+    },
+    {
+      "$ref": "issuerCode.json"
+    },
+    {
+      "$ref": "issuerCodeListProvider.json"
+    },
+    {
+      "$ref": "declaredValueCurrency.json"
+    },
+    {
+      "$ref": "declaredValue.json"
+    },
+    {
+      "$ref": "numberOfRiderPages.json"
+    },
+    {
+      "$ref": "transportDocument.json"
+    },
+    {
+      "$ref": "documentStatus.json"
+    },
+    {
+      "$ref": "eblShipmentEventTypeCode.json"
+    },
+    {
+      "$ref": "eblDocumentTypeCode.json"
+    },
+    {
+      "$ref": "eventCreatedDateTime.json"
+    },
+    {
+      "$ref": "shipmentEvent.json"
+    },
+    {
+      "$ref": "baseEvent.json"
+    },
+    {
+      "$ref": "eventID.json"
+    },
+    {
+      "$ref": "baseEventBody.json"
+    },
+    {
+      "$ref": "eventType.json"
+    },
+    {
+      "$ref": "eventClassifierCode.json"
+    },
+    {
+      "$ref": "eventDateTime.json"
+    },
+    {
+      "$ref": "baseShipmentEvent.json"
+    },
+    {
+      "$ref": "shipmentEventTypeCode.json"
+    },
+    {
+      "$ref": "documentID.json"
+    },
+    {
+      "$ref": "documentTypeCode.json"
+    },
+    {
+      "$ref": "shipmentInformationType.json"
+    },
+    {
+      "$ref": "reason.json"
+    },
+    {
+      "$ref": "eventTypeCode.json"
+    },
+    {
+      "$ref": "shipmentID.json"
+    },
+    {
+      "$ref": "documentReferences.json"
+    }
+  ]
+}

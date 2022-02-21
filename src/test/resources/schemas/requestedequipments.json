@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "requestedEquipments": {
+      "type": "array",
+      "items": {
+        "$ref": "requestedEquipment.json"
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}
