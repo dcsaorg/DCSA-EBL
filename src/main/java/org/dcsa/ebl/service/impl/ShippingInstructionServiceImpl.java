@@ -1,6 +1,7 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
@@ -31,7 +32,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-
 @RequiredArgsConstructor
 @Service
 public class ShippingInstructionServiceImpl implements ShippingInstructionService {
@@ -42,6 +42,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final ShipmentEventService shipmentEventService;
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
+  private final ShipmentService shipmentService;
 
   // Repositories
   private final ShipmentRepository shipmentRepository;
@@ -49,9 +50,50 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
 
+  @Transactional(readOnly = true)
   @Override
   public Mono<ShippingInstructionTO> findById(String shippingInstructionID) {
-    return null;
+    return Mono.justOrEmpty(shippingInstructionID)
+        .flatMap(shippingInstructionRepository::findById)
+        .flatMap(
+            si -> {
+              ShippingInstructionTO siTO = shippingInstructionMapper.shippingInstructionToDTO(si);
+
+              return Mono.when(
+                      shippingInstructionRepository
+                          .findCarrierBookingReferenceByShippingInstructionID(
+                              si.getShippingInstructionID())
+                          .collectList()
+                          .doOnNext(
+                              cRefs -> {
+                                // we should only set carrier booking reference on root SI TO if
+                                // there is only one distinct value
+                                // This is as per requirement
+                                if (cRefs.size() == 1) {
+                                  siTO.setCarrierBookingReference(cRefs.get(0));
+                                }
+                              }),
+                      locationService
+                          .fetchLocationByID(si.getPlaceOfIssueID())
+                          .doOnNext(siTO::setPlaceOfIssue),
+                      shippingInstructionRepository
+                          .findShipmentIDsByShippingInstructionID(si.getShippingInstructionID())
+                          .flatMap(shipmentEquipmentService::findShipmentEquipmentByShipmentID)
+                          .flatMap(Flux::fromIterable)
+                          .collectList()
+                          .doOnNext(siTO::setShipmentEquipments),
+                      documentPartyService
+                          .fetchDocumentPartiesByByShippingInstructionID(
+                              si.getShippingInstructionID())
+                          .doOnNext(siTO::setDocumentParties),
+                      referenceService
+                          .findByShippingInstructionID(si.getShippingInstructionID())
+                          .doOnNext(siTO::setReferences),
+                      shipmentService
+                          .findByShippingInstructionID(si.getShippingInstructionID())
+                          .doOnNext(siTO::setShipments))
+                  .thenReturn(siTO);
+            });
   }
 
   @Transactional
