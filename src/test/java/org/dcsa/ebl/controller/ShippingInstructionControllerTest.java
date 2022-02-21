@@ -6,7 +6,6 @@ import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -179,6 +178,50 @@ class ShippingInstructionControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(invalidShippingInstructionTO))
             .exchange();
+
+    checkStatus400.apply(exchange);
+  }
+
+  @Test
+  @DisplayName(
+          "PUT shipping-instructions should return 200 and valid shipping instruction json schema.")
+  void putShippingInstructionsShouldReturn201ForValidShippingInstructionRequest() {
+
+    ArgumentCaptor<ShippingInstructionTO> argument =
+            ArgumentCaptor.forClass(ShippingInstructionTO.class);
+
+    // mock service method call
+    when(shippingInstructionService.updateShippingInstructionByShippingInstructionID(any(), any()))
+            .thenReturn(Mono.just(shippingInstructionResponseTO));
+
+    WebTestClient.ResponseSpec exchange =
+            webTestClient
+                    .put()
+                    .uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(shippingInstructionTO))
+                    .exchange();
+
+    // these values are only allowed in response and not to be set via request body
+    verify(shippingInstructionMapper).dtoToShippingInstructionResponseTO(argument.capture());
+    assertNull(argument.getValue().getDocumentStatus());
+
+    checkStatus200.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+  }
+
+  @Test
+  @DisplayName("PUT booking should return 400 for invalid request.")
+  void putShippingInstructionsShouldReturn400ForInvalidShippingInstructionRequest() {
+
+    ShippingInstructionTO invalidShippingInstructionTO = new ShippingInstructionTO();
+
+    WebTestClient.ResponseSpec exchange =
+            webTestClient
+                    .put()
+                    .uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(invalidShippingInstructionTO))
+                    .exchange();
 
     checkStatus400.apply(exchange);
   }

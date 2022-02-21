@@ -3,11 +3,11 @@ package org.dcsa.ebl.extendedrequest;
 import org.dcsa.core.events.model.CargoItem;
 import org.dcsa.core.events.model.Shipment;
 import org.dcsa.core.events.model.ShipmentEquipment;
+import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.extendedrequest.QueryField;
 import org.dcsa.core.query.DBEntityAnalysis;
-import org.dcsa.ebl.model.ShippingInstruction;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.relational.core.sql.Join;
 
