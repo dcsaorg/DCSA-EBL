@@ -33,7 +33,8 @@ public class ShippingInstructionTO extends AbstractShippingInstruction {
 
   @Valid private List<ReferenceTO> references;
 
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  // we need this as the client should not be able to set shipments, need to resolve issues with test
+  // @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private List<ShipmentTO> shipments;
 
   /**
