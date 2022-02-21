@@ -2,7 +2,7 @@
 
 Code standard
 -------------------------------------
-We use [Google Java Style](https://google.github.io/styleguide/javaguide.html), if using
+We use [Google Java Style](https://google.github.io/styleguide/javaguide.html), when using
 IntelliJ it is recommended to download and activate the
 [google-java-format plugin](https://github.com/google/google-java-format).
 
