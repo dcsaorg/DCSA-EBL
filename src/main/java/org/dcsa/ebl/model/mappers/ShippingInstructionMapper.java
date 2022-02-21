@@ -1,8 +1,8 @@
 package org.dcsa.ebl.model.mappers;
 
-import org.dcsa.ebl.model.ShippingInstruction;
+import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

@@ -1,7 +1,7 @@
 package org.dcsa.ebl.service;
 
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import reactor.core.publisher.Mono;
 
 public interface ShippingInstructionService {

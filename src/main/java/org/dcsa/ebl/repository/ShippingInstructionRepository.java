@@ -1,7 +1,7 @@
 package org.dcsa.ebl.repository;
 
+import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.repository.ExtendedRepository;
-import org.dcsa.ebl.model.ShippingInstruction;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Mono;

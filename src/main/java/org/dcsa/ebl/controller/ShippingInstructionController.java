@@ -1,8 +1,8 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
