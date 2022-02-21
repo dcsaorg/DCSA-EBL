@@ -26,7 +26,7 @@ public class ShippingInstructionSummaryTO {
     private String transportDocumentTypeCode;
 
     @NotNull
-    private Boolean shippedOnboardType;
+    private Boolean isShippedOnboardType;
 
     private Integer numberOfCopies;
 
