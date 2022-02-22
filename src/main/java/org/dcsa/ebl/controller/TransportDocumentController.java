@@ -7,18 +7,17 @@ import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.ebl.extendedrequest.TransportDocumentExtendedRequest;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
-import org.dcsa.ebl.service.TransportDocumentTOService;
+import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class TransportDocumentController {
 
     private final ExtendedParameters extendedParameters;
 
-    private final TransportDocumentTOService transportDocumentTOService;
+    private final TransportDocumentService transportDocumentTOService;
 
     private final R2dbcDialect r2dbcDialect;
 
