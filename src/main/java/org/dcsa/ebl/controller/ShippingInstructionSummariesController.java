@@ -31,7 +31,7 @@ public class ShippingInstructionSummariesController {
     private final ShippingInstructionSummariesService service;
 
     @GetMapping
-    public Flux<ShippingInstructionSummaryTO> getBookingConfirmationSummaries(
+    public Flux<ShippingInstructionSummaryTO> getShippingInstructionSummaries(
             @RequestParam(value = "carrierBookingReference", required = false) String carrierBookingReference,
             @RequestParam(value = "documentStatus", required = false) @EnumSubset(anyOf = ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES) ShipmentEventTypeCode documentStatus,
             ServerHttpRequest request) {
@@ -48,6 +48,6 @@ public class ShippingInstructionSummariesController {
             return Flux.error(e);
         }
 
-        return service.findShippingInstructions(extendedRequest);
+        return service.findShippingInstructionSummaries(extendedRequest);
     }
 }

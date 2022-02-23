@@ -54,6 +54,5 @@ public class ShippingInstructionSummaryTO {
     @Size(max = 250)
     private String displayedNameForPlaceOfDelivery;
 
-    @With
     private List<String> carrierBookingReferences;
 }
