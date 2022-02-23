@@ -189,7 +189,6 @@ class ShippingInstructionServiceImplTest {
 
     cargoItem = new CargoItem();
     cargoItem.setId(UUID.randomUUID());
-    cargoItem.setShipmentID(shipment.getShipmentID());
     cargoItem.setHsCode("x".repeat(10));
     cargoItem.setDescriptionOfGoods("Some description of the goods!");
     cargoItem.setNumberOfPackages(2);
