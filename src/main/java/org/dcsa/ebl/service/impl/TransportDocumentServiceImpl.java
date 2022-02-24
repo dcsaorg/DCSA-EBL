@@ -75,7 +75,7 @@ public class TransportDocumentServiceImpl
                           .fetchCarrierClausesByTransportDocumentReference(
                               transportDocumentReference)
                           .collectList()
-                          .doOnNext(transportDocumentTO::setClauses))
+                          .doOnNext(transportDocumentTO::setCarrierClauses))
                   .thenReturn(transportDocumentTO);
             });
   }

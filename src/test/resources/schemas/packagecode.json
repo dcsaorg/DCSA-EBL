@@ -1,7 +1,0 @@
-{
-  "maxLength": 3,
-  "type": "string",
-  "description": "The unique identifier for the package type",
-  "example": "5H4",
-  "$schema": "http://json-schema.org/schema#"
-}

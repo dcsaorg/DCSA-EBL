@@ -28,7 +28,7 @@ spring:
   application:
     name: DCSA-eBL
   r2dbc:
-    url: r2dbc:postgresql://${DB_HOSTNAME:localhost:5432}
+    url: r2dbc:postgresql://${db_hostname}
     name: dcsa_openapi
     properties:
       schema: dcsa_im_v3_0

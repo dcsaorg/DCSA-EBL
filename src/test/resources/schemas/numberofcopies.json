@@ -1,6 +1,0 @@
-{
-  "type": "integer",
-  "description": "The requested number of copies of the Transport document to be issued by the carrier. Only applicable for physical documents",
-  "example": 2,
-  "$schema": "http://json-schema.org/schema#"
-}

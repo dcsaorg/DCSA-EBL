@@ -1,6 +1,0 @@
-{
-  "type": "boolean",
-  "description": "Indicates whether the transport document is issued `to order` or not\n",
-  "example": false,
-  "$schema": "http://json-schema.org/schema#"
-}

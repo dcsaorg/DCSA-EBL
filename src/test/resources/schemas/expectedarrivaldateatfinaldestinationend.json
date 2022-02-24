@@ -1,7 +1,0 @@
-{
-  "type": "string",
-  "description": "The end date (provided as a range together with `expectedArrivalDateStart`) for when the shipment is expected to arrive at final destination. If vessel/voyage or expected date of departure is not provided, this is mandatory together with `expectedArrivalDateStart`\n",
-  "format": "date",
-  "example": "2021-05-19",
-  "$schema": "http://json-schema.org/schema#"
-}

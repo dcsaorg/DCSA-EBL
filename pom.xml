@@ -46,6 +46,12 @@
       <scope>test</scope>
       <version>${io.rest-assured.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.openapi4j</groupId>
+      <artifactId>openapi-schema-validator</artifactId>
+      <version>1.0.7</version>
+      <scope>test</scope>
+    </dependency>
 	</dependencies>
 
 	<build>

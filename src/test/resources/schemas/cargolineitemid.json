@@ -1,5 +1,0 @@
-{
-  "type": "string",
-  "description": "Identifies the cargo line item (package) within the cargo. The cargo line item ID is provided by the shipper and is used to define the stuffing. Cargo line items belonging to the same cargo items are stuffed in the same container.",
-  "$schema": "http://json-schema.org/schema#"
-}

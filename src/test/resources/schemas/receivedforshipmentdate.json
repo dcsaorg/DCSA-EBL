@@ -1,7 +1,0 @@
-{
-  "type": "string",
-  "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel).",
-  "format": "date",
-  "example": "2020-12-12",
-  "$schema": "http://json-schema.org/schema#"
-}
