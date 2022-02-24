@@ -3,6 +3,7 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.base.AbstractShippingInstruction;
 import org.dcsa.core.service.impl.AsymmetricQueryServiceImpl;
 import org.dcsa.ebl.model.mappers.ShippingInstructionSummaryMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionSummaryTO;
@@ -44,7 +45,7 @@ public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServ
     return instructions
       .collectList()
       .map(shippingInstructions -> shippingInstructionRepository
-        .findCarrierBookingReferences(shippingInstructions.stream().map(si -> si.getShippingInstructionID()).collect(Collectors.toList()))
+        .findCarrierBookingReferences(shippingInstructions.stream().map(AbstractShippingInstruction::getShippingInstructionID).collect(Collectors.toList()))
         .map(map -> shippingInstructions.stream()
           .map(si -> mapDaoToDto(si, map.getOrDefault(si.getShippingInstructionID(), Collections.emptyList())))
           .collect(Collectors.toList())
