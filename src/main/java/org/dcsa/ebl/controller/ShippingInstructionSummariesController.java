@@ -32,10 +32,6 @@ public class ShippingInstructionSummariesController extends AsymmetricQueryContr
   private final R2dbcDialect r2dbcDialect;
   private final ShippingInstructionSummariesServiceImpl service;
 
-  // Super ugly hack to get around limitations in the core framework - good thing this is not production code
-  // TODO find a proper solution instead of this
-  private ThreadLocal<String> carrierBookingReferenceHolder = new ThreadLocal<>();
-
   @GetMapping
   public Flux<ShippingInstructionSummaryTO> findAll(
     @RequestParam(value = "carrierBookingReference", required = false) String carrierBookingReference,
@@ -43,13 +39,12 @@ public class ShippingInstructionSummariesController extends AsymmetricQueryContr
     ServerHttpResponse response, ServerHttpRequest request
   ) {
     log.debug("getBookingConfirmationSummaries: carrierBookingReference='{}', documentStatus='{}'", carrierBookingReference, documentStatus);
-    carrierBookingReferenceHolder.set(carrierBookingReference);
     return super.findAll(response, request);
   }
 
   @Override
   protected ExtendedRequest<ShippingInstruction> newExtendedRequest() {
-    return new ShippingInstructionSummariesExtendedRequest(extendedParameters, r2dbcDialect, carrierBookingReferenceHolder.get());
+    return new ShippingInstructionSummariesExtendedRequest(extendedParameters, r2dbcDialect);
   }
 
   @Override

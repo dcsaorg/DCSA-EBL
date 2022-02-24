@@ -23,8 +23,19 @@ public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServ
   private final ShippingInstructionRepository shippingInstructionRepository;
   private final ShippingInstructionSummaryMapper shippingInstructionSummaryMapper;
 
+  @Override
   protected Flux<ShippingInstructionSummaryTO> bulkMapDM2TO(Flux<ShippingInstruction> dmFlux) {
     return convertAndPopulateShippingInstructions(dmFlux);
+  }
+
+  @Override
+  protected Mono<ShippingInstructionSummaryTO> mapDM2TO(ShippingInstruction shippingInstruction) {
+    return null; // dummy - isn't used but need to be implemented
+  }
+
+  @Override
+  protected ShippingInstructionRepository getRepository() {
+    return shippingInstructionRepository;
   }
 
   private Flux<ShippingInstructionSummaryTO> convertAndPopulateShippingInstructions(Flux<ShippingInstruction> instructions) {
@@ -46,15 +57,5 @@ public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServ
     ShippingInstructionSummaryTO dto = shippingInstructionSummaryMapper.shippingInstructionToDTO(instruction);
     dto.setCarrierBookingReferences(carrierBookingReferences);
     return dto;
-  }
-
-  @Override
-  protected Mono<ShippingInstructionSummaryTO> mapDM2TO(ShippingInstruction shippingInstruction) {
-    return null;
-  }
-
-  @Override
-  protected ShippingInstructionRepository getRepository() {
-    return shippingInstructionRepository;
   }
 }
