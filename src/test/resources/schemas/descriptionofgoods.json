@@ -1,5 +1,0 @@
-{
-  "type": "string",
-  "description": "The cargo description are details which accurately and properly describe the cargo being shipped in the container(s) as provided by the shipper.",
-  "$schema": "http://json-schema.org/schema#"
-}

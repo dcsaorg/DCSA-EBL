@@ -63,5 +63,5 @@ public class TransportDocumentTO {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<ChargeTO> charges;
 
-  @Valid private List<CarrierClauseTO> clauses;
+  @Valid private List<CarrierClauseTO> carrierClauses;
 }

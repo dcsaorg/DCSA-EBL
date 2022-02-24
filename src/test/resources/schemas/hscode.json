@@ -1,6 +1,0 @@
-{
-  "maxLength": 10,
-  "type": "string",
-  "description": "Used by customs to classify the product being shipped.",
-  "$schema": "http://json-schema.org/schema#"
-}

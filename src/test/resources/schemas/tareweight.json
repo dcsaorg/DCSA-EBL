@@ -1,6 +1,0 @@
-{
-  "type": "number",
-  "description": "The weight of an empty container (gross container weight).",
-  "example": 12000.0,
-  "$schema": "http://json-schema.org/schema#"
-}

@@ -1,7 +1,0 @@
-{
-  "maxLength": 100,
-  "type": "string",
-  "description": "Name of the address",
-  "example": "Henrik",
-  "$schema": "http://json-schema.org/schema#"
-}

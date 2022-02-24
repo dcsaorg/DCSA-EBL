@@ -1,6 +1,0 @@
-{
-  "type": "boolean",
-  "description": "An indicator of whether the charges are displayed on the copies of the documents.\n",
-  "example": true,
-  "$schema": "http://json-schema.org/schema#"
-}

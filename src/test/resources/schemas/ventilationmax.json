@@ -1,6 +1,0 @@
-{
-  "type": "number",
-  "description": "Indicates the maximum ventilation setting on the container in CBM/Hr.",
-  "example": 296,
-  "$schema": "http://json-schema.org/schema#"
-}

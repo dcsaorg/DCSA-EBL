@@ -1,6 +1,0 @@
-{
-  "type": "number",
-  "description": "Indicates the maximum temperature setting on the container.",
-  "example": 64.3,
-  "$schema": "http://json-schema.org/schema#"
-}

@@ -1,5 +1,0 @@
-{
-  "type": "string",
-  "description": "The identifying details of a package or the actual markings that appear on the package(s). This information is provided by the shipper.",
-  "$schema": "http://json-schema.org/schema#"
-}

@@ -124,7 +124,7 @@ class TransportDocumentServiceImplTest {
     transportDocumentTO = new TransportDocumentTO();
     transportDocumentTO.setCharges(List.of(chargeTO));
     transportDocumentTO.setPlaceOfIssue(locationTO);
-    transportDocumentTO.setClauses(List.of(carrierClauseTO));
+    transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
   }
@@ -154,7 +154,7 @@ class TransportDocumentServiceImplTest {
               assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
               assertEquals(1, transportDocumentTOResponse.getCharges().size());
               assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
-              assertEquals(1, transportDocumentTOResponse.getClauses().size());
+              assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
               assertEquals(
                   1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
             })
@@ -187,7 +187,7 @@ class TransportDocumentServiceImplTest {
           assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
           assertEquals(1, transportDocumentTOResponse.getCharges().size());
           assertNull(transportDocumentTOResponse.getPlaceOfIssue());
-          assertEquals(1, transportDocumentTOResponse.getClauses().size());
+          assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
           assertEquals(
             1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
         })
@@ -219,7 +219,7 @@ class TransportDocumentServiceImplTest {
           assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
           assertEquals(1, transportDocumentTOResponse.getCharges().size());
           assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
-          assertEquals(1, transportDocumentTOResponse.getClauses().size());
+          assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
           assertEquals(
             1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
         })
@@ -251,7 +251,7 @@ class TransportDocumentServiceImplTest {
           assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
           assertEquals(0, transportDocumentTOResponse.getCharges().size());
           assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
-          assertEquals(1, transportDocumentTOResponse.getClauses().size());
+          assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
           assertEquals(
             1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
         })
@@ -283,7 +283,7 @@ class TransportDocumentServiceImplTest {
           assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
           assertEquals(1, transportDocumentTOResponse.getCharges().size());
           assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
-          assertEquals(0, transportDocumentTOResponse.getClauses().size());
+          assertEquals(0, transportDocumentTOResponse.getCarrierClauses().size());
           assertEquals(
             1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
         })
@@ -347,7 +347,7 @@ class TransportDocumentServiceImplTest {
           assertNull(transportDocumentTOResponse.getIssuerCodeListProvider());
           assertEquals(1, transportDocumentTOResponse.getCharges().size());
           assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
-          assertEquals(1, transportDocumentTOResponse.getClauses().size());
+          assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
           assertEquals(
             1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
         })

@@ -1,6 +1,0 @@
-{
-  "type": "number",
-  "description": "Calculated by multiplying the width, height, and length of the packed cargo.",
-  "example": 12,
-  "$schema": "http://json-schema.org/schema#"
-}
