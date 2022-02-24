@@ -5,7 +5,7 @@ import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionSummaryTO;
-import org.dcsa.ebl.service.ShippingInstructionSummariesService;
+import org.dcsa.ebl.service.impl.ShippingInstructionSummariesServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ public class ShippingInstructionSummariesControllerTest {
   private R2dbcDialect r2dbcDialect;
 
   @MockBean
-  private ShippingInstructionSummariesService service;
+  private ShippingInstructionSummariesServiceImpl service;
 
   @BeforeEach
   public void init() {
@@ -70,8 +70,7 @@ public class ShippingInstructionSummariesControllerTest {
   @DisplayName("emptyRequestShouldReturnValues")
   void emptyRequestShouldReturnValues() {
     ShippingInstructionSummaryTO expectedResult = buildShippingInstructionSummaryTO();
-
-    when(service.findShippingInstructionSummaries(any()))
+    when(service.findAllExtended(any()))
         .thenReturn(Flux.just(expectedResult));
 
     verifyShippingInstructionSummaryTO(webTestClient
@@ -83,7 +82,7 @@ public class ShippingInstructionSummariesControllerTest {
       expectedResult)
     ;
 
-    verify(service).findShippingInstructionSummaries(any());
+    verify(service).findAllExtended(any());
   }
 
   @ParameterizedTest
@@ -91,8 +90,7 @@ public class ShippingInstructionSummariesControllerTest {
   @MethodSource("validEblDocumentStatuses")
   void validDocumentStatusShouldReturnValue(String documentStatus) {
     ShippingInstructionSummaryTO expectedResult = buildShippingInstructionSummaryTO();
-
-    when(service.findShippingInstructionSummaries(any()))
+    when(service.findAllExtended(any()))
       .thenReturn(Flux.just(expectedResult));
 
     verifyShippingInstructionSummaryTO(webTestClient
@@ -108,7 +106,7 @@ public class ShippingInstructionSummariesControllerTest {
       expectedResult)
     ;
 
-    verify(service).findShippingInstructionSummaries(any());
+    verify(service).findAllExtended(any());
   }
 
   @ParameterizedTest

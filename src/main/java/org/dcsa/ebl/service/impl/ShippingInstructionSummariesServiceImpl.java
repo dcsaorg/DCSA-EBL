@@ -3,13 +3,13 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.events.model.ShippingInstruction;
-import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.core.service.impl.AsymmetricQueryServiceImpl;
 import org.dcsa.ebl.model.mappers.ShippingInstructionSummaryMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionSummaryTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
-import org.dcsa.ebl.service.ShippingInstructionSummariesService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,14 +19,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ShippingInstructionSummariesServiceImpl implements ShippingInstructionSummariesService {
+public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServiceImpl<ShippingInstructionRepository, ShippingInstruction, ShippingInstructionSummaryTO, String> {
   private final ShippingInstructionRepository shippingInstructionRepository;
   private final ShippingInstructionSummaryMapper shippingInstructionSummaryMapper;
 
-  @Override
-  public Flux<ShippingInstructionSummaryTO> findShippingInstructionSummaries(ExtendedRequest<ShippingInstruction> request) {
-    Flux<ShippingInstruction> instructions = shippingInstructionRepository.findAllExtended(request);
-    return convertAndPopulateShippingInstructions(instructions);
+  protected Flux<ShippingInstructionSummaryTO> bulkMapDM2TO(Flux<ShippingInstruction> dmFlux) {
+    return convertAndPopulateShippingInstructions(dmFlux);
   }
 
   private Flux<ShippingInstructionSummaryTO> convertAndPopulateShippingInstructions(Flux<ShippingInstruction> instructions) {
@@ -48,5 +46,15 @@ public class ShippingInstructionSummariesServiceImpl implements ShippingInstruct
     ShippingInstructionSummaryTO dto = shippingInstructionSummaryMapper.shippingInstructionToDTO(instruction);
     dto.setCarrierBookingReferences(carrierBookingReferences);
     return dto;
+  }
+
+  @Override
+  protected Mono<ShippingInstructionSummaryTO> mapDM2TO(ShippingInstruction shippingInstruction) {
+    return null;
+  }
+
+  @Override
+  protected ShippingInstructionRepository getRepository() {
+    return shippingInstructionRepository;
   }
 }

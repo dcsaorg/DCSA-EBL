@@ -11,25 +11,23 @@ import org.dcsa.core.query.DBEntityAnalysis;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.relational.core.sql.Join;
 
-public class ShippingInstructionSummariesExtendedRequest<T extends ShippingInstruction>
-    extends ExtendedRequest<T> {
+public class ShippingInstructionSummariesExtendedRequest extends ExtendedRequest<ShippingInstruction> {
 
   private static final String CARRIER_BOOKING_REFERENCE_PARAMETER = "carrierBookingReference";
 
   private final String carrierBookingReference;
 
   public ShippingInstructionSummariesExtendedRequest(
-      String carrierBookingReference,
       ExtendedParameters extendedParameters,
       R2dbcDialect r2dbcDialect,
-      Class<T> modelClass) {
-    super(extendedParameters, r2dbcDialect, modelClass);
+      String carrierBookingReference) {
+    super(extendedParameters, r2dbcDialect, ShippingInstruction.class);
     this.carrierBookingReference = carrierBookingReference;
   }
 
   @Override
-  protected DBEntityAnalysis.DBEntityAnalysisBuilder<T> prepareDBEntityAnalysis() {
-    DBEntityAnalysis.DBEntityAnalysisBuilder<T> builder = super.prepareDBEntityAnalysis();
+  protected DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> prepareDBEntityAnalysis() {
+    DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> builder = super.prepareDBEntityAnalysis();
     if (carrierBookingReference != null && !"".equals(carrierBookingReference)) {
       return builder
           .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
