@@ -6,10 +6,10 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
+import org.dcsa.core.events.model.AbstractTransportDocument;
 import org.dcsa.core.events.model.Location;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.TransportPlan;
-import org.dcsa.ebl.model.base.AbstractTransportDocument;
 import org.dcsa.ebl.model.enums.ServiceType;
 import org.dcsa.ebl.model.enums.ShipmentTerm;
 

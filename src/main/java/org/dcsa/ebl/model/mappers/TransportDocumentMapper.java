@@ -13,8 +13,9 @@ public interface TransportDocumentMapper {
 
     TransportDocument dtoToTransportDocument(TransportDocumentTO transportDocumentTO);
 
-    @Mapping(source = "dateOfIssue", target = "issueDate")
-    @Mapping(source = "issuer", target = "issuerCode")
-    @Mapping(source = "onboardDate", target = "shippedOnboardDate")
+    @Mapping(source = "issueDate", target = "issueDate")
+    @Mapping(source = "shippedOnBoardDate", target = "shippedOnboardDate")
+    @Mapping(source = "transportDocumentRequestCreatedDateTime", target = "transportDocumentRequestCreatedDateTime")
+    @Mapping(source = "transportDocumentRequestUpdatedDateTime", target = "transportDocumentRequestUpdatedDateTime")
     TransportDocumentSummary transportDocumentToTransportDocumentSummary(TransportDocument transportDocument);
 }

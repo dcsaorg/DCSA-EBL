@@ -26,28 +26,28 @@ public class TransportDocumentController {
 
     private final ExtendedParameters extendedParameters;
 
-    private final TransportDocumentService transportDocumentTOService;
+    private final TransportDocumentService transportDocumentService;
 
     private final R2dbcDialect r2dbcDialect;
 
-    @GetMapping
-    public Flux<TransportDocument> findAll(ServerHttpResponse response, ServerHttpRequest request) {
-        ExtendedRequest<TransportDocument> extendedRequest = new TransportDocumentExtendedRequest<>(extendedParameters,
-                r2dbcDialect, TransportDocument.class);
-
-        try {
-            extendedRequest.parseParameter(request.getQueryParams());
-        } catch (GetException e) {
-            return Flux.error(e);
-        }
-
-        return transportDocumentTOService.findAllExtended(extendedRequest).doOnComplete(
-                () -> extendedRequest.insertHeaders(response, request)
-        );
-    }
+//    @GetMapping
+//    public Flux<TransportDocument> findAll(ServerHttpResponse response, ServerHttpRequest request) {
+//        ExtendedRequest<TransportDocument> extendedRequest = new TransportDocumentExtendedRequest<>(extendedParameters,
+//                r2dbcDialect, TransportDocument.class);
+//
+//        try {
+//            extendedRequest.parseParameter(request.getQueryParams());
+//        } catch (GetException e) {
+//            return Flux.error(e);
+//        }
+//
+//        return transportDocumentService.findAllExtended(extendedRequest).doOnComplete(
+//                () -> extendedRequest.insertHeaders(response, request)
+//        );
+//    }
 
     @GetMapping(path="{transportDocumentReference}")
     public Mono<TransportDocumentTO> findById(@PathVariable String transportDocumentReference) {
-        return transportDocumentTOService.findById(transportDocumentReference);
+        return transportDocumentService.findById(transportDocumentReference);
     }
 }

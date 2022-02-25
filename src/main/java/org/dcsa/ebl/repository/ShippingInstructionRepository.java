@@ -1,6 +1,7 @@
 package org.dcsa.ebl.repository;
 
 import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.repository.ExtendedRepository;
 import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
@@ -29,4 +30,6 @@ public interface ShippingInstructionRepository
           + "JOIN shipment s ON s.id = se.shipment_id "
           + "WHERE si.id = :shippingInstructionID")
   Flux<String> findCarrierBookingReferenceByShippingInstructionID(String shippingInstructionID);
+
+  Flux<ShippingInstruction> findShippingInstructionByShippingInstructionIDAndDocumentStatus(String id, ShipmentEventTypeCode documentStatus);
 }
