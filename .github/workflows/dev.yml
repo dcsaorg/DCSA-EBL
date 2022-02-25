@@ -65,3 +65,7 @@ jobs:
         with:
           script: |
            core.setFailed('The DCSA-EBL service is down.')
+
+      - name: Run Integeation Tests
+        run: |
+          cd DCSA-EBL &&  mvn failsafe:integration-test
