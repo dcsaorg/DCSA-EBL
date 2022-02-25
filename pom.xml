@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>org.dcsa</groupId>
 			<artifactId>dcsa_event_core</artifactId>
-			<version>0.0.56-dev-ebl-SNAPSHOT</version>
+			<version>${dcsa.events.version}${dcsa.event.tag}${dcsa.artifacttype}</version>
 		</dependency>
 		<!-- delete me later -->
 		<dependency>
