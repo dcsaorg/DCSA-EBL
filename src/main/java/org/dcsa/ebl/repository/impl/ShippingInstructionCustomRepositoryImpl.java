@@ -149,7 +149,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
      * Workaround for SelectBuilder not being very flexible.
      */
     private SelectBuilder.BuildSelect addWhereConditions(SelectBuilder.SelectWhere selectWhere, ShipmentEventTypeCode documentStatus, List<String> carrierBookingReferences) {
-        List<Condition> conditions = new ArrayList();
+        List<Condition> conditions = new ArrayList<>();
         if (documentStatus != null) {
             conditions.add(isEqual(ShippingInstructionSpec.documentStatus, SQL.literalOf(documentStatus.name())));
         }

@@ -25,6 +25,7 @@
 		<dcsa.artifacttype>-SNAPSHOT</dcsa.artifacttype>
 		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
 		<org.lombok.version>1.18.22</org.lombok.version>
+    <io.rest-assured.version>4.5.1</io.rest-assured.version>
 	</properties>
 
 	<dependencies>

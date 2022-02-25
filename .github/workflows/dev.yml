@@ -42,7 +42,7 @@ jobs:
           path: DCSA-EBL
           submodules: recursive
 
-      - name: Build Booking API
+      - name: Build eBL API
         run: cd DCSA-EBL && mvn package -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT #Need to skip the tests as they depend on a running DB
 
       - name: Build and run the microservices

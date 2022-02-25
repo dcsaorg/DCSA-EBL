@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.validator.EnumSubset;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionSummaryTO;
-import org.dcsa.ebl.service.ShippingInstructionService;
+import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -28,7 +28,7 @@ import java.util.List;
 @RequestMapping(value = "shipping-instructions-summaries", produces = {MediaType.APPLICATION_JSON_VALUE})
 public class ShippingInstructionSummariesController {
 
-    private final ShippingInstructionService service;
+    private final ShippingInstructionRepository service;
 
     @GetMapping
     public Flux<ShippingInstructionSummaryTO> getBookingConfirmationSummaries(

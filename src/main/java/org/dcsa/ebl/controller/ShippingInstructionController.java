@@ -1,8 +1,8 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,9 +34,10 @@ public class ShippingInstructionController {
   }
 
   @PutMapping(path = "/{shippingInstructionID}")
-  public Mono<ShippingInstructionTO> update(
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(shippingInstructionID, shippingInstructionTO);
   }
 }
