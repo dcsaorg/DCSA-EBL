@@ -6,25 +6,28 @@ import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
+import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Address;
 import org.dcsa.core.events.model.Carrier;
+import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.PaymentTerm;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.CarrierRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.LocationService;
+import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
+import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.dcsa.ebl.service.TransportDocumentService;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
@@ -46,12 +49,21 @@ import static org.mockito.Mockito.when;
 @DisplayName("Tests for Transport document implementation.")
 class TransportDocumentServiceImplTest {
 
+  @Mock
+  TransportDocumentService transportDocumentServiceMock;
+  @Mock
+  TransportDocumentServiceImpl transportDocumentServiceImplMock;
   @Mock TransportDocumentRepository transportDocumentRepository;
   @Mock CarrierRepository carrierRepository;
   @Mock ShippingInstructionService shippingInstructionService;
   @Mock ChargeService chargeService;
   @Mock CarrierClauseService carrierClauseService;
   @Mock LocationService locationService;
+  @Mock ShippingInstructionRepository shippingInstructionRepository;
+  @Mock BookingRepository bookingRepository;
+  @Mock ShipmentService shipmentService;
+  @Mock ShipmentEventService shipmentEventService;
+
 
   @Spy
   TransportDocumentMapper transportDocumentMapper =
@@ -67,6 +79,8 @@ class TransportDocumentServiceImplTest {
   ChargeTO chargeTO;
   CarrierClauseTO carrierClauseTO;
   LocationTO locationTO;
+  ShipmentTO shipmentTO;
+  BookingTO bookingTO;
 
   @BeforeEach
   void init() {
@@ -113,12 +127,14 @@ class TransportDocumentServiceImplTest {
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
-    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
+    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
 
-    ShipmentTO shipmentTO = new ShipmentTO();
-    shipmentTO.setBooking(new BookingTO());
+    bookingTO = new BookingTO();
+    bookingTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
+    shipmentTO = new ShipmentTO();
+    shipmentTO.setBooking(bookingTO);
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
     transportDocumentTO = new TransportDocumentTO();
@@ -396,4 +412,47 @@ class TransportDocumentServiceImplTest {
     transportDocumentService.setIssuerOnTransportDocument(transportDocumentTO, carrier);
     assertNull(transportDocumentTO.getIssuerCode());
   }
+
+  @Test
+  @Disabled
+  @DisplayName("Approve at transport document with valid reference should return transport document with SI & bookings " +
+    "document statuses set to APPR & CMPL respectively")
+  void testApproveTransportDocument() {
+    when(transportDocumentServiceMock.findByTransportDocumentReference("TransportDocumentReference1"))
+      .thenReturn(Mono.just(transportDocumentTO));
+   // when(.createShipmentEventFromTransportDocumentTO(transportDocumentTO)).thenReturn(Mono.empty());
+  //  when(transportDocumentService.shipmentEventFromTransportDocumentTO(transportDocumentTO)).thenReturn(Mono.just(new ShipmentEvent()));
+    when(shippingInstructionRepository.setDocumentStatusByID(any(),any(),any())).thenReturn(Mono.empty());
+    when(bookingRepository.updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(any(),any(),any())).thenReturn(Mono.empty());
+    when(shipmentService.findByShippingInstructionID(any())).thenReturn((Mono.just( List.of(shipmentTO))));
+    when(shipmentEventService.create(any())).thenReturn(Mono.just(new ShipmentEvent()));
+    // when
+
+    StepVerifier.create(
+            transportDocumentService.ApproveTransportDocument("TransportDocumentReference1"))
+      //  .consumeNextWith(System.out::println)
+        .assertNext(
+            transportDocumentTOResponse -> {
+              assertNotNull(transportDocumentTOResponse.getShippingInstruction());
+              assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
+              assertEquals(
+                  ShipmentEventTypeCode.APPR,
+                  transportDocumentTOResponse.getShippingInstruction().getDocumentStatus());
+              assertEquals(1, transportDocumentTOResponse.getCharges().size());
+              assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+              assertEquals(
+                  1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
+              assertEquals(
+                  ShipmentEventTypeCode.CMPL,
+                  transportDocumentTOResponse
+                      .getShippingInstruction()
+                      .getShipments()
+                      .get(0)
+                      .getBooking()
+                      .getDocumentStatus());
+            })
+        .verifyComplete();
+  }
+
+
 }
