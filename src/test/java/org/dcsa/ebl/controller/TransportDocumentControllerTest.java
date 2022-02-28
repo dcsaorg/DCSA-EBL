@@ -256,7 +256,7 @@ class TransportDocumentControllerTest {
     when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
       .thenReturn(
         Mono.error(
-          ConcreteRequestErrorMessageException.invalidParameter(
+          ConcreteRequestErrorMessageException.notFound(
             "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA")));
 
     webTestClient
@@ -279,8 +279,8 @@ class TransportDocumentControllerTest {
     when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
       .thenReturn(
         Mono.error(
-          ConcreteRequestErrorMessageException.invalidParameter(
-            "No shipments found for: " + "{transport document ID}")));
+          ConcreteRequestErrorMessageException.notFound(
+            "No shipments found for Shipping instruction of transport document reference: " + "{transport document ID}")));
 
     webTestClient
       .put()
