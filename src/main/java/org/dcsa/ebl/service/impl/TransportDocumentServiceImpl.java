@@ -1,10 +1,7 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.events.model.Booking;
-import org.dcsa.core.events.model.Charge;
-import org.dcsa.core.events.model.ShipmentEvent;
-import org.dcsa.core.events.model.TransportDocument;
+import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.repository.BookingRepository;
@@ -116,12 +113,17 @@ public class TransportDocumentServiceImpl
 
     return shippingInstructionRepository
         .findById(transportDocumentSummary.getShippingInstructionID())
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "No shipping instruction was found with ID: "
+                        + transportDocument.getShippingInstructionID())))
         .flatMap(
             shippingInstruction -> {
               transportDocumentSummary.setDocumentStatus(shippingInstruction.getDocumentStatus());
               return shippingInstructionRepository
-                  .findCarrierBookingReferenceByShippingInstructionID(shippingInstruction.getShippingInstructionID())
-                .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("No shipping instruction found with ID: " + shippingInstruction.getShippingInstructionID())))
+                  .findCarrierBookingReferenceByShippingInstructionID(
+                      shippingInstruction.getShippingInstructionID())
                   .collectList()
                   .doOnNext(transportDocumentSummary::setCarrierBookingReferences)
                   .thenReturn(transportDocumentSummary);
@@ -131,6 +133,10 @@ public class TransportDocumentServiceImpl
               if (transportDocument.getIssuer() == null) return Mono.just(transportDocumentSummary);
               return carrierRepository
                   .findById(transportDocument.getIssuer())
+                  .switchIfEmpty(
+                      Mono.error(
+                          ConcreteRequestErrorMessageException.internalServerError(
+                              "No carrier found with issuer ID: " + transportDocument.getIssuer())))
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {

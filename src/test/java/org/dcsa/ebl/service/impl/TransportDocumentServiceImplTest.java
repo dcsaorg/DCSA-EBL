@@ -6,13 +6,11 @@ import org.dcsa.core.events.model.enums.WeightUnit;
 import org.dcsa.core.events.repository.CarrierRepository;
 import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
+import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.TransportDocumentService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
@@ -114,8 +112,8 @@ class TransportDocumentServiceImplTest {
   class GetTransportDocumentSummaryTest {
 
     @Test
-    @DisplayName("Test GET shipping instruction for an assumed valid ID.")
-    void testGetTransportDocumentForValidID() {
+    @DisplayName("Test GET shipping instruction with everything for a valid ID.")
+    void testGetTransportDocumentWithEverythingForValidID() {
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
       when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any())).thenReturn(Flux.just(shipment.getCarrierBookingReference()));
@@ -140,7 +138,7 @@ class TransportDocumentServiceImplTest {
 
     @Test
     @DisplayName("Test GET transport document summaries for null issuer")
-    void testGetTransportDocumentWithInvalidIssuer() {
+    void testGetTransportDocumentWithNullIssuer() {
 
       transportDocument.setIssuer(null);
 
@@ -157,6 +155,44 @@ class TransportDocumentServiceImplTest {
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
               })
           .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Test GET transport document summaries for null issuer")
+    void testGetTransportDocumentWithInvalidIssuer() {
+
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any())).thenReturn(Flux.just(shipment.getCarrierBookingReference()));
+      when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.empty());
+
+      StepVerifier.create(
+              transportDocumentServiceImpl.mapDM2TO(transportDocument))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "No carrier found with issuer ID: " + transportDocument.getIssuer(),
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName("Test GET transport document summaries for invalid shipping instruction")
+    void testGetTransportDocumentWithInvalidShippingInstruction() {
+
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
+
+      StepVerifier.create(
+              transportDocumentServiceImpl.mapDM2TO(transportDocument))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "No shipping instruction was found with ID: " + transportDocument.getShippingInstructionID(),
+                    throwable.getMessage());
+              })
+          .verify();
     }
   }
 }
