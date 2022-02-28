@@ -1,19 +1,19 @@
 package ebl.v2;
 
-import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
+import ebl.config.TestConfig;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 
 class ShippingInstructionIT {
 
-  @BeforeEach
-  void init() {
-    RestAssured.baseURI = "http://localhost";
-    RestAssured.port = 9090;
+  @BeforeAll
+  void configs() throws IOException {
+    TestConfig.init();
   }
 
   // dummy test to verify flow integration works
