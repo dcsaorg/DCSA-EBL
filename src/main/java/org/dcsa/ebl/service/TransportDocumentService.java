@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
+import org.dcsa.core.service.QueryService;
 
 public interface TransportDocumentService extends AsymmetricQueryService<TransportDocument, TransportDocumentSummary, String> {
   Mono<TransportDocumentTO> findById(String transportDocumentReference);
