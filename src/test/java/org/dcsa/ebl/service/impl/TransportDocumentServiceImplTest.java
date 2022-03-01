@@ -4,12 +4,9 @@ import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.enums.WeightUnit;
 import org.dcsa.core.events.repository.CarrierRepository;
-import org.dcsa.core.events.repository.ShipmentRepository;
-import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
-import org.dcsa.ebl.service.TransportDocumentService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -23,11 +20,9 @@ import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -35,12 +30,8 @@ import static org.mockito.Mockito.*;
 @DisplayName("Tests for TransportDocument Implementation.")
 class TransportDocumentServiceImplTest {
 
-  @Mock TransportDocumentRepository transportDocumentRepository;
-  @Mock ShipmentRepository shipmentRepository;
   @Mock CarrierRepository carrierRepository;
   @Mock ShippingInstructionRepository shippingInstructionRepository;
-
-  @Mock TransportDocumentService transportDocumentService;
 
   @InjectMocks TransportDocumentServiceImpl transportDocumentServiceImpl;
 

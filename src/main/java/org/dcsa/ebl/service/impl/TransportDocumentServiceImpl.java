@@ -1,28 +1,22 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.events.model.*;
+import org.dcsa.core.events.model.Booking;
+import org.dcsa.core.events.model.Charge;
+import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.CarrierRepository;
-import org.dcsa.core.events.repository.ShipmentEventRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.exception.CreateException;
-import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.service.impl.AsymmetricQueryServiceImpl;
-import org.dcsa.core.service.impl.QueryServiceImpl;
 import org.dcsa.ebl.model.TransportDocumentSummary;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
 import org.dcsa.ebl.model.transferobjects.ChargeTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
-import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.ebl.service.TransportDocumentService;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -30,7 +24,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
