@@ -6,7 +6,6 @@ import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.extendedrequest.QueryField;
 import org.dcsa.core.extendedrequest.QueryFieldConditionGenerator;
 import org.dcsa.core.query.DBEntityAnalysis;
-import org.dcsa.ebl.model.TransportDocumentSummary;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.relational.core.sql.Join;
 
