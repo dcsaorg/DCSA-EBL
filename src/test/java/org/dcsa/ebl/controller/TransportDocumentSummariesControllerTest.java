@@ -25,7 +25,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -77,6 +79,13 @@ class TransportDocumentSummariesControllerTest {
     transportDocumentSummary.setTransportDocumentRequestUpdatedDateTime(now);
     transportDocumentSummary.setIssuerCode("x".repeat(3));
     transportDocumentSummary.setIssuerCodeListProvider(CarrierCodeListProvider.SMDG);
+    transportDocumentSummary.setIssueDate(LocalDate.now());
+    transportDocumentSummary.setShippedOnboardDate(LocalDate.now());
+    transportDocumentSummary.setReceivedForShipmentDate(LocalDate.now());
+    transportDocumentSummary.setDeclaredValueCurrency("EUR");
+    transportDocumentSummary.setDeclaredValue(100F);
+    transportDocumentSummary.setNumberOfRiderPages(10);
+    transportDocumentSummary.setCarrierBookingReferences(List.of("CarrierBookingReference"));
   }
 
   @Test

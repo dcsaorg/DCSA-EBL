@@ -1,0 +1,95 @@
+{
+    "required": [
+        "errorDateTime",
+        "errors",
+        "httpMethod",
+        "requestUri",
+        "statusCode",
+        "statusCodeText"
+    ],
+    "type": "object",
+    "properties": {
+        "httpMethod": {
+            "type": "string",
+            "description": "The http request method type e.g. GET, POST\n",
+            "enum": [
+                "GET",
+                "HEAD",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTION",
+                "PATCH"
+            ]
+        },
+        "requestUri": {
+            "type": "string",
+            "description": "The request URI as it was sent\n",
+            "format": "uri"
+        },
+        "statusCode": {
+            "type": "integer",
+            "description": "The HTTP status code\n"
+        },
+        "statusCodeText": {
+            "type": "string",
+            "description": "The textual representation of the status code\n"
+        },
+        "errorMessage": {
+            "maxLength": 200,
+            "type": "string",
+            "description": "Other error information\n"
+        },
+        "providerCorrelationID": {
+            "type": "string",
+            "description": "A unique identifier for the transaction, e.g. a UUID\n"
+        },
+        "errorDateTime": {
+            "type": "string",
+            "description": "The date and time (in ISO 8601 format) the error occurred.\n",
+            "format": "date-time"
+        },
+        "errors": {
+            "minItems": 1,
+            "type": "array",
+            "description": "List of detailed errors, e.g. fields that could not pass validation\n",
+            "items": {
+                "allOf": [
+                    {
+                        "required": [
+                            "message",
+                            "reason"
+                        ],
+                        "type": "object",
+                        "properties": {
+                            "errorCode": {
+                                "maximum": 7999,
+                                "minimum": 7000,
+                                "type": "integer",
+                                "description": "Standard error code see http://dcsa.org/error-codes (to be created). Examples: 7003 \u00e2\u20ac\u201c out or range value, 7004 -  invalid type\n"
+                            },
+                            "field": {
+                                "type": "string",
+                                "description": "The field that caused the error, e.g. a failed validation\n"
+                            },
+                            "value": {
+                                "type": "string",
+                                "description": "The value that of the field that caused the error\n"
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "High level error message\n"
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Additional information as to why the error occured\n"
+                            }
+                        },
+                        "$schema": "http://json-schema.org/schema#"
+                    }
+                ]
+            }
+        }
+    },
+    "$schema": "http://json-schema.org/schema#"
+}

@@ -29,6 +29,7 @@ public class TransportDocumentController {
       @PathVariable @Size(max = 20) String transportDocumentReference) {
     return transportDocumentService
         .findByTransportDocumentReference(transportDocumentReference)
+      .map(transportDocumentTO -> transportDocumentTO)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.notFound(

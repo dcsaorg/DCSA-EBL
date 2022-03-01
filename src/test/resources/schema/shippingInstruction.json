@@ -1,0 +1,1404 @@
+{
+    "type": "object",
+    "description": "The Shipping Instruction is an enrichment to the original booking shared by the shipper to the carrier. The shipping instruction includes volume or weight, cargo items, shipping dates, origin, destination, and other special instructions. The information given by the shipper through the shipping instruction is the information required to create a Transport Document.\n",
+    "allOf": [
+        {
+            "type": "object",
+            "properties": {
+                "shippingInstructionID": {
+                    "allOf": [
+                        {
+                            "maxLength": 100,
+                            "type": "string",
+                            "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "object",
+            "description": "The Shipping Instruction is an enrichment to the original booking shared by the shipper to the carrier. The shipping instruction includes volume or weight, cargo items, shipping dates, origin, destination, and other special instructions. The information given by the shipper through the shipping instruction is the information required to create a Transport Document.\n",
+            "allOf": [
+                {
+                    "required": [
+                        "isElectronic",
+                        "isShippedOnboardType",
+                        "isToOrder"
+                    ],
+                    "type": "object",
+                    "description": "The part of the ShippingInstruction that contains simple fields (no nested objects)\n",
+                    "allOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "transportDocumentTypeCode": {
+                                    "type": "string",
+                                    "description": "Specifies the type of the transport document\n- BOL (Bill of Lading)\n- SWB (Sea Waybill)\n",
+                                    "enum": [
+                                        "BOL",
+                                        "SWB"
+                                    ],
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isShippedOnboardType": {
+                                    "type": "boolean",
+                                    "description": "Specifies whether the Transport document is a received for shipment, or shipped onboard.",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "numberOfCopies": {
+                                    "type": "integer",
+                                    "description": "The requested number of copies of the Transport document to be issued by the carrier. Only applicable for physical documents",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "numberOfOriginals": {
+                                    "type": "integer",
+                                    "description": "Number of original copies of the negotiable bill of lading that has been requested by the customer.\n",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isElectronic": {
+                                    "type": "boolean",
+                                    "description": "An indicator whether the transport document is electronically transferred.",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "isToOrder": {
+                                    "type": "boolean",
+                                    "description": "Indicates whether the transport document is issued `to order` or not\n",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "areChargesDisplayedOnOriginals": {
+                                    "type": "boolean",
+                                    "description": "An indicator of whether the charges are displayed on the original documents.\n",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "areChargesDisplayedOnCopies": {
+                                    "type": "boolean",
+                                    "description": "An indicator of whether the charges are displayed on the copies of the documents.\n",
+                                    "$schema": "http://json-schema.org/schema#"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "displayedNameForPlaceOfReceipt": {
+                                    "allOf": [
+                                        {
+                                            "maxLength": 250,
+                                            "type": "string",
+                                            "description": "The address of the Party to be displayed on the transport document.",
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        {
+                                            "description": "The address of the Place of Receipt to be displayed on the transport document.\n"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "displayedNameForPortOfLoad": {
+                                    "allOf": [
+                                        {
+                                            "maxLength": 250,
+                                            "type": "string",
+                                            "description": "The address of the Party to be displayed on the transport document.",
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        {
+                                            "description": "The address of the Port of Load to be displayed on the transport document.\n"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "displayedNameForPortOfDischarge": {
+                                    "allOf": [
+                                        {
+                                            "maxLength": 250,
+                                            "type": "string",
+                                            "description": "The address of the Party to be displayed on the transport document.",
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        {
+                                            "description": "The address of the Port of Discharge to be displayed on the transport document.\n"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "displayedNameForPlaceOfDelivery": {
+                                    "allOf": [
+                                        {
+                                            "maxLength": 250,
+                                            "type": "string",
+                                            "description": "The address of the Party to be displayed on the transport document.",
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        {
+                                            "description": "The address of the Place of Delivery to be displayed on the transport document.\n"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "$schema": "http://json-schema.org/schema#"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "carrierBookingReference": {
+                            "allOf": [
+                                {
+                                    "maxLength": 35,
+                                    "type": "string",
+                                    "description": "A set of unique characters provided by carrier to identify a booking.",
+                                    "$schema": "http://json-schema.org/schema#"
+                                },
+                                {
+                                    "description": "The associated booking number provided by the carrier.\n\n<b>Cannot</b> be used in combination with Cargo Item level carrierBookingReference\n"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "required": [
+                        "utilizedTransportEquipments"
+                    ],
+                    "type": "object",
+                    "description": "The part of the ShippingInstruction that contains the nested objects.\n",
+                    "allOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "placeOfIssue": {
+                                    "allOf": [
+                                        {
+                                            "type": "object",
+                                            "description": "General purpose object to capture location-related data, the location can be specified in **any** of the following ways: `geoLocation` (lat+long), `UN Location Code`, a `Facility` or an `Address`.\n\nIf multiple ways are used - then they all have to point to the same location!\n",
+                                            "allOf": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "locationName": {
+                                                            "maxLength": 100,
+                                                            "type": "string",
+                                                            "description": "The name of the location.",
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "latitude": {
+                                                            "maxLength": 10,
+                                                            "type": "string",
+                                                            "description": "Geographic coordinate that specifies the north\u00e2\u20ac\u201csouth position of a point on the Earth&apos;s surface.",
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "longitude": {
+                                                            "maxLength": 11,
+                                                            "type": "string",
+                                                            "description": "Geographic coordinate that specifies the east\u00e2\u20ac\u201cwest position of a point on the Earth&apos;s surface.",
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "UNLocationCode": {
+                                                            "maxLength": 5,
+                                                            "type": "string",
+                                                            "description": "The UN Location code specifying where the place is located.",
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "facilityCode": {
+                                                            "maxLength": 6,
+                                                            "type": "string",
+                                                            "description": "The code used for identifying the specific facility. This code does <b>not</b> include the UN Location Code.\n",
+                                                            "nullable": false,
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "facilityCodeListProvider": {
+                                                            "type": "string",
+                                                            "description": "The provider used for identifying the facility Code\n",
+                                                            "enum": [
+                                                                "BIC",
+                                                                "SMDG"
+                                                            ],
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "address": {
+                                                            "description": "Address related information",
+                                                            "allOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "description": "An object for storing address related information\n",
+                                                                    "allOf": [
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "name": {
+                                                                                    "maxLength": 100,
+                                                                                    "type": "string",
+                                                                                    "description": "Name of the address",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "street": {
+                                                                                    "maxLength": 100,
+                                                                                    "type": "string",
+                                                                                    "description": "The name of the street of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "streetNumber": {
+                                                                                    "maxLength": 50,
+                                                                                    "type": "string",
+                                                                                    "description": "The number of the street of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "floor": {
+                                                                                    "maxLength": 50,
+                                                                                    "type": "string",
+                                                                                    "description": "The floor of the party\u00e2\u20ac\u2122s street number.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "postCode": {
+                                                                                    "maxLength": 10,
+                                                                                    "type": "string",
+                                                                                    "description": "The post code of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "city": {
+                                                                                    "maxLength": 65,
+                                                                                    "type": "string",
+                                                                                    "description": "The city name of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "stateRegion": {
+                                                                                    "maxLength": 65,
+                                                                                    "type": "string",
+                                                                                    "description": "The state/region of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        {
+                                                                            "type": "object",
+                                                                            "properties": {
+                                                                                "country": {
+                                                                                    "maxLength": 75,
+                                                                                    "type": "string",
+                                                                                    "description": "The country of the party\u00e2\u20ac\u2122s address.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    ],
+                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "$schema": "http://json-schema.org/schema#"
+                                        },
+                                        {
+                                            
+                                        },
+                                        {
+                                            "description": "The location where the original transport document (bill of lading) will be issued.\n"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "utilizedTransportEquipments": {
+                                    "minItems": 1,
+                                    "type": "array",
+                                    "items": {
+                                        "required": [
+                                            "cargoGrossWeight",
+                                            "cargoGrossWeightUnit",
+                                            "cargoItems",
+                                            "equipment",
+                                            "isShipperOwned"
+                                        ],
+                                        "type": "object",
+                                        "description": "Specifies the container assigned to a shipment (`equipment`), all its content (`cargoItems`), the `seals` used and possible `reefer` settings\n",
+                                        "allOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "equipment": {
+                                                        "required": [
+                                                            "equipmentReference",
+                                                            "isShipperOwned"
+                                                        ],
+                                                        "type": "object",
+                                                        "description": "used for storing cargo in/on during transport. The equipment size/type is defined by the ISO 6346 code. The most common equipment size/type is 20'/40'/45' Dry Freight Container, but several different versions exist.\n",
+                                                        "allOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "equipmentReference": {
+                                                                        "maxLength": 15,
+                                                                        "type": "string",
+                                                                        "description": "The unique identifier for the equipment, which should follow the BIC ISO Container Identification Number where possible.\nAccording to ISO 6346, a container identification code consists of a 4-letter prefix and a 7-digit number (composed of a 3-letter owner code, a category identifier, a serial number, and a check-digit). If a container does not comply with ISO 6346, it is suggested to follow Recommendation #2 \u00e2\u20ac\u0153Container with non-ISO identification\u00e2\u20ac\ufffd from SMDG.\n",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "ISOEquipmentCode": {
+                                                                        "maxLength": 4,
+                                                                        "type": "string",
+                                                                        "description": "Unique code for the different equipment size/type used for transporting commodities. The code is a concatenation of ISO Equipment Size Code and ISO Equipment Type Code A and follows the ISO 6346 standard.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "tareWeight": {
+                                                                        "type": "number",
+                                                                        "description": "The weight of an empty container (gross container weight).",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "weightUnit": {
+                                                                        "type": "string",
+                                                                        "description": "The unit of measure which can be expressed in imperial or metric terms",
+                                                                        "enum": [
+                                                                            "KGM",
+                                                                            "LBR"
+                                                                        ],
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            }
+                                                        ],
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "cargoGrossWeightUnit": {
+                                                        "type": "string",
+                                                        "description": "The unit of measure which can be expressed in imperial or metric terms",
+                                                        "enum": [
+                                                            "KGM",
+                                                            "LBR"
+                                                        ],
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "cargoGrossWeight": {
+                                                        "type": "number",
+                                                        "description": "The grand total weight of the cargo and weight per container(s) including packaging items being carried, which can be expressed in imperial or metric terms, as provided by the shipper. Excludes the tare weight of the container(s).",
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "isShipperOwned": {
+                                                        "type": "boolean",
+                                                        "description": "Indicates whether the container is shipper owned (SOC).",
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "cargoItems": {
+                                                        "minItems": 1,
+                                                        "type": "array",
+                                                        "items": {
+                                                            "required": [
+                                                                "HSCode",
+                                                                "descriptionOfGoods",
+                                                                "numberOfPackages",
+                                                                "packageCode",
+                                                                "weight",
+                                                                "weightUnit"
+                                                            ],
+                                                            "type": "object",
+                                                            "description": "addresses the cargo items to be stuffed into a container for a shipment. A cargo item cannot be split across containers.",
+                                                            "allOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "cargoLineItems": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "required": [
+                                                                                    "cargoLineItemID",
+                                                                                    "shippingMarks"
+                                                                                ],
+                                                                                "type": "object",
+                                                                                "description": "identifies the specific details of packages within a cargo item.\n",
+                                                                                "allOf": [
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "cargoLineItemID": {
+                                                                                                "type": "string",
+                                                                                                "description": "Identifies the cargo line item (package) within the cargo. The cargo line item ID is provided by the shipper and is used to define the stuffing. Cargo line items belonging to the same cargo items are stuffed in the same container.",
+                                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                                            }
+                                                                                        }
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "shippingMarks": {
+                                                                                                "type": "string",
+                                                                                                "description": "The identifying details of a package or the actual markings that appear on the package(s). This information is provided by the shipper.",
+                                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                ],
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "carrierBookingReference": {
+                                                                            "allOf": [
+                                                                                {
+                                                                                    "maxLength": 35,
+                                                                                    "type": "string",
+                                                                                    "description": "A set of unique characters provided by carrier to identify a booking.",
+                                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                                },
+                                                                                {
+                                                                                    "description": "The associated booking number provided by the carrier for this cargo item.\n\n<b>Cannot</b> be used in combination with Shipping Instruction header level carrierBookingReference\n"
+                                                                                }
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "descriptionOfGoods": {
+                                                                            "type": "string",
+                                                                            "description": "The cargo description are details which accurately and properly describe the cargo being shipped in the container(s) as provided by the shipper.",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "HSCode": {
+                                                                            "maxLength": 10,
+                                                                            "type": "string",
+                                                                            "description": "Used by customs to classify the product being shipped.",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "weight": {
+                                                                            "type": "number",
+                                                                            "description": "The total weight of the cargo including packaging items being carried in the container(s). Excludes the tare weight of the container(s).",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "volume": {
+                                                                            "type": "number",
+                                                                            "description": "Calculated by multiplying the width, height, and length of the packed cargo.",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "weightUnit": {
+                                                                            "type": "string",
+                                                                            "description": "The unit of measure which can be expressed in imperial or metric terms",
+                                                                            "enum": [
+                                                                                "KGM",
+                                                                                "LBR"
+                                                                            ],
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "volumeUnit": {
+                                                                            "type": "string",
+                                                                            "description": "The unit of measure which can be expressed in either imperial or metric terms",
+                                                                            "enum": [
+                                                                                "CBM",
+                                                                                "CFT"
+                                                                            ],
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "numberOfPackages": {
+                                                                            "type": "integer",
+                                                                            "description": "Specifies the number of packages associated with this cargo item",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "packageCode": {
+                                                                            "maxLength": 3,
+                                                                            "type": "string",
+                                                                            "description": "The unique identifier for the package type",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "references": {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "required": [
+                                                                                    "referenceType",
+                                                                                    "referenceValue"
+                                                                                ],
+                                                                                "type": "object",
+                                                                                "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+                                                                                "allOf": [
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "referenceType": {
+                                                                                                "type": "string",
+                                                                                                "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder\u00e2\u20ac\u2122s Reference)\n- SI (Shipper\u00e2\u20ac\u2122s Reference)\n- PO (Purchase Order Reference)\n- CR (Customer\u00e2\u20ac\u2122s Reference)\n- AAO (Consignee\u00e2\u20ac\u2122s Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
+                                                                                                "enum": [
+                                                                                                    "FF",
+                                                                                                    "SI",
+                                                                                                    "PO",
+                                                                                                    "CR",
+                                                                                                    "AAO",
+                                                                                                    "ECR",
+                                                                                                    "CSI",
+                                                                                                    "BPR",
+                                                                                                    "BID"
+                                                                                                ],
+                                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                                            }
+                                                                                        }
+                                                                                    },
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "properties": {
+                                                                                            "referenceValue": {
+                                                                                                "maxLength": 100,
+                                                                                                "type": "string",
+                                                                                                "description": "The actual value of the reference.",
+                                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                ],
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    "$schema": "http://json-schema.org/schema#"
+                                                                }
+                                                            ],
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                "$schema": "http://json-schema.org/schema#"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "activeReeferSettings": {
+                                                        "type": "object",
+                                                        "description": "specifies the settings for an active reefer container used to a shipment.",
+                                                        "allOf": [
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "temperatureMin": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the minimum temperature setting on the container.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "temperatureMax": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the maximum temperature setting on the container.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "temperatureUnit": {
+                                                                        "type": "string",
+                                                                        "description": "Celsius (CEL) or Fahrenheit (FAH).",
+                                                                        "enum": [
+                                                                            "CEL",
+                                                                            "FAH"
+                                                                        ],
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "humidityMin": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the minimum humidity setting on the container in percent.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "humidityMax": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the maximum humidity setting on the container in percent.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "ventilationMin": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the minimum ventilation setting on the container in CBM/Hr.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            },
+                                                            {
+                                                                "type": "object",
+                                                                "properties": {
+                                                                    "ventilationMax": {
+                                                                        "type": "number",
+                                                                        "description": "Indicates the maximum ventilation setting on the container in CBM/Hr.",
+                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                    }
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "seals": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "required": [
+                                                                "sealNumber",
+                                                                "sealType"
+                                                            ],
+                                                            "type": "object",
+                                                            "description": "addresses the seal-related information associated with the shipment equipment. A seal is put on a shipment equipment once it is loaded. This seal is meant to stay on until the shipment equipment reaches its final destination.",
+                                                            "allOf": [
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "sealNumber": {
+                                                                            "maxLength": 15,
+                                                                            "type": "string",
+                                                                            "description": "Identifies a seal affixed to the container.",
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "sealSource": {
+                                                                            "type": "string",
+                                                                            "description": "The source of the seal, namely who has affixed the seal. This attribute links to the Seal Source ID defined in the Seal Source reference data entity.\n- CAR (Carrier)\n- SHI (Shipper)\n- PHY (Phytosanitary)\n- VET (Veterinary)\n- CUS (Customs)\n",
+                                                                            "enum": [
+                                                                                "CAR",
+                                                                                "SHI",
+                                                                                "PHY",
+                                                                                "VET",
+                                                                                "CUS"
+                                                                            ],
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "sealType": {
+                                                                            "type": "string",
+                                                                            "description": "The type of seal. This attribute links to the Seal Type ID defined in the Seal Type reference data entity.\n- KLP (Keyless padlock)\n- BLT (Bolt)\n- WIR (Wire)\n",
+                                                                            "enum": [
+                                                                                "KLP",
+                                                                                "BLT",
+                                                                                "WIR"
+                                                                            ],
+                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                },
+                                                "$schema": "http://json-schema.org/schema#"
+                                            }
+                                        ],
+                                        "$schema": "http://json-schema.org/schema#"
+                                    }
+                                }
+                            },
+                            "$schema": "http://json-schema.org/schema#"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "documentParties": {
+                                    "type": "array",
+                                    "items": {
+                                        "required": [
+                                            "isToBeNotified",
+                                            "party",
+                                            "partyFunction"
+                                        ],
+                                        "type": "object",
+                                        "description": "stores the parties involved in the transport document.",
+                                        "allOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "party": {
+                                                        "allOf": [
+                                                            {
+                                                                "required": [
+                                                                    "partyContactDetails"
+                                                                ],
+                                                                "type": "object",
+                                                                "description": "refers to a company or a legal entity.",
+                                                                "allOf": [
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "partyName": {
+                                                                                "maxLength": 100,
+                                                                                "type": "string",
+                                                                                "description": "Name of the party.",
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "taxReference1": {
+                                                                                "maxLength": 20,
+                                                                                "type": "string",
+                                                                                "description": "The identifying number of the consignee or shipper (Individual or entity) used for tax purposes.",
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "taxReference2": {
+                                                                                "maxLength": 20,
+                                                                                "type": "string",
+                                                                                "description": "Optional second identifying number of the consignee or shipper (Individual or entity) used for tax purposes.",
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "publicKey": {
+                                                                                "maxLength": 500,
+                                                                                "type": "string",
+                                                                                "description": "The public key used for a digital signature.",
+                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "eblPlatform": {
+                                                                                "allOf": [
+                                                                                    {
+                                                                                        "required": [
+                                                                                            "URL",
+                                                                                            "partyName",
+                                                                                            "publicKey"
+                                                                                        ],
+                                                                                        "type": "object",
+                                                                                        "description": "refers to an eBL Party solution provider\n",
+                                                                                        "allOf": [
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "partyName": {
+                                                                                                        "allOf": [
+                                                                                                            {
+                                                                                                                "maxLength": 100,
+                                                                                                                "type": "string",
+                                                                                                                "description": "Name of the party.",
+                                                                                                                "$schema": "http://json-schema.org/schema#"
+                                                                                                            },
+                                                                                                            {
+                                                                                                                "description": "Name of the eBL solution provider\n"
+                                                                                                            },
+                                                                                                            {
+                                                                                                                
+                                                                                                            }
+                                                                                                        ]
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "LEI": {
+                                                                                                        "maxLength": 20,
+                                                                                                        "minLength": 20,
+                                                                                                        "type": "string",
+                                                                                                        "description": "Legal Entity Identifier for the ebl solution provider\n"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "publicKey": {
+                                                                                                        "maxLength": 500,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The public key used for a digital signature.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "URL": {
+                                                                                                        "type": "string",
+                                                                                                        "description": "A Uniform Resource Locator pointing to the solution provider\n"
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        ],
+                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "address": {
+                                                                                "allOf": [
+                                                                                    {
+                                                                                        "type": "object",
+                                                                                        "description": "An object for storing address related information\n",
+                                                                                        "allOf": [
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "name": {
+                                                                                                        "maxLength": 100,
+                                                                                                        "type": "string",
+                                                                                                        "description": "Name of the address",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "street": {
+                                                                                                        "maxLength": 100,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The name of the street of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "streetNumber": {
+                                                                                                        "maxLength": 50,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The number of the street of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "floor": {
+                                                                                                        "maxLength": 50,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The floor of the party\u00e2\u20ac\u2122s street number.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "postCode": {
+                                                                                                        "maxLength": 10,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The post code of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "city": {
+                                                                                                        "maxLength": 65,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The city name of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "stateRegion": {
+                                                                                                        "maxLength": 65,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The state/region of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            },
+                                                                                            {
+                                                                                                "type": "object",
+                                                                                                "properties": {
+                                                                                                    "country": {
+                                                                                                        "maxLength": 75,
+                                                                                                        "type": "string",
+                                                                                                        "description": "The country of the party\u00e2\u20ac\u2122s address.",
+                                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        ],
+                                                                                        "$schema": "http://json-schema.org/schema#"
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "partyContactDetails": {
+                                                                                "minItems": 1,
+                                                                                "type": "array",
+                                                                                "description": "A list of contact details - the list cannot be empty\n",
+                                                                                "items": {
+                                                                                    "allOf": [
+                                                                                        {
+                                                                                            "required": [
+                                                                                                "name"
+                                                                                            ],
+                                                                                            "type": "object",
+                                                                                            "description": "Contact information for a Party\n",
+                                                                                            "allOf": [
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "name": {
+                                                                                                            "maxLength": 100,
+                                                                                                            "type": "string",
+                                                                                                            "description": "Name of the contact",
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "phone": {
+                                                                                                            "maxLength": 30,
+                                                                                                            "type": "string",
+                                                                                                            "description": "Phone number for the contact",
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "email": {
+                                                                                                            "maxLength": 100,
+                                                                                                            "type": "string",
+                                                                                                            "description": "E-mail address for the contact",
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            ],
+                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "identifyingCodes": {
+                                                                                "type": "array",
+                                                                                "items": {
+                                                                                    "allOf": [
+                                                                                        {
+                                                                                            "required": [
+                                                                                                "DCSAResponsibleAgencyCode",
+                                                                                                "partyCode"
+                                                                                            ],
+                                                                                            "type": "object",
+                                                                                            "allOf": [
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "DCSAResponsibleAgencyCode": {
+                                                                                                            "type": "string",
+                                                                                                            "description": "A DCSA provided code for UN/CEFACT code list providers:\n- ISO (International Standards Organization)\n- UNECE (United Nations Economic Commission for Europe)\n- LLOYD (Lloyd's register of shipping)\n- BIC (Bureau International des Containeurs)\n- IMO (International Maritime Organization)\n- SCAC (Standard Carrier Alpha Code)\n- ITIGG (International Transport Implementation Guidelines Group)\n- ITU\n- SMDG (Shipplanning Message Development Group)\n- EXIS\n- FMC (Federal Maritime Commission)\n- CBSA (Canada Border Services Agency)\n- ZZZ (Mutually defined)\n",
+                                                                                                            "enum": [
+                                                                                                                "ISO",
+                                                                                                                "UNECE",
+                                                                                                                "LLOYD",
+                                                                                                                "BIC",
+                                                                                                                "IMO",
+                                                                                                                "SCAC",
+                                                                                                                "ITIGG",
+                                                                                                                "ITU",
+                                                                                                                "SMDG",
+                                                                                                                "EXIS",
+                                                                                                                "FMC",
+                                                                                                                "CBSA",
+                                                                                                                "ZZZ"
+                                                                                                            ],
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "partyCode": {
+                                                                                                            "maxLength": 100,
+                                                                                                            "type": "string",
+                                                                                                            "description": "Code to identify the party as provided by the agency\n",
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                },
+                                                                                                {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                        "codeListName": {
+                                                                                                            "maxLength": 100,
+                                                                                                            "type": "string",
+                                                                                                            "description": "The name of the list, provided by the responsible agency\n",
+                                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            ],
+                                                                                            "$schema": "http://json-schema.org/schema#"
+                                                                                        }
+                                                                                    ]
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ],
+                                                                "$schema": "http://json-schema.org/schema#"
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "partyFunction": {
+                                                        "type": "string",
+                                                        "description": "Specifies the role of the party in the context of the given Shipping Instruction.\n- OS (Original shipper)\n- CN (Consignee)\n- COW (Invoice payer on behalf of the consignor (shipper))\n- COX (Invoice payer on behalf of the consignee)\n- MS (Document/message issuer/sender)\n- N1 (First Notify Party)\n- N2 (Second Notify Party)\n- NI (Other Notify Party)\n- DDR (Consignor's freight forwarder)\n- DDS (Consignee's freight forwarder)\n- HE (Carrier booking office (transportation office))\n- SCO (Service contract owner - Defined by DCSA)\n- BA (Booking Agency)\n- CA (Carrier)\n",
+                                                        "enum": [
+                                                            "OS",
+                                                            "CN",
+                                                            "COW",
+                                                            "COX",
+                                                            "MS",
+                                                            "N1",
+                                                            "N2",
+                                                            "NI",
+                                                            "DDR",
+                                                            "DDS",
+                                                            "HE",
+                                                            "SCO",
+                                                            "BA",
+                                                            "CA"
+                                                        ],
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "displayedAddress": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "maxLength": 250,
+                                                            "type": "string",
+                                                            "description": "A single address line.",
+                                                            "$schema": "http://json-schema.org/schema#"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "isToBeNotified": {
+                                                        "type": "boolean",
+                                                        "description": "Used to decide whether the party will be notified of the arrival of the cargo.",
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "$schema": "http://json-schema.org/schema#"
+                                    }
+                                }
+                            },
+                            "$schema": "http://json-schema.org/schema#"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "references": {
+                                    "type": "array",
+                                    "items": {
+                                        "required": [
+                                            "referenceType",
+                                            "referenceValue"
+                                        ],
+                                        "type": "object",
+                                        "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+                                        "allOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "referenceType": {
+                                                        "type": "string",
+                                                        "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder\u00e2\u20ac\u2122s Reference)\n- SI (Shipper\u00e2\u20ac\u2122s Reference)\n- PO (Purchase Order Reference)\n- CR (Customer\u00e2\u20ac\u2122s Reference)\n- AAO (Consignee\u00e2\u20ac\u2122s Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
+                                                        "enum": [
+                                                            "FF",
+                                                            "SI",
+                                                            "PO",
+                                                            "CR",
+                                                            "AAO",
+                                                            "ECR",
+                                                            "CSI",
+                                                            "BPR",
+                                                            "BID"
+                                                        ],
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "referenceValue": {
+                                                        "maxLength": 100,
+                                                        "type": "string",
+                                                        "description": "The actual value of the reference.",
+                                                        "$schema": "http://json-schema.org/schema#"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "$schema": "http://json-schema.org/schema#"
+                                    }
+                                }
+                            },
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    ],
+                    "$schema": "http://json-schema.org/schema#"
+                }
+            ],
+            "$schema": "http://json-schema.org/schema#"
+        }
+    ],
+    "$schema": "http://json-schema.org/schema#"
+}
