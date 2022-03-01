@@ -24,6 +24,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -161,6 +162,42 @@ class ShippingInstructionControllerTest {
     assertNull(argument.getValue().getDocumentStatus());
 
     checkStatus201.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+  }
+
+
+  @Test
+  @DisplayName(
+    "POST shipping-instructions should return 400 when no cargo items are present.")
+  void postShippingInstructionsShouldReturn400ForMissingCargoItems() {
+
+    shippingInstructionTO.getShipmentEquipments().get(0).setCargoItems(Collections.emptyList());
+
+    WebTestClient.ResponseSpec exchange =
+      webTestClient
+        .post()
+        .uri(SHIPPING_INSTRUCTION_ENDPOINT)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue(shippingInstructionTO))
+        .exchange();
+
+    checkStatus400.apply(exchange);
+  }
+
+  @DisplayName(
+    "POST shipping-instructions should return 400 when no shipment equipments are present.")
+  void postShippingInstructionsShouldReturn400ForShipmentEquipments() {
+
+    shippingInstructionTO.setShipmentEquipments(Collections.emptyList());
+
+    WebTestClient.ResponseSpec exchange =
+      webTestClient
+        .post()
+        .uri(SHIPPING_INSTRUCTION_ENDPOINT)
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue(shippingInstructionTO))
+        .exchange();
+
+    checkStatus400.apply(exchange);
   }
 
   @Test
