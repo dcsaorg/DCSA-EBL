@@ -2,7 +2,6 @@ package org.dcsa.ebl.model.transferobjects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
@@ -52,7 +51,6 @@ public class TransportDocumentTO {
   private Integer numberOfRiderPages;
 
   @Valid
-  @JsonProperty("placeOfIssue")
   private LocationTO placeOfIssue;
 
   @Valid

@@ -48,8 +48,7 @@ class TransportDocumentControllerTest {
 
   @BeforeEach
   private void init() {
-    transportDocumentTO = new TransportDocumentTO();
-    transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
+
 
     Address address = new Address();
     address.setCity("Amsterdam");
@@ -91,6 +90,7 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
     transportDocumentTO = new TransportDocumentTO();
+    transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
     transportDocumentTO.setCharges(List.of(chargeTO));
     transportDocumentTO.setPlaceOfIssue(locationTO);
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
@@ -169,6 +169,14 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBody();
+        .expectBody()
+        .jsonPath("$.transportDocumentReference")
+        .hasJsonPath()
+        .jsonPath("$.shippingInstruction")
+        .hasJsonPath()
+        .jsonPath("$.placeOfIssue")
+        .hasJsonPath()
+        .jsonPath("$.charges")
+        .hasJsonPath();
   }
 }
