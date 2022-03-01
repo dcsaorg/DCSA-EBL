@@ -121,6 +121,7 @@ class TransportDocumentServiceImplTest {
       StepVerifier.create(transportDocumentServiceImpl.mapDM2TO(transportDocument))
           .assertNext(
               result -> {
+                assertNotNull(result.getTransportDocumentReference());
                 assertNotNull(result.getIssuerCode());
                 assertNotNull(result.getIssueDate());
                 assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
@@ -131,6 +132,32 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getDeclaredValueCurrency());
                 assertNotNull(result.getIssuerCodeListProvider());
                 assertFalse(result.getCarrierBookingReferences().isEmpty());
+                assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
+              })
+          .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Test GET shipping instruction without carrierBookingReferences.")
+    void testGetTransportDocumentWithoutCarrierBookingReferences() {
+      when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any())).thenReturn(Flux.empty());
+
+      StepVerifier.create(transportDocumentServiceImpl.mapDM2TO(transportDocument))
+          .assertNext(
+              result -> {
+                assertNotNull(result.getTransportDocumentReference());
+                assertNotNull(result.getIssuerCode());
+                assertNotNull(result.getIssueDate());
+                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
+                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+                assertNotNull(result.getShippingInstructionID());
+                assertNotNull(result.getReceivedForShipmentDate());
+                assertNotNull(result.getDeclaredValue());
+                assertNotNull(result.getDeclaredValueCurrency());
+                assertNotNull(result.getIssuerCodeListProvider());
+                assertTrue(result.getCarrierBookingReferences().isEmpty());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
               })
           .verifyComplete();
@@ -158,7 +185,7 @@ class TransportDocumentServiceImplTest {
     }
 
     @Test
-    @DisplayName("Test GET transport document summaries for null issuer")
+    @DisplayName("Test GET transport document summaries for invalid issuer")
     void testGetTransportDocumentWithInvalidIssuer() {
 
       when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.just(shippingInstruction));
