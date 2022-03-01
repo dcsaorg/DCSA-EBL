@@ -13,11 +13,11 @@ public class TestConfig {
 
   public static void init() throws IOException {
     File file = new File("src/test/resources/test.properties");
-    FileInputStream fis = new FileInputStream(file);
-    Properties properties = new Properties();
-    properties.load(fis);
-
-    RestAssured.baseURI = properties.getProperty("base_url");
-    RestAssured.port = Integer.parseInt(properties.getProperty("port"));
+    try (FileInputStream fis = new FileInputStream(file)) {
+      Properties properties = new Properties();
+      properties.load(fis);
+      RestAssured.baseURI = properties.getProperty("base_url");
+      RestAssured.port = Integer.parseInt(properties.getProperty("port"));
+    }
   }
 }

@@ -12,7 +12,7 @@ import static io.restassured.RestAssured.given;
 class ShippingInstructionIT {
 
   @BeforeAll
-  void configs() throws IOException {
+  static void configs() throws IOException {
     TestConfig.init();
   }
 
