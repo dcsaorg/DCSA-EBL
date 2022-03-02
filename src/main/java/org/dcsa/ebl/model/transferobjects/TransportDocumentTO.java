@@ -50,8 +50,7 @@ public class TransportDocumentTO {
 
   private Integer numberOfRiderPages;
 
-  @Valid
-  private LocationTO placeOfIssue;
+  @Valid private LocationTO placeOfIssue;
 
   @Valid
   @JsonInclude(JsonInclude.Include.NON_NULL)

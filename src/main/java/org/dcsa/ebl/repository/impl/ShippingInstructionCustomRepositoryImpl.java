@@ -93,7 +93,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         return summaries
                 .collectList()
                 .map(shippingInstructions -> findCarrierBookingReferences(
-                        shippingInstructions.stream().map(si -> si.getShippingInstructionID()).collect(Collectors.toList())
+                        shippingInstructions.stream().map(ShippingInstructionSummaryTO::getShippingInstructionID).collect(Collectors.toList())
                     ).map(map -> shippingInstructions.stream()
                         .map(si -> si.withCarrierBookingReferences(map.getOrDefault(si.getShippingInstructionID(), Collections.emptyList())))
                         .collect(Collectors.toList())

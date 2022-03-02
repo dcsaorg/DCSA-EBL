@@ -140,12 +140,10 @@ class ShippingInstructionControllerTest {
   }
 
   @Test
-  @DisplayName(
-      "POST shipping-instructions should return 201 and valid shipping instruction json schema.")
+  @DisplayName("POST shipping-instructions should return 201 and valid shipping instruction json schema.")
   void postShippingInstructionsShouldReturn201ForValidShippingInstructionRequest() {
 
-    ArgumentCaptor<ShippingInstructionTO> argument =
-        ArgumentCaptor.forClass(ShippingInstructionTO.class);
+    ArgumentCaptor<ShippingInstructionTO> argument = ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
     // mock service method call
     when(shippingInstructionService.createShippingInstruction(any()))
