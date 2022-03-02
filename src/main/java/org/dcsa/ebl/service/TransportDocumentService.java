@@ -9,4 +9,6 @@ import reactor.core.publisher.Mono;
 public interface TransportDocumentService
     extends AsymmetricQueryService<TransportDocument, TransportDocumentSummary, String> {
   Mono<TransportDocumentTO> findById(String transportDocumentReference);
+
+  Mono<TransportDocumentTO> findByTransportDocumentReference(String transportDocumentReference);
 }
