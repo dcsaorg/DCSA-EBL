@@ -2,12 +2,15 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
+import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.ShipmentEquipmentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -25,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -38,6 +42,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
   private final ShipmentService shipmentService;
+
+  private final BookingRepository bookingRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -118,6 +124,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               shippingInstructionTO.setShippingInstructionUpdatedDateTime(
                   si.getShippingInstructionUpdatedDateTime());
               return Mono.when(
+                      validateDocumentStatusOnBooking(shippingInstructionTO),
                       insertLocationTO(
                               shippingInstructionTO.getPlaceOfIssue(),
                               shippingInstructionTO.getShippingInstructionID())
@@ -205,6 +212,45 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
+  }
+
+  private Mono<List<Booking>> validateDocumentStatusOnBooking(
+      ShippingInstructionTO shippingInstructionTO) {
+
+    List<String> carrierBookingReferences = new ArrayList<>();
+    if (shippingInstructionTO.getCarrierBookingReference() != null) {
+      carrierBookingReferences.add(shippingInstructionTO.getCarrierBookingReference());
+    } else {
+      carrierBookingReferences =
+          shippingInstructionTO.getShipmentEquipments().stream()
+              .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
+              .collect(Collectors.toList());
+    }
+
+    return Flux.fromIterable(carrierBookingReferences)
+        .flatMap(
+            carrierBookingReference ->
+                bookingRepository
+                    .findAllByCarrierBookingReference(carrierBookingReference)
+                    .flatMap(
+                        booking -> {
+                          System.out.println(carrierBookingReference);
+                          if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
+                            return Mono.error(
+                                ConcreteRequestErrorMessageException.invalidParameter(
+                                    "DocumentStatus "
+                                        + booking.getDocumentStatus()
+                                        + " for booking "
+                                        + booking.getId()
+                                        + " related to carrier booking reference "
+                                        + carrierBookingReference
+                                        + " is not in "
+                                        + ShipmentEventTypeCode.CONF
+                                        + " state!"));
+                          }
+                          return Mono.just(booking);
+                        }))
+        .collectList();
   }
 
   private Mono<LocationTO> insertLocationTO(LocationTO placeOfIssue, String shippingInstructionID) {
