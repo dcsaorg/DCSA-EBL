@@ -5,12 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
-import org.dcsa.core.events.model.AbstractTransportDocument;
-import org.dcsa.core.events.model.Location;
-import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
-import org.dcsa.ebl.model.TransportPlan;
-import org.dcsa.ebl.model.enums.ServiceType;
-import org.dcsa.ebl.model.enums.ShipmentTerm;
 import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
@@ -56,8 +50,7 @@ public class TransportDocumentTO {
 
   private Integer numberOfRiderPages;
 
-  @Valid
-  private LocationTO placeOfIssue;
+  @Valid private LocationTO placeOfIssue;
 
   @Valid
   @JsonInclude(JsonInclude.Include.NON_NULL)
