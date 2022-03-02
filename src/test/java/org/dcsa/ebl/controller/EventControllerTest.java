@@ -8,7 +8,10 @@ import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.service.EBLShipmentEventService;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -193,18 +196,15 @@ public class EventControllerTest {
     @Test
     @DisplayName("Get events should throw bad request for incorrect DocumentTypeCode subset.")
     void testEventsShouldFailForIncorrectDocumentTypeCodeSubset() {
-        webTestClient
-                .get()
-                .uri(
-                        uriBuilder ->
-                                uriBuilder
-                                        .path("/events")
-                                        .queryParam("shipmentEventTypeCode", "VGM")
-                                        .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .exchange()
-                .expectStatus()
-                .isBadRequest();
+    webTestClient
+        .get()
+        .uri(
+            uriBuilder ->
+                uriBuilder.path("/events").queryParam("shipmentEventTypeCode", "VGM").build())
+        .accept(MediaType.APPLICATION_JSON)
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
     }
 
     @Test
