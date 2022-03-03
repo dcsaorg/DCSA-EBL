@@ -15,18 +15,10 @@ import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInC
 
 public class TestConfig {
 
-  public static final String ROOT_URI =
-      System.getenv().getOrDefault("API_ROOT_URI", "http://localhost");
-  private static final String PORT = System.getenv().getOrDefault("PORT", "9090");
-
   // API endpoints
   public static final String SHIPPING_INSTRUCTIONS = "/v2/shipping-instructions";
 
   private TestConfig() {}
-
-  public static String baseURL() {
-    return ROOT_URI + ":" + PORT;
-  }
 
   public static void init() throws IOException {
     File file = new File("src/test/resources/test.properties");
