@@ -8,6 +8,7 @@ import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.mapper.*;
 import org.dcsa.core.events.model.mappers.LocationMapper;
 import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -31,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.BOOKING_DOCUMENT_STATUSES;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -41,6 +43,7 @@ class ShippingInstructionServiceImplTest {
 
   @Mock ShippingInstructionRepository shippingInstructionRepository;
   @Mock ShipmentRepository shipmentRepository;
+  @Mock BookingRepository bookingRepository;
 
   @Mock LocationService locationService;
   @Mock ReferenceService referenceService;
@@ -88,6 +91,7 @@ class ShippingInstructionServiceImplTest {
   ShipmentEvent shipmentEvent;
   ShipmentEquipment shipmentEquipment;
   CargoItem cargoItem;
+  Booking booking;
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
@@ -109,6 +113,11 @@ class ShippingInstructionServiceImplTest {
   }
 
   private void initEntities() {
+    booking = new Booking();
+    booking.setId(UUID.randomUUID());
+    booking.setDocumentStatus(ShipmentEventTypeCode.CONF);
+    booking.setCarrierBookingRequestReference(UUID.randomUUID().toString());
+
     location = new Location();
     location.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
     location.setLocationName("Hamburg");
@@ -285,6 +294,8 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Method should save shipping instruction and return shipping response")
     void testCreateShippingInstructionWithEverything() {
 
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
@@ -362,6 +373,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setCarrierBookingReference(null);
       cargoItemTO.setCarrierBookingReference("carrierBookingRequestReference");
 
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
@@ -437,6 +450,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setShipmentEquipments(null);
 
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
@@ -507,6 +522,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setIsElectronic(false);
       shippingInstructionTO.setNumberOfCopies(null);
 
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
@@ -580,6 +597,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setShipmentEquipments(null);
 
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any()))
           .thenAnswer(arguments -> Mono.just(shippingInstruction));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
@@ -639,9 +658,60 @@ class ShippingInstructionServiceImplTest {
     }
 
     @Test
+    @DisplayName("Fail if carrierBookingReference linked to a Booking with invalid documentStatus")
+    void testCreateShippingInstructionShouldFailWithInvalidBookingDocumentStatus() {
+
+      // Test all valid status except CONFIRMED
+      for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
+        if (!BOOKING_DOCUMENT_STATUSES.contains(s.toString())) continue;
+        if (s.equals(ShipmentEventTypeCode.CONF)) continue;
+
+        booking.setDocumentStatus(s);
+        when(bookingRepository.findAllByCarrierBookingReference(any()))
+            .thenReturn(Flux.just(booking));
+
+        StepVerifier.create(
+                shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+            .expectErrorSatisfies(
+                throwable -> {
+                  Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                  assertEquals(
+                      "DocumentStatus "
+                          + booking.getDocumentStatus()
+                          + " for booking "
+                          + booking.getCarrierBookingRequestReference()
+                          + " related to carrier booking reference "
+                          + cargoItemTO.getCarrierBookingReference()
+                          + " is not in CONF state!",
+                      throwable.getMessage());
+                })
+            .verify();
+      }
+    }
+
+    @Test
+    @DisplayName("Fail if carrierBookingReference is not linked to a Booking")
+    void testCreateShippingInstructionShouldFailWithNoBookingFound() {
+
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.empty());
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "No booking found for carrier booking reference: "
+                        + cargoItemTO.getCarrierBookingReference(),
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
     @DisplayName(
         "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
-    void testCreateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
+    void testCreateShippingInstructionShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
 
       cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
 
@@ -677,6 +747,8 @@ class ShippingInstructionServiceImplTest {
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
@@ -767,6 +839,8 @@ class ShippingInstructionServiceImplTest {
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
@@ -856,6 +930,8 @@ class ShippingInstructionServiceImplTest {
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
@@ -940,6 +1016,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setShipmentEquipments(null);
 
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
@@ -963,6 +1041,8 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setShipmentEquipments(null);
 
       when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
+      when(bookingRepository.findAllByCarrierBookingReference(any()))
+          .thenReturn(Flux.just(booking));
 
       StepVerifier.create(
               shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
@@ -1150,6 +1230,57 @@ class ShippingInstructionServiceImplTest {
                     result.getShipments().get(0).getTermsAndConditions());
               })
           .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Fail if carrierBookingReference linked to a Booking with invalid documentStatus")
+    void testCreateShippingInstructionShouldFailWithInvalidBookingDocumentStatus() {
+
+      // Test all valid status except CONFIRMED
+      for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
+        if (!BOOKING_DOCUMENT_STATUSES.contains(s.toString())) continue;
+        if (s.equals(ShipmentEventTypeCode.CONF)) continue;
+
+        booking.setDocumentStatus(s);
+        when(bookingRepository.findAllByCarrierBookingReference(any()))
+            .thenReturn(Flux.just(booking));
+
+        StepVerifier.create(
+                shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+            .expectErrorSatisfies(
+                throwable -> {
+                  Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                  assertEquals(
+                      "DocumentStatus "
+                          + booking.getDocumentStatus()
+                          + " for booking "
+                          + booking.getCarrierBookingRequestReference()
+                          + " related to carrier booking reference "
+                          + cargoItemTO.getCarrierBookingReference()
+                          + " is not in CONF state!",
+                      throwable.getMessage());
+                })
+            .verify();
+      }
+    }
+
+    @Test
+    @DisplayName("Fail if carrierBookingReference is not linked to a Booking")
+    void testCreateShippingInstructionShouldFailWithNoBookingFound() {
+
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.empty());
+
+      StepVerifier.create(
+              shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "No booking found for carrier booking reference: "
+                        + cargoItemTO.getCarrierBookingReference(),
+                    throwable.getMessage());
+              })
+          .verify();
     }
   }
 }

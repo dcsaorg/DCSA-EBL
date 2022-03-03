@@ -10,7 +10,6 @@ import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.core.events.repository.ShipmentEquipmentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -112,8 +111,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
-    return shippingInstructionRepository
-        .save(shippingInstruction)
+    return validateDocumentStatusOnBooking(shippingInstructionTO)
+        .flatMap(ignored -> shippingInstructionRepository.save(shippingInstruction))
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
@@ -124,7 +123,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               shippingInstructionTO.setShippingInstructionUpdatedDateTime(
                   si.getShippingInstructionUpdatedDateTime());
               return Mono.when(
-                      validateDocumentStatusOnBooking(shippingInstructionTO),
                       insertLocationTO(
                               shippingInstructionTO.getPlaceOfIssue(),
                               shippingInstructionTO.getShippingInstructionID())
@@ -156,8 +154,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
 
-    return shippingInstructionRepository
-        .findById(shippingInstructionID)
+    return validateDocumentStatusOnBooking(shippingInstructionRequest)
+        .flatMap(ignored -> shippingInstructionRepository.findById(shippingInstructionID))
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
@@ -214,8 +212,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
   }
 
-  private Mono<List<Booking>> validateDocumentStatusOnBooking(
-      ShippingInstructionTO shippingInstructionTO) {
+  Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
 
     List<String> carrierBookingReferences = new ArrayList<>();
     if (shippingInstructionTO.getCarrierBookingReference() != null) {
@@ -234,14 +231,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     .findAllByCarrierBookingReference(carrierBookingReference)
                     .flatMap(
                         booking -> {
-                          System.out.println(carrierBookingReference);
                           if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
                             return Mono.error(
                                 ConcreteRequestErrorMessageException.invalidParameter(
                                     "DocumentStatus "
                                         + booking.getDocumentStatus()
                                         + " for booking "
-                                        + booking.getId()
+                                        + booking.getCarrierBookingRequestReference()
                                         + " related to carrier booking reference "
                                         + carrierBookingReference
                                         + " is not in "
@@ -249,7 +245,12 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                                         + " state!"));
                           }
                           return Mono.just(booking);
-                        }))
+                        })
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.notFound(
+                                "No booking found for carrier booking reference: "
+                                    + carrierBookingReference))))
         .collectList();
   }
 
