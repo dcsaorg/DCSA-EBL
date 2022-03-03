@@ -6,6 +6,8 @@ services:
            .
         ports:
             - 9090:9090
+        environment:
+            - "SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-default}"
         logging:
             options:
                 max-file: '10'
