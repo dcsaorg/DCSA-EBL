@@ -1,6 +1,7 @@
 package ebl.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.URL;
@@ -30,37 +31,19 @@ public class TestUtil {
         });
   }
 
-  private static void closeStream(InputStream inputStream) {
-    if (inputStream != null) {
-      try {
-        inputStream.close();
-      } catch (IOException ignored) {
-      }
-    }
-  }
-
+  @SneakyThrows
   private static <T> T parseResourceWithStream(
       String classpath, ParserFunction<InputStream, T> reader) {
-    InputStream inputStream = null;
-    try {
-      inputStream = openStream(classpath);
+    try (InputStream inputStream = openStream(classpath)) {
       return reader.apply(inputStream);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    } finally {
-      closeStream(inputStream);
     }
   }
 
+  @SneakyThrows
   public static Map<String, Object> jsonToMap(String json) {
     ObjectMapper mapper = new ObjectMapper();
-    try {
-      Map<String, Object> map = mapper.readValue(json, Map.class);
-      return map;
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
+    Map<String, Object> map = mapper.readValue(json, Map.class);
+    return map;
   }
 
   private interface ParserFunction<T, R> {
