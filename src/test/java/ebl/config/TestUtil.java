@@ -24,8 +24,9 @@ public class TestUtil {
           Reader dataInputStream = new BufferedReader(new InputStreamReader(inputStream));
           StringBuilder stringBuilder = new StringBuilder();
           char[] buffer = new char[4096];
-          while (dataInputStream.read(buffer) >= 1) {
-            stringBuilder.append(buffer);
+          int read;
+          while ((read = dataInputStream.read(buffer)) > 0) {
+            stringBuilder.append(buffer, 0, read);
           }
           return stringBuilder.toString().trim();
         });
