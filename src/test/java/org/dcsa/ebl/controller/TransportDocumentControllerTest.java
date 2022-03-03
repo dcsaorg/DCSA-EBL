@@ -60,7 +60,7 @@ class TransportDocumentControllerTest {
     locationTO.setId("1");
 
     ChargeTO chargeTO = new ChargeTO();
-    chargeTO.setChargeType("chargeType");
+    chargeTO.setChargeType("chargeTypeCode");
     chargeTO.setCalculationBasis("CalculationBasics");
     chargeTO.setCurrencyAmount(100.0);
     chargeTO.setCurrencyCode("EUR");
