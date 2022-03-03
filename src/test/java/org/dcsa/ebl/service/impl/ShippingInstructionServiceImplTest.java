@@ -5,7 +5,7 @@ import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
-import org.dcsa.core.events.model.mapper.*;
+import org.dcsa.core.events.model.mapper.PartyMapper;
 import org.dcsa.core.events.model.mappers.LocationMapper;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
@@ -59,23 +59,8 @@ class ShippingInstructionServiceImplTest {
       Mappers.getMapper(ShippingInstructionMapper.class);
 
   @Spy LocationMapper locationMapper = Mappers.getMapper(LocationMapper.class);
-  @Spy SealMapper sealMapper = Mappers.getMapper(SealMapper.class);
-  @Spy CargoLineItemMapper cargoLineItemMapper = Mappers.getMapper(CargoLineItemMapper.class);
-  @Spy CargoItemMapper cargoItemMapper = Mappers.getMapper(CargoItemMapper.class);
-
-  @Spy
-  ActiveReeferSettingsMapper activeReeferSettingsMapper =
-      Mappers.getMapper(ActiveReeferSettingsMapper.class);
-
-  @Spy EquipmentMapper equipmentMapper = Mappers.getMapper(EquipmentMapper.class);
-
-  @Spy
-  ShipmentEquipmentMapper shipmentEquipmentMapper =
-      Mappers.getMapper(ShipmentEquipmentMapper.class);
-
   @Spy PartyMapper partyMapper = Mappers.getMapper(PartyMapper.class);
-
-  ShipmentMapper shipmentMapper = Mappers.getMapper(ShipmentMapper.class);
+  @Spy ShipmentMapper shipmentMapper = Mappers.getMapper(ShipmentMapper.class);
 
   ShippingInstruction shippingInstruction;
   Location location;
@@ -661,7 +646,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Fail if carrierBookingReference linked to a Booking with invalid documentStatus")
     void testCreateShippingInstructionShouldFailWithInvalidBookingDocumentStatus() {
 
-      // Test all valid status except CONFIRMED
+      // Test all invalid status except CONFIRMED
       for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
         if (!BOOKING_DOCUMENT_STATUSES.contains(s.toString())) continue;
         if (s.equals(ShipmentEventTypeCode.CONF)) continue;
@@ -1236,7 +1221,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Fail if carrierBookingReference linked to a Booking with invalid documentStatus")
     void testCreateShippingInstructionShouldFailWithInvalidBookingDocumentStatus() {
 
-      // Test all valid status except CONFIRMED
+      // Test all invalid status except CONFIRMED
       for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
         if (!BOOKING_DOCUMENT_STATUSES.contains(s.toString())) continue;
         if (s.equals(ShipmentEventTypeCode.CONF)) continue;

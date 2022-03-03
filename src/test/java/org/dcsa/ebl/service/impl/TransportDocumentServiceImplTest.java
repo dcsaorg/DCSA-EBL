@@ -139,7 +139,7 @@ class TransportDocumentServiceImplTest {
     locationTO.setId("1");
 
     chargeTO = new ChargeTO();
-    chargeTO.setChargeTypeCode("chargeTypeCode");
+    chargeTO.setChargeType("chargeType");
     chargeTO.setCalculationBasis("CalculationBasics");
     chargeTO.setCurrencyAmount(100.0);
     chargeTO.setCurrencyCode("EUR");
