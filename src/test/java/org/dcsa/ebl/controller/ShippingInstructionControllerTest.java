@@ -137,6 +137,7 @@ class ShippingInstructionControllerTest {
 
     shippingInstructionResponseTO =
         shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO);
+    shippingInstructionResponseTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
   }
 
   @Test

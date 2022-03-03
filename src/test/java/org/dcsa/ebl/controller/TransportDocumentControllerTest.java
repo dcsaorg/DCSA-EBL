@@ -1,14 +1,9 @@
 package org.dcsa.ebl.controller;
 
-import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.model.Address;
-import org.dcsa.core.events.model.enums.PaymentTerm;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.events.model.enums.*;
+import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
@@ -25,6 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,7 +44,6 @@ class TransportDocumentControllerTest {
 
   @BeforeEach
   private void init() {
-
 
     Address address = new Address();
     address.setCity("Amsterdam");
@@ -76,6 +71,24 @@ class TransportDocumentControllerTest {
     CarrierClauseTO carrierClauseTO = new CarrierClauseTO();
     carrierClauseTO.setClauseContent("CarrierClause");
 
+    CargoItemTO cargoItemTO = new CargoItemTO();
+    cargoItemTO.setHsCode("hs");
+    cargoItemTO.setWeight(10F);
+    cargoItemTO.setWeightUnit(WeightUnit.KGM);
+    cargoItemTO.setDescriptionOfGoods("desc");
+    cargoItemTO.setNumberOfPackages(1);
+    cargoItemTO.setPackageCode("123");
+
+    EquipmentTO equipmentTO = new EquipmentTO();
+    equipmentTO.setEquipmentReference("ref");
+
+    ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+    shipmentEquipmentTO.setIsShipperOwned(false);
+    shipmentEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
+    shipmentEquipmentTO.setCargoGrossWeight(10F);
+    shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
+    shipmentEquipmentTO.setEquipment(equipmentTO);
+
     ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
     shippingInstructionTO.setIsShippedOnboardType(true);
     shippingInstructionTO.setIsElectronic(true);
@@ -84,9 +97,27 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
+    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+
+    TransportTO transportTO = new TransportTO();
+    transportTO.setTransportPlanStageSequenceNumber(1);
+    transportTO.setTransportPlanStage(TransportPlanStageCode.MNC);
+    transportTO.setLoadLocation(locationTO);
+    transportTO.setDischargeLocation(locationTO);
+    transportTO.setPlannedDepartureDate(OffsetDateTime.now());
+    transportTO.setPlannedArrivalDate(OffsetDateTime.now());
+
+    CommodityTO commodityTO = new CommodityTO();
+    commodityTO.setCargoGrossWeight(10.0);
+    commodityTO.setCargoGrossWeightUnit(CargoGrossWeight.KGM);
+    commodityTO.setCommodityType("Type");
 
     ShipmentTO shipmentTO = new ShipmentTO();
-    shipmentTO.setBooking(new BookingTO());
+    shipmentTO.setCarrierBookingReference("CarrierBookingReference");
+    shipmentTO.setShipmentCreatedDateTime(OffsetDateTime.now());
+    shipmentTO.setShipmentUpdatedDateTime(OffsetDateTime.now());
+
+    shipmentTO.setTransports(List.of(transportTO));
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
     transportDocumentTO = new TransportDocumentTO();
@@ -96,6 +127,7 @@ class TransportDocumentControllerTest {
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentReference("TRDocReference1");
+    transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
   }
 
   @Test
@@ -116,7 +148,10 @@ class TransportDocumentControllerTest {
         .expectBody()
         .consumeWith(System.out::println)
         .jsonPath("$.transportDocumentReference")
-        .hasJsonPath();
+        .hasJsonPath()
+        .consumeWith(
+            response ->
+                JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
   }
 
   @Test
@@ -133,7 +168,9 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isNotFound()
-        .expectBody();
+        .expectBody()
+        .consumeWith(
+            response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
   @Test
@@ -151,7 +188,9 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isBadRequest()
-        .expectBody();
+        .expectBody()
+        .consumeWith(
+            response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
   @Test
@@ -170,13 +209,8 @@ class TransportDocumentControllerTest {
         .expectStatus()
         .isOk()
         .expectBody()
-        .jsonPath("$.transportDocumentReference")
-        .hasJsonPath()
-        .jsonPath("$.shippingInstruction")
-        .hasJsonPath()
-        .jsonPath("$.placeOfIssue")
-        .hasJsonPath()
-        .jsonPath("$.charges")
-        .hasJsonPath();
+        .consumeWith(
+            response ->
+                JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
   }
 }
