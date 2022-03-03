@@ -223,6 +223,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
               .collect(Collectors.toList());
     }
+    carrierBookingReferences = carrierBookingReferences.stream().distinct().collect(Collectors.toList());
 
     return Flux.fromIterable(carrierBookingReferences)
         .flatMap(
