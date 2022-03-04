@@ -26,7 +26,7 @@ public class ShippingInstructionSummaryTO {
     private String transportDocumentTypeCode;
 
     @NotNull
-    private Boolean shippedOnboardType;
+    private Boolean isShippedOnboardType;
 
     private Integer numberOfCopies;
 
@@ -54,6 +54,5 @@ public class ShippingInstructionSummaryTO {
     @Size(max = 250)
     private String displayedNameForPlaceOfDelivery;
 
-    @With
     private List<String> carrierBookingReferences;
 }

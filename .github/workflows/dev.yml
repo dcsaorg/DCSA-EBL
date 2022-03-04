@@ -65,3 +65,7 @@ jobs:
         with:
           script: |
            core.setFailed('The DCSA-EBL service is down.')
+
+      - name: Run Integration Tests
+        run: |
+          cd DCSA-EBL &&  mvn failsafe:integration-test -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT

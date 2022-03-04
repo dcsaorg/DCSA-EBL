@@ -1,8 +1,6 @@
 package org.dcsa.ebl.model.transferobjects;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
@@ -28,13 +26,10 @@ public class TransportDocumentTO {
 
   private OffsetDateTime transportDocumentUpdatedDateTime;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate issueDate;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate shippedOnBoardDate;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate receivedForShipmentDate;
 
   private Integer numberOfOriginals;
@@ -51,9 +46,7 @@ public class TransportDocumentTO {
 
   private Integer numberOfRiderPages;
 
-  @Valid
-  @JsonProperty("placeOfIssue")
-  private LocationTO placeOfIssue;
+  @Valid private LocationTO placeOfIssue;
 
   @Valid
   @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -63,5 +56,6 @@ public class TransportDocumentTO {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<ChargeTO> charges;
 
+//  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Valid private List<CarrierClauseTO> carrierClauses;
 }

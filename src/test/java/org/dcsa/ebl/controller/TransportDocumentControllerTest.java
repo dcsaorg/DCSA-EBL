@@ -1,14 +1,10 @@
 package org.dcsa.ebl.controller;
 
-import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
-import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.model.Address;
-import org.dcsa.core.events.model.enums.PaymentTerm;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+
+import org.dcsa.core.events.model.enums.*;
+import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.security.SecurityConfig;
@@ -28,6 +24,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,8 +51,6 @@ class TransportDocumentControllerTest {
 
   @BeforeEach
   private void init() {
-    transportDocumentTO = new TransportDocumentTO();
-    transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
 
     Address address = new Address();
     address.setCity("Amsterdam");
@@ -72,7 +67,7 @@ class TransportDocumentControllerTest {
     locationTO.setId("1");
 
     ChargeTO chargeTO = new ChargeTO();
-    chargeTO.setChargeTypeCode("chargeTypeCode");
+    chargeTO.setChargeType("chargeTypeCode");
     chargeTO.setCalculationBasis("CalculationBasics");
     chargeTO.setCurrencyAmount(100.0);
     chargeTO.setCurrencyCode("EUR");
@@ -83,6 +78,57 @@ class TransportDocumentControllerTest {
     CarrierClauseTO carrierClauseTO = new CarrierClauseTO();
     carrierClauseTO.setClauseContent("CarrierClause");
 
+    CargoItemTO cargoItemTO = new CargoItemTO();
+    cargoItemTO.setHsCode("hs");
+    cargoItemTO.setWeight(10F);
+    cargoItemTO.setWeightUnit(WeightUnit.KGM);
+    cargoItemTO.setDescriptionOfGoods("desc");
+    cargoItemTO.setNumberOfPackages(1);
+    cargoItemTO.setPackageCode("123");
+
+    EquipmentTO equipmentTO = new EquipmentTO();
+    equipmentTO.setEquipmentReference("ref");
+
+    ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+    shipmentEquipmentTO.setIsShipperOwned(false);
+    shipmentEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
+    shipmentEquipmentTO.setCargoGrossWeight(10F);
+    shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
+    shipmentEquipmentTO.setEquipment(equipmentTO);
+
+    TransportTO transportTO = new TransportTO();
+    transportTO.setTransportPlanStageSequenceNumber(1);
+    transportTO.setTransportPlanStage(TransportPlanStageCode.MNC);
+    transportTO.setLoadLocation(locationTO);
+    transportTO.setDischargeLocation(locationTO);
+    transportTO.setPlannedDepartureDate(OffsetDateTime.now());
+    transportTO.setPlannedArrivalDate(OffsetDateTime.now());
+
+    CommodityTO commodityTO = new CommodityTO();
+    commodityTO.setCargoGrossWeight(10.0);
+    commodityTO.setCargoGrossWeightUnit(CargoGrossWeight.KGM);
+    commodityTO.setCommodityType("Type");
+
+    BookingTO bookingTO = new BookingTO();
+    bookingTO.setDocumentStatus(ShipmentEventTypeCode.CMPL);
+    bookingTO.setBookingRequestUpdatedDateTime(OffsetDateTime.now());
+    bookingTO.setBookingRequestCreatedDateTime(OffsetDateTime.now());
+    bookingTO.setCarrierBookingRequestReference("bookingTOCarrierBookingReference");
+    bookingTO.setInvoicePayableAt(locationTO);
+
+    ShipmentTO shipmentTO = new ShipmentTO();
+    shipmentTO.setCarrierBookingReference("CarrierBookingReference");
+    shipmentTO.setShipmentCreatedDateTime(OffsetDateTime.now());
+    shipmentTO.setShipmentUpdatedDateTime(OffsetDateTime.now());
+    shipmentTO.setTransports(List.of(transportTO));
+
+    ShipmentTO approveShipmentTO = new ShipmentTO();
+    approveShipmentTO.setCarrierBookingReference("CarrierBookingReference");
+    approveShipmentTO.setShipmentCreatedDateTime(OffsetDateTime.now());
+    approveShipmentTO.setShipmentUpdatedDateTime(OffsetDateTime.now());
+    approveShipmentTO.setTransports(List.of(transportTO));
+    approveShipmentTO.setBooking(bookingTO);
+
     ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
     shippingInstructionTO.setIsShippedOnboardType(true);
     shippingInstructionTO.setIsElectronic(true);
@@ -91,45 +137,42 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
-
-    ShipmentTO shipmentTO = new ShipmentTO();
-    BookingTO bookingTO = new BookingTO();
-    bookingTO.setDocumentStatus(ShipmentEventTypeCode.CMPL);
-    shipmentTO.setBooking(bookingTO);
+    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
+    ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
+    approveShippingInstructionTO.setIsShippedOnboardType(true);
+    approveShippingInstructionTO.setIsElectronic(true);
+    approveShippingInstructionTO.setIsToOrder(true);
+    approveShippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    approveShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
+    approveShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
+    approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
+    approveShippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+    approveShippingInstructionTO.setShipments(List.of(approveShipmentTO));
+
+
     transportDocumentTO = new TransportDocumentTO();
+    transportDocumentTO.setTransportDocumentReference("TRDocReference1");
     transportDocumentTO.setCharges(List.of(chargeTO));
     transportDocumentTO.setPlaceOfIssue(locationTO);
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
-    transportDocumentTO.setTransportDocumentReference("TRDocReference1");
+    transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
+
+    approvedTransportDocument = new TransportDocumentTO();
+    approvedTransportDocument.setTransportDocumentReference("approvedTRDocReference");
+    approvedTransportDocument.setCharges(List.of(chargeTO));
+    approvedTransportDocument.setPlaceOfIssue(locationTO);
+    approvedTransportDocument.setCarrierClauses(List.of(carrierClauseTO));
+    approvedTransportDocument.setShippingInstruction(approveShippingInstructionTO);
+    approvedTransportDocument.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
 
     // request body for valid & invalid approval request body
     validTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
     validTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.APPR);
     invalidTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
     invalidTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
-
-    // response approved TD
-    ShippingInstructionTO approvedShippingInstructionTO = new ShippingInstructionTO();
-    approvedShippingInstructionTO.setIsShippedOnboardType(true);
-    approvedShippingInstructionTO.setIsElectronic(true);
-    approvedShippingInstructionTO.setIsToOrder(true);
-    approvedShippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
-    approvedShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.APPR);
-    approvedShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
-    approvedShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
-    approvedShippingInstructionTO.setShipments(List.of(shipmentTO));
-
-    approvedTransportDocument = new TransportDocumentTO();
-    approvedTransportDocument.setCharges(List.of(chargeTO));
-    approvedTransportDocument.setPlaceOfIssue(locationTO);
-    approvedTransportDocument.setCarrierClauses(List.of(carrierClauseTO));
-    approvedTransportDocument.setShippingInstruction(approvedShippingInstructionTO);
-    approvedTransportDocument.setTransportDocumentReference("approvedTRDocReference");
-    approvedTransportDocument.setTransportDocumentReference("TransportDocumentReference1");
-
   }
 
   @Test
@@ -150,7 +193,10 @@ class TransportDocumentControllerTest {
         .expectBody()
         .consumeWith(System.out::println)
         .jsonPath("$.transportDocumentReference")
-        .hasJsonPath();
+        .hasJsonPath()
+        .consumeWith(
+            response ->
+                JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
   }
 
   @Test
@@ -167,7 +213,9 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isNotFound()
-        .expectBody();
+        .expectBody()
+        .consumeWith(
+            response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
   @Test
@@ -185,7 +233,9 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isBadRequest()
-        .expectBody();
+        .expectBody()
+        .consumeWith(
+            response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
   @Test
@@ -203,7 +253,10 @@ class TransportDocumentControllerTest {
         .exchange()
         .expectStatus()
         .isOk()
-        .expectBody();
+        .expectBody()
+        .consumeWith(
+            response ->
+                JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
   }
 
   @Test
@@ -211,14 +264,14 @@ class TransportDocumentControllerTest {
     "document statuses set to APPR & CMPL respectively")
   void testApproveTransportDocumentByReference() {
 
-    when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
+    when(transportDocumentService.ApproveTransportDocument("approvedTRDocReference"))
       .thenReturn(Mono.just(approvedTransportDocument));
 
     webTestClient
       .put()
       .uri(
         uriBuilder ->
-          uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
+          uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("approvedTRDocReference").build())
       .contentType(MediaType.APPLICATION_JSON)
       .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
       .exchange()
@@ -268,7 +321,7 @@ class TransportDocumentControllerTest {
         .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
         .exchange()
         .expectStatus()
-        .isBadRequest();
+        .isNotFound();
   }
 
 
@@ -291,6 +344,6 @@ class TransportDocumentControllerTest {
       .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
       .exchange()
       .expectStatus()
-      .isBadRequest();
+      .isNotFound();
   }
 }

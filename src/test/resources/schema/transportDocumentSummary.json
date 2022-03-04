@@ -1,0 +1,198 @@
+{
+    "required": [
+        "shippingInstructionID"
+    ],
+    "type": "object",
+    "description": "A 'shallow' representation of the Transport Document. This version of the Transport Document does not contain nested objects. For a 'rich' version of the Transport Document please use the `GET` endPoint.\n",
+    "allOf": [
+        {
+            "required": [
+                "transportDocumentReference"
+            ],
+            "type": "object",
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "transportDocumentReference": {
+                            "maxLength": 20,
+                            "type": "string",
+                            "description": "A unique number allocated by the shipping line to the transport document and the main number used for the tracking of the status of the shipment.\n",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "transportDocumentCreatedDateTime": {
+                            "type": "string",
+                            "description": "Date and time when the TransportDocument was created\n",
+                            "format": "date-time",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "transportDocumentUpdatedDateTime": {
+                            "type": "string",
+                            "description": "Date and time when the TransportDocument was updated\n",
+                            "format": "date-time",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "issueDate": {
+                            "type": "string",
+                            "description": "Date when the transport document has been issued",
+                            "format": "date",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "shippedOnBoardDate": {
+                            "type": "string",
+                            "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document.",
+                            "format": "date",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "receivedForShipmentDate": {
+                            "type": "string",
+                            "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel).",
+                            "format": "date",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "numberOfOriginals": {
+                            "type": "integer",
+                            "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "issuerCode": {
+                            "maxLength": 4,
+                            "type": "string",
+                            "description": "The code used for identifying the specific issuer.\n",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "issuerCodeListProvider": {
+                            "type": "string",
+                            "description": "The provider used for identifying the issuer Code\n",
+                            "enum": [
+                                "SMDG",
+                                "NMFTA"
+                            ],
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "declaredValueCurrency": {
+                            "maxLength": 3,
+                            "type": "string",
+                            "description": "The currency used for the declared value, using the 3-character code defined by ISO 4217.",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "declaredValue": {
+                            "type": "number",
+                            "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper.",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "numberOfRiderPages": {
+                            "type": "integer",
+                            "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents.",
+                            "$schema": "http://json-schema.org/schema#"
+                        }
+                    }
+                }
+            ],
+            "$schema": "http://json-schema.org/schema#"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "shippingInstructionID": {
+                    "maxLength": 100,
+                    "type": "string",
+                    "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n",
+                    "$schema": "http://json-schema.org/schema#"
+                }
+            }
+        },
+        {
+            "type": "object",
+            "properties": {
+                "documentStatus": {
+                    "type": "string",
+                    "description": "The status of the Bill of Lading. Possible values are:\n- RECE (Received)\n- PENU (Pending Update)\n- DRFT (Draft)\n- PENA (Pending Approval)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- VOID (Void)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>. Be aware that the list linked to is the `ShipmentEventTypeCodes` which is equivalent to `documentStatus`, the list is a subset of the possible values.\n",
+                    "enum": [
+                        "RECE",
+                        "PENU",
+                        "DRFT",
+                        "PENA",
+                        "APPR",
+                        "ISSU",
+                        "SURR",
+                        "VOID"
+                    ],
+                    "$schema": "http://json-schema.org/schema#"
+                }
+            }
+        },
+        {
+            "type": "object",
+            "properties": {
+                "carrierBookingReferences": {
+                    "type": "array",
+                    "description": "A list of all `carrierBookingReferences` used. The `carrierBookingReferences` are sourced from the `CargoItems` or the root object of the SI.\n",
+                    "items": {
+                        "maxLength": 35,
+                        "type": "string",
+                        "description": "A set of unique characters provided by carrier to identify a booking.",
+                        "$schema": "http://json-schema.org/schema#"
+                    }
+                }
+            },
+            "$schema": "http://json-schema.org/schema#"
+        }
+    ],
+    "$schema": "http://json-schema.org/schema#"
+}
