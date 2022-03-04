@@ -34,6 +34,7 @@ class ShipmentEventIT {
       .contentType(ContentType.JSON)
       .body("size()", greaterThanOrEqualTo(0))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
+      .body("eventClassifierCode", everyItem(equalTo("ACT")))
       ;
   }
 
@@ -50,6 +51,7 @@ class ShipmentEventIT {
         .contentType(ContentType.JSON)
         .body("size()", greaterThanOrEqualTo(0))
         .body("eventType", everyItem(equalTo("SHIPMENT")))
+        .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("shipmentEventTypeCode", everyItem(m))
     ;
 
@@ -71,6 +73,7 @@ class ShipmentEventIT {
         .contentType(ContentType.JSON)
         .body("size()", greaterThanOrEqualTo(0))
         .body("eventType", everyItem(equalTo("SHIPMENT")))
+        .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("documentTypeCode", everyItem(m))
       ;
     runner.accept("SHI,TRD", anyOf(equalTo("SHI"), equalTo("TRD")));
