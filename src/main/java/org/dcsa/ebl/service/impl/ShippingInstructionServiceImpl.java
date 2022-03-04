@@ -214,16 +214,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
 
-    List<String> carrierBookingReferences = new ArrayList<>();
+    List<String> carrierBookingReferences;
     if (shippingInstructionTO.getCarrierBookingReference() != null) {
-      carrierBookingReferences.add(shippingInstructionTO.getCarrierBookingReference());
+      carrierBookingReferences = Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
     } else {
       carrierBookingReferences =
           shippingInstructionTO.getShipmentEquipments().stream()
               .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
+              .distinct()
               .collect(Collectors.toList());
     }
-    carrierBookingReferences = carrierBookingReferences.stream().distinct().collect(Collectors.toList());
 
     return Flux.fromIterable(carrierBookingReferences)
         .flatMap(
