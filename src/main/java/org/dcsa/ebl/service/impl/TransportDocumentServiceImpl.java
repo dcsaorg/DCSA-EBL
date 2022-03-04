@@ -3,9 +3,12 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
+import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.Carrier;
 import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
+import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
+import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.CarrierRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.LocationService;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -33,6 +37,7 @@ public class TransportDocumentServiceImpl
   private final TransportDocumentRepository transportDocumentRepository;
   private final CarrierRepository carrierRepository;
   private final ShippingInstructionRepository shippingInstructionRepository;
+  private final BookingRepository bookingRepository;
 
   private final ShippingInstructionService shippingInstructionService;
   private final ChargeService chargeService;
@@ -141,6 +146,36 @@ public class TransportDocumentServiceImpl
                           .doOnNext(transportDocumentTO::setCarrierClauses))
                   .thenReturn(transportDocumentTO);
             });
+  }
+
+  Mono<List<Booking>> validateDocumentStatusOnBooking(TransportDocumentTO transportDocumentTO) {
+
+    return bookingRepository
+        .findAllByShippingInstructionID(
+            transportDocumentTO.getShippingInstruction().getShippingInstructionID())
+        .flatMap(
+            booking -> {
+              if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
+                return Mono.error(
+                    ConcreteRequestErrorMessageException.invalidParameter(
+                        "DocumentStatus "
+                            + booking.getDocumentStatus()
+                            + " for booking "
+                            + booking.getCarrierBookingRequestReference()
+                            + " related to carrier booking reference "
+                            + transportDocumentTO.getTransportDocumentReference()
+                            + " is not in "
+                            + ShipmentEventTypeCode.CONF
+                            + " state!"));
+              }
+              return Mono.just(booking);
+            })
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No booking found for carrier booking reference: "
+                        + transportDocumentTO.getTransportDocumentReference())))
+        .collectList();
   }
 
   void setIssuerOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
