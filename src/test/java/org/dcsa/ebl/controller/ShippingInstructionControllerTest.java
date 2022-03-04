@@ -132,12 +132,11 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
 
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionTO.setShippingInstructionCreatedDateTime(now);
-    shippingInstructionTO.setShippingInstructionUpdatedDateTime(now);
-
     shippingInstructionResponseTO =
         shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO);
     shippingInstructionResponseTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
+    shippingInstructionResponseTO.setShippingInstructionCreatedDateTime(now);
+    shippingInstructionResponseTO.setShippingInstructionUpdatedDateTime(now);
   }
 
   @Test
