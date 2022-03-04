@@ -2,6 +2,7 @@ package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.http.HttpStatus;
@@ -24,12 +25,18 @@ public class ShippingInstructionController {
 
   @GetMapping(path = "/{shippingInstructionID}")
   public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
-    return shippingInstructionService.findById(shippingInstructionID);
+    return shippingInstructionService
+        .findById(shippingInstructionID)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No Shipping Instruction found with ID: " + shippingInstructionID)));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public Mono<ShippingInstructionResponseTO> create(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
+  public Mono<ShippingInstructionResponseTO> create(
+      @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
     return shippingInstructionService.createShippingInstruction(shippingInstructionTO);
   }
 
@@ -38,6 +45,7 @@ public class ShippingInstructionController {
   public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(
+        shippingInstructionID, shippingInstructionTO);
   }
 }

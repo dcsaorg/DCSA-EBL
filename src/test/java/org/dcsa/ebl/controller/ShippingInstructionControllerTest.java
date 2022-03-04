@@ -262,6 +262,22 @@ class ShippingInstructionControllerTest {
     checkStatus400.apply(exchange);
   }
 
+  @Test
+  @DisplayName("PUT booking should return 400 for invalid request.")
+  void getShippingInstructionsShouldReturn400ForInvalidShippingInstructionId() {
+
+    when(shippingInstructionService.findById(any()))
+        .thenReturn(Mono.empty());
+
+    WebTestClient.ResponseSpec exchange =
+        webTestClient
+            .get()
+            .uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID())
+            .exchange();
+
+    checkStatus404.apply(exchange);
+  }
+
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus200 =
       (exchange) -> exchange.expectStatus().isOk();
 
@@ -273,6 +289,9 @@ class ShippingInstructionControllerTest {
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus400 =
       (exchange) -> exchange.expectStatus().isBadRequest();
+
+  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus404 =
+      (exchange) -> exchange.expectStatus().isNotFound();
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec>
       checkShippingInstructionResponseTOJsonSchema =
