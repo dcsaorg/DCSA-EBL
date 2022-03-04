@@ -263,8 +263,8 @@ class ShippingInstructionControllerTest {
   }
 
   @Test
-  @DisplayName("PUT booking should return 400 for invalid request.")
-  void getShippingInstructionsShouldReturn400ForInvalidShippingInstructionId() {
+  @DisplayName("GET booking should return 404 for invalid shipping instruction ID.")
+  void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionId() {
 
     when(shippingInstructionService.findById(any()))
         .thenReturn(Mono.empty());
