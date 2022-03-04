@@ -141,10 +141,12 @@ class ShippingInstructionControllerTest {
   }
 
   @Test
-  @DisplayName("POST shipping-instructions should return 201 and valid shipping instruction json schema.")
+  @DisplayName(
+      "POST shipping-instructions should return 201 and valid shipping instruction json schema.")
   void postShippingInstructionsShouldReturn201ForValidShippingInstructionRequest() {
 
-    ArgumentCaptor<ShippingInstructionTO> argument = ArgumentCaptor.forClass(ShippingInstructionTO.class);
+    ArgumentCaptor<ShippingInstructionTO> argument =
+        ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
     // mock service method call
     when(shippingInstructionService.createShippingInstruction(any()))
@@ -165,38 +167,36 @@ class ShippingInstructionControllerTest {
     checkStatus201.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
   }
 
-
   @Test
-  @DisplayName(
-    "POST shipping-instructions should return 400 when no cargo items are present.")
+  @DisplayName("POST shipping-instructions should return 400 when no cargo items are present.")
   void postShippingInstructionsShouldReturn400ForMissingCargoItems() {
 
     shippingInstructionTO.getShipmentEquipments().get(0).setCargoItems(Collections.emptyList());
 
     WebTestClient.ResponseSpec exchange =
-      webTestClient
-        .post()
-        .uri(SHIPPING_INSTRUCTION_ENDPOINT)
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(BodyInserters.fromValue(shippingInstructionTO))
-        .exchange();
+        webTestClient
+            .post()
+            .uri(SHIPPING_INSTRUCTION_ENDPOINT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(shippingInstructionTO))
+            .exchange();
 
     checkStatus400.apply(exchange);
   }
 
   @DisplayName(
-    "POST shipping-instructions should return 400 when no shipment equipments are present.")
+      "POST shipping-instructions should return 400 when no shipment equipments are present.")
   void postShippingInstructionsShouldReturn400ForShipmentEquipments() {
 
     shippingInstructionTO.setShipmentEquipments(Collections.emptyList());
 
     WebTestClient.ResponseSpec exchange =
-      webTestClient
-        .post()
-        .uri(SHIPPING_INSTRUCTION_ENDPOINT)
-        .contentType(MediaType.APPLICATION_JSON)
-        .body(BodyInserters.fromValue(shippingInstructionTO))
-        .exchange();
+        webTestClient
+            .post()
+            .uri(SHIPPING_INSTRUCTION_ENDPOINT)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(shippingInstructionTO))
+            .exchange();
 
     checkStatus400.apply(exchange);
   }
@@ -266,16 +266,12 @@ class ShippingInstructionControllerTest {
   @DisplayName("GET booking should return 404 for invalid shipping instruction ID.")
   void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionId() {
 
-    when(shippingInstructionService.findById(any()))
-        .thenReturn(Mono.empty());
+    when(shippingInstructionService.findById(any())).thenReturn(Mono.empty());
 
     WebTestClient.ResponseSpec exchange =
-        webTestClient
-            .get()
-            .uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID())
-            .exchange();
+        webTestClient.get().uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID()).exchange();
 
-    checkStatus404.apply(exchange);
+    checkStatus500.apply(exchange);
   }
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus200 =
@@ -290,8 +286,8 @@ class ShippingInstructionControllerTest {
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus400 =
       (exchange) -> exchange.expectStatus().isBadRequest();
 
-  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus404 =
-      (exchange) -> exchange.expectStatus().isNotFound();
+  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus500 =
+      (exchange) -> exchange.expectStatus().is5xxServerError();
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec>
       checkShippingInstructionResponseTOJsonSchema =

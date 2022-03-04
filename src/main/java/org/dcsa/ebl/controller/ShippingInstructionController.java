@@ -29,8 +29,8 @@ public class ShippingInstructionController {
         .findById(shippingInstructionID)
         .switchIfEmpty(
             Mono.error(
-                ConcreteRequestErrorMessageException.notFound(
-                    "No Shipping Instruction found with ID: " + shippingInstructionID)));
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "ShippingInstructionController.findById is attempting to return an empty Mono.")));
   }
 
   @PostMapping

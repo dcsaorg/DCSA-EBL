@@ -1111,6 +1111,25 @@ class ShippingInstructionServiceImplTest {
 
     @Test
     @DisplayName("Test GET shipping instruction for an assumed valid ID.")
+    void testGetShippingInstructionForInvalidID() {
+
+      String invalidShippingInstructionId = UUID.randomUUID().toString();
+
+      when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
+
+      StepVerifier.create(shippingInstructionServiceImpl.findById(invalidShippingInstructionId))
+          .expectErrorSatisfies(
+              throwable -> {
+                Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
+                assertEquals(
+                    "No Shipping Instruction found with ID: " + invalidShippingInstructionId,
+                    throwable.getMessage());
+              })
+          .verify();
+    }
+
+    @Test
+    @DisplayName("Test GET shipping instruction for an assumed valid ID.")
     void testGetShippingInstructionForValidID() {
       String stubbedCRef = UUID.randomUUID().toString();
       when(shippingInstructionRepository.findById(any(String.class)))
