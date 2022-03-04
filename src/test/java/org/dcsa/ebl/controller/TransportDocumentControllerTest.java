@@ -2,10 +2,13 @@ package org.dcsa.ebl.controller;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.model.Address;
+
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.security.SecurityConfig;
+import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
@@ -41,6 +45,9 @@ class TransportDocumentControllerTest {
   private final String TRANSPORT_DOCUMENT_ENDPOINT = "/transport-documents";
 
   TransportDocumentTO transportDocumentTO;
+  TransportDocumentTO approvedTransportDocument;
+  ApproveTransportDocumentRequestTO validTransportDocumentRequestTO;
+  ApproveTransportDocumentRequestTO invalidTransportDocumentRequestTO;
 
   @BeforeEach
   private void init() {
@@ -89,16 +96,6 @@ class TransportDocumentControllerTest {
     shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
     shipmentEquipmentTO.setEquipment(equipmentTO);
 
-    ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
-    shippingInstructionTO.setIsShippedOnboardType(true);
-    shippingInstructionTO.setIsElectronic(true);
-    shippingInstructionTO.setIsToOrder(true);
-    shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
-    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
-    shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
-    shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
-    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
-
     TransportTO transportTO = new TransportTO();
     transportTO.setTransportPlanStageSequenceNumber(1);
     transportTO.setTransportPlanStage(TransportPlanStageCode.MNC);
@@ -112,22 +109,70 @@ class TransportDocumentControllerTest {
     commodityTO.setCargoGrossWeightUnit(CargoGrossWeight.KGM);
     commodityTO.setCommodityType("Type");
 
+    BookingTO bookingTO = new BookingTO();
+    bookingTO.setDocumentStatus(ShipmentEventTypeCode.CMPL);
+    bookingTO.setBookingRequestUpdatedDateTime(OffsetDateTime.now());
+    bookingTO.setBookingRequestCreatedDateTime(OffsetDateTime.now());
+    bookingTO.setCarrierBookingRequestReference("bookingTOCarrierBookingReference");
+    bookingTO.setInvoicePayableAt(locationTO);
+
     ShipmentTO shipmentTO = new ShipmentTO();
     shipmentTO.setCarrierBookingReference("CarrierBookingReference");
     shipmentTO.setShipmentCreatedDateTime(OffsetDateTime.now());
     shipmentTO.setShipmentUpdatedDateTime(OffsetDateTime.now());
-
     shipmentTO.setTransports(List.of(transportTO));
+
+    ShipmentTO approveShipmentTO = new ShipmentTO();
+    approveShipmentTO.setCarrierBookingReference("CarrierBookingReference");
+    approveShipmentTO.setShipmentCreatedDateTime(OffsetDateTime.now());
+    approveShipmentTO.setShipmentUpdatedDateTime(OffsetDateTime.now());
+    approveShipmentTO.setTransports(List.of(transportTO));
+    approveShipmentTO.setBooking(bookingTO);
+
+    ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
+    shippingInstructionTO.setIsShippedOnboardType(true);
+    shippingInstructionTO.setIsElectronic(true);
+    shippingInstructionTO.setIsToOrder(true);
+    shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
+    shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
+    shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
+    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
+    ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
+    approveShippingInstructionTO.setIsShippedOnboardType(true);
+    approveShippingInstructionTO.setIsElectronic(true);
+    approveShippingInstructionTO.setIsToOrder(true);
+    approveShippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    approveShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
+    approveShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
+    approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
+    approveShippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+    approveShippingInstructionTO.setShipments(List.of(approveShipmentTO));
+
+
     transportDocumentTO = new TransportDocumentTO();
-    transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
+    transportDocumentTO.setTransportDocumentReference("TRDocReference1");
     transportDocumentTO.setCharges(List.of(chargeTO));
     transportDocumentTO.setPlaceOfIssue(locationTO);
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
-    transportDocumentTO.setTransportDocumentReference("TRDocReference1");
     transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
+
+    approvedTransportDocument = new TransportDocumentTO();
+    approvedTransportDocument.setTransportDocumentReference("approvedTRDocReference");
+    approvedTransportDocument.setCharges(List.of(chargeTO));
+    approvedTransportDocument.setPlaceOfIssue(locationTO);
+    approvedTransportDocument.setCarrierClauses(List.of(carrierClauseTO));
+    approvedTransportDocument.setShippingInstruction(approveShippingInstructionTO);
+    approvedTransportDocument.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
+
+    // request body for valid & invalid approval request body
+    validTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
+    validTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.APPR);
+    invalidTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
+    invalidTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
   }
 
   @Test
@@ -212,5 +257,93 @@ class TransportDocumentControllerTest {
         .consumeWith(
             response ->
                 JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
+  }
+
+  @Test
+  @DisplayName("Approve at transport document with valid reference should return transport document with SI & booking " +
+    "document statuses set to APPR & CMPL respectively")
+  void testApproveTransportDocumentByReference() {
+
+    when(transportDocumentService.ApproveTransportDocument("approvedTRDocReference"))
+      .thenReturn(Mono.just(approvedTransportDocument));
+
+    webTestClient
+      .put()
+      .uri(
+        uriBuilder ->
+          uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("approvedTRDocReference").build())
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
+      .exchange()
+      .expectStatus()
+      .isOk()
+      .expectBody()
+      .consumeWith(System.out::println)
+      .jsonPath("$.transportDocumentReference").hasJsonPath()
+      .jsonPath("$.shippingInstruction.documentStatus").hasJsonPath()
+      .jsonPath("$.shippingInstruction.shipments[0].booking.documentStatus").hasJsonPath();
+
+  }
+
+
+  @Test
+  @DisplayName("Approve transport document with invalid request body should return bad request")
+  void testApproveTransportDocumentWithInvalidBodyRequest() {
+
+      webTestClient
+        .put()
+        .uri(
+          uriBuilder ->
+            uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue(invalidTransportDocumentRequestTO))
+        .exchange()
+        .expectStatus()
+        .isBadRequest();
+  }
+
+  @Test
+  @DisplayName("Approving a transport document that has a SI with invalid status document status should return bad request")
+  void testApproveTransportDocumentThatHasShippingInstructionInvalidDocumentStatus() {
+
+    when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
+      .thenReturn(
+        Mono.error(
+          ConcreteRequestErrorMessageException.notFound(
+            "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA")));
+
+    webTestClient
+        .put()
+        .uri(
+          uriBuilder ->
+            uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
+        .exchange()
+        .expectStatus()
+        .isNotFound();
+  }
+
+
+  @Test
+  @DisplayName("Approving a transport document that has a SI with no shipments should return bad request")
+  void testApproveTransportDocumentThatHasShippingInstructionWithNoShipments() {
+
+    when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
+      .thenReturn(
+        Mono.error(
+          ConcreteRequestErrorMessageException.notFound(
+            "No shipments found for Shipping instruction of transport document reference: " + "{transport document ID}")));
+
+    webTestClient
+      .put()
+      .uri(
+        uriBuilder ->
+          uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
+      .exchange()
+      .expectStatus()
+      .isNotFound();
   }
 }
