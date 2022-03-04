@@ -5,9 +5,9 @@ import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import reactor.core.publisher.Mono;
 
 public interface ShippingInstructionService {
-  Mono<ShippingInstructionTO> findById(String shippingInstructionID);
+  Mono<ShippingInstructionTO> findById(String shippingInstructionReference);
 
   Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO);
 
-  Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionID(String shippingInstructionID, ShippingInstructionTO update);
+  Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionReference(String shippingInstructionReference, ShippingInstructionTO update);
 }

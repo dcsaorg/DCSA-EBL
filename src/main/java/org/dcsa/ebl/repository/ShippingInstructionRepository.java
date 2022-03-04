@@ -22,16 +22,16 @@ public interface ShippingInstructionRepository
       "SELECT DISTINCT se.shipment_id FROM shipping_instruction si "
           + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
           + "JOIN shipment_equipment se ON se.id = ci.shipment_equipment_id "
-          + "WHERE si.id = :shippingInstructionID")
-  Flux<UUID> findShipmentIDsByShippingInstructionID(String shippingInstructionID);
+          + "WHERE si.id = :shippingInstructionReference")
+  Flux<UUID> findShipmentIDsByShippingInstructionReference(String shippingInstructionReference);
 
   @Query(
       "SELECT DISTINCT s.carrier_booking_reference FROM shipping_instruction si "
           + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
           + "JOIN shipment_equipment se ON se.id = ci.shipment_equipment_id "
           + "JOIN shipment s ON s.id = se.shipment_id "
-          + "WHERE si.id = :shippingInstructionID")
-  Flux<String> findCarrierBookingReferenceByShippingInstructionID(String shippingInstructionID);
+          + "WHERE si.id = :shippingInstructionReference")
+  Flux<String> findCarrierBookingReferenceByShippingInstructionReference(String shippingInstructionReference);
 
   @Modifying
   @Query(
@@ -39,6 +39,6 @@ public interface ShippingInstructionRepository
   Mono<Boolean> setDocumentStatusByID(
       ShipmentEventTypeCode documentStatus, OffsetDateTime updatedDateTime, String id);
 
-  Flux<ShippingInstruction> findShippingInstructionByShippingInstructionIDAndDocumentStatus(
+  Flux<ShippingInstruction> findShippingInstructionByShippingInstructionReferenceAndDocumentStatus(
       String id, ShipmentEventTypeCode documentStatus);
 }

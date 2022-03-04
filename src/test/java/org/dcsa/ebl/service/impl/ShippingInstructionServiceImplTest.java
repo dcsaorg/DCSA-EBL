@@ -162,7 +162,7 @@ class ShippingInstructionServiceImplTest {
     shippingInstruction.setIsShippedOnboardType(true);
     shippingInstruction.setIsElectronic(true);
     shippingInstruction.setIsToOrder(true);
-    shippingInstruction.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstruction.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setPlaceOfIssueID(location.getId());
     shippingInstruction.setAreChargesDisplayedOnCopies(true);
@@ -194,7 +194,7 @@ class ShippingInstructionServiceImplTest {
     cargoItem.setNumberOfPackages(2);
     cargoItem.setPackageCode("XYZ");
     cargoItem.setShipmentEquipmentID(shipmentEquipment.getId());
-    cargoItem.setShippingInstructionID(shippingInstruction.getShippingInstructionID());
+    cargoItem.setShippingInstructionReference(shippingInstruction.getShippingInstructionReference());
 
     shipmentEvent = new ShipmentEvent();
     shipmentEvent.setEventID(UUID.randomUUID());
@@ -202,7 +202,7 @@ class ShippingInstructionServiceImplTest {
         ShipmentEventTypeCode.valueOf(shippingInstruction.getDocumentStatus().name()));
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
-    shipmentEvent.setDocumentID(shippingInstruction.getShippingInstructionID());
+    shipmentEvent.setDocumentID(shippingInstruction.getShippingInstructionReference());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     shipmentEvent.setEventDateTime(shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
@@ -289,9 +289,9 @@ class ShippingInstructionServiceImplTest {
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.just(List.of(shipmentEquipmentTO)));
-      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
+      when(documentPartyService.createDocumentPartiesByShippingInstructionReference(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO)));
-      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
+      when(referenceService.createReferencesByShippingInstructionReferenceAndTOs(any(), any()))
           .thenReturn(Mono.just(List.of(referenceTO)));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
@@ -310,9 +310,9 @@ class ShippingInstructionServiceImplTest {
                 verify(shipmentEquipmentService)
                     .addShipmentEquipmentToShippingInstruction(any(), any());
                 verify(documentPartyService)
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
                 verify(referenceService)
-                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                    .createReferencesByShippingInstructionReferenceAndTOs(any(), any());
 
                 verify(shipmentEventService, times(2))
                     .create(argumentCaptorShipmentEvent.capture());
@@ -332,7 +332,7 @@ class ShippingInstructionServiceImplTest {
                         .getValue());
 
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -340,8 +340,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -364,9 +364,9 @@ class ShippingInstructionServiceImplTest {
 
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
-      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
+      when(documentPartyService.createDocumentPartiesByShippingInstructionReference(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO)));
-      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
+      when(referenceService.createReferencesByShippingInstructionReferenceAndTOs(any(), any()))
           .thenReturn(Mono.just(List.of(referenceTO)));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
@@ -387,9 +387,9 @@ class ShippingInstructionServiceImplTest {
                 verify(shipmentEquipmentService)
                     .addShipmentEquipmentToShippingInstruction(any(), any());
                 verify(documentPartyService)
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
                 verify(referenceService)
-                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                    .createReferencesByShippingInstructionReferenceAndTOs(any(), any());
 
                 verify(shipmentEventService, times(2))
                     .create(argumentCaptorShipmentEvent.capture());
@@ -409,7 +409,7 @@ class ShippingInstructionServiceImplTest {
                         .getValue());
 
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -417,8 +417,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -437,7 +437,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setShipmentEquipments(null);
 
-      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
+      when(referenceService.createReferencesByShippingInstructionReferenceAndTOs(any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
@@ -456,7 +456,7 @@ class ShippingInstructionServiceImplTest {
           .assertNext(
               b -> {
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -481,8 +481,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -491,7 +491,7 @@ class ShippingInstructionServiceImplTest {
 
                 verify(locationService, never()).createLocationByTO(any(), any());
                 verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
               })
           .verifyComplete();
     }
@@ -507,7 +507,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setIsElectronic(false);
       shippingInstructionTO.setNumberOfCopies(null);
 
-      when(referenceService.createReferencesByShippingInstructionIDAndTOs(any(), any()))
+      when(referenceService.createReferencesByShippingInstructionReferenceAndTOs(any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
@@ -526,7 +526,7 @@ class ShippingInstructionServiceImplTest {
           .assertNext(
               b -> {
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Update", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -551,8 +551,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -562,7 +562,7 @@ class ShippingInstructionServiceImplTest {
                 verify(locationService, never()).createLocationByTO(any(), any());
                 verify(shipmentRepository, never()).findByCarrierBookingReference(any());
                 verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
                 assertNull(argumentCaptor.getValue().getPlaceOfIssue());
                 assertNull(argumentCaptor.getValue().getDocumentParties());
                 assertNull(argumentCaptor.getValue().getReferences());
@@ -660,7 +660,7 @@ class ShippingInstructionServiceImplTest {
 
   @Nested
   @DisplayName(
-      "Tests for the method updateShippingInstructionByShippingInstructionID(#ShippingInstructionTO)")
+      "Tests for the method updateShippingInstructionByShippingInstructionReference(#ShippingInstructionTO)")
   class UpdateShippingInstructionTest {
 
     @Test
@@ -681,11 +681,11 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
-      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionID(any(), any()))
+      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
+      when(documentPartyService.resolveDocumentPartiesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionID(any(), any()))
+      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -695,16 +695,16 @@ class ShippingInstructionServiceImplTest {
           ArgumentCaptor.forClass(ShipmentEvent.class);
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .assertNext(
               b -> {
                 verify(locationService).resolveLocationByTO(any(), any(), any());
                 verify(shipmentEquipmentService)
-                    .resolveShipmentEquipmentsForShippingInstructionID(any(), any());
+                    .resolveShipmentEquipmentsForShippingInstructionReference(any(), any());
                 verify(documentPartyService)
-                    .resolveDocumentPartiesForShippingInstructionID(any(), any());
-                verify(referenceService).resolveReferencesForShippingInstructionID(any(), any());
+                    .resolveDocumentPartiesForShippingInstructionReference(any(), any());
+                verify(referenceService).resolveReferencesForShippingInstructionReference(any(), any());
 
                 verify(shipmentEventService, times(2))
                     .create(argumentCaptorShipmentEvent.capture());
@@ -724,7 +724,7 @@ class ShippingInstructionServiceImplTest {
                         .getValue());
 
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -732,8 +732,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -771,11 +771,11 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
-      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionID(any(), any()))
+      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
+      when(documentPartyService.resolveDocumentPartiesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionID(any(), any()))
+      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -785,12 +785,12 @@ class ShippingInstructionServiceImplTest {
           ArgumentCaptor.forClass(ShipmentEvent.class);
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .assertNext(
               b -> {
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -815,8 +815,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -828,9 +828,9 @@ class ShippingInstructionServiceImplTest {
                 verify(shipmentEquipmentService, never())
                     .createShipmentEquipment(any(), any(), any());
                 verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
                 verify(referenceService, never())
-                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                    .createReferencesByShippingInstructionReferenceAndTOs(any(), any());
               })
           .verifyComplete();
     }
@@ -860,11 +860,11 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
-      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionID(any(), any()))
+      when(shipmentEquipmentService.resolveShipmentEquipmentsForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
+      when(documentPartyService.resolveDocumentPartiesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionID(any(), any()))
+      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -874,12 +874,12 @@ class ShippingInstructionServiceImplTest {
           ArgumentCaptor.forClass(ShipmentEvent.class);
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .assertNext(
               b -> {
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(), b.getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
                 assertEquals("Pending Update", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
@@ -904,8 +904,8 @@ class ShippingInstructionServiceImplTest {
                 verify(shippingInstructionMapper)
                     .dtoToShippingInstructionResponseTO(argumentCaptor.capture());
                 assertEquals(
-                    shippingInstruction.getShippingInstructionID(),
-                    argumentCaptor.getValue().getShippingInstructionID());
+                    shippingInstruction.getShippingInstructionReference(),
+                    argumentCaptor.getValue().getShippingInstructionReference());
                 assertEquals(
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
@@ -917,9 +917,9 @@ class ShippingInstructionServiceImplTest {
                 verify(shipmentEquipmentService, never())
                     .createShipmentEquipment(any(), any(), any());
                 verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionReference(any(), any());
                 verify(referenceService, never())
-                    .createReferencesByShippingInstructionIDAndTOs(any(), any());
+                    .createReferencesByShippingInstructionReferenceAndTOs(any(), any());
                 assertNull(argumentCaptor.getValue().getPlaceOfIssue());
                 assertNull(argumentCaptor.getValue().getDocumentParties());
                 assertNull(argumentCaptor.getValue().getReferences());
@@ -944,8 +944,8 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(shippingInstruction));
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .expectErrorSatisfies(
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
@@ -965,14 +965,14 @@ class ShippingInstructionServiceImplTest {
       when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .expectErrorSatisfies(
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
                     "No Shipping Instruction found with ID: "
-                        + shippingInstruction.getShippingInstructionID(),
+                        + shippingInstruction.getShippingInstructionReference(),
                     throwable.getMessage());
               })
           .verify();
@@ -986,8 +986,8 @@ class ShippingInstructionServiceImplTest {
       cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
 
       StepVerifier.create(
-              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionID(
-                  shippingInstruction.getShippingInstructionID(), shippingInstructionTO))
+              shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .expectErrorSatisfies(
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
@@ -1106,23 +1106,23 @@ class ShippingInstructionServiceImplTest {
   }
 
   @Nested
-  @DisplayName("Tests for the method findById(#ShippingInstructionID)")
+  @DisplayName("Tests for the method findById(#ShippingInstructionReference)")
   class GetShippingInstructionTest {
 
     @Test
     @DisplayName("Test GET shipping instruction for an assumed valid ID.")
     void testGetShippingInstructionForInvalidID() {
 
-      String invalidShippingInstructionId = UUID.randomUUID().toString();
+      String invalidShippingInstructionReference = UUID.randomUUID().toString();
 
       when(shippingInstructionRepository.findById(any(String.class))).thenReturn(Mono.empty());
 
-      StepVerifier.create(shippingInstructionServiceImpl.findById(invalidShippingInstructionId))
+      StepVerifier.create(shippingInstructionServiceImpl.findById(invalidShippingInstructionReference))
           .expectErrorSatisfies(
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No Shipping Instruction found with ID: " + invalidShippingInstructionId,
+                    "No Shipping Instruction found with ID: " + invalidShippingInstructionReference,
                     throwable.getMessage());
               })
           .verify();
@@ -1134,22 +1134,22 @@ class ShippingInstructionServiceImplTest {
       String stubbedCRef = UUID.randomUUID().toString();
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
+      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionReference(any()))
           .thenReturn(Flux.just(stubbedCRef));
       when(locationService.fetchLocationByID(any())).thenReturn(Mono.just(locationTO));
       UUID sID1 = UUID.randomUUID();
       UUID sID2 = UUID.randomUUID();
-      when(shippingInstructionRepository.findShipmentIDsByShippingInstructionID(any()))
+      when(shippingInstructionRepository.findShipmentIDsByShippingInstructionReference(any()))
           .thenReturn(Flux.just(sID1, sID2));
       when(shipmentEquipmentService.findShipmentEquipmentByShipmentID(sID1))
           .thenReturn(Mono.just(Collections.singletonList(shipmentEquipmentTO)));
       when(shipmentEquipmentService.findShipmentEquipmentByShipmentID(sID2))
           .thenReturn(Mono.just(Collections.singletonList(shipmentEquipmentTO)));
-      when(documentPartyService.fetchDocumentPartiesByByShippingInstructionID(any()))
+      when(documentPartyService.fetchDocumentPartiesByByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(documentPartyTO)));
-      when(referenceService.findByShippingInstructionID(any()))
+      when(referenceService.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(referenceTO)));
-      when(shipmentService.findByShippingInstructionID(any()))
+      when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(shipmentTO)));
 
       StepVerifier.create(shippingInstructionServiceImpl.findById(UUID.randomUUID().toString()))

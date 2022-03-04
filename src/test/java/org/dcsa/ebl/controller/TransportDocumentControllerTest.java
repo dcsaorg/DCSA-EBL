@@ -133,7 +133,7 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setIsShippedOnboardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
-    shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
@@ -144,7 +144,7 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setIsShippedOnboardType(true);
     approveShippingInstructionTO.setIsElectronic(true);
     approveShippingInstructionTO.setIsToOrder(true);
-    approveShippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    approveShippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     approveShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
     approveShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);

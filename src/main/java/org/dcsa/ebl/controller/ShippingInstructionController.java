@@ -23,10 +23,10 @@ public class ShippingInstructionController {
 
   private final ShippingInstructionService shippingInstructionService;
 
-  @GetMapping(path = "/{shippingInstructionID}")
-  public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
+  @GetMapping(path = "/{shippingInstructionReference}")
+  public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionReference) {
     return shippingInstructionService
-        .findById(shippingInstructionID)
+        .findById(shippingInstructionReference)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.internalServerError(
@@ -40,12 +40,12 @@ public class ShippingInstructionController {
     return shippingInstructionService.createShippingInstruction(shippingInstructionTO);
   }
 
-  @PutMapping(path = "/{shippingInstructionID}")
+  @PutMapping(path = "/{shippingInstructionReference}")
   @ResponseStatus(HttpStatus.OK)
   public Mono<ShippingInstructionResponseTO> update(
-      @PathVariable String shippingInstructionID,
+      @PathVariable String shippingInstructionReference,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(
-        shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByShippingInstructionReference(
+        shippingInstructionReference, shippingInstructionTO);
   }
 }

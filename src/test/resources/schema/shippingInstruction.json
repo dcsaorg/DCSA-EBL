@@ -5,7 +5,7 @@
         {
             "type": "object",
             "properties": {
-                "shippingInstructionID": {
+                "shippingInstructionReference": {
                     "allOf": [
                         {
                             "maxLength": 100,
@@ -402,7 +402,7 @@
                                             "$schema": "http://json-schema.org/schema#"
                                         },
                                         {
-                                            
+
                                         },
                                         {
                                             "description": "The location where the original transport document (bill of lading) will be issued.\n"
@@ -1003,7 +1003,7 @@
                                                                                                                 "description": "Name of the eBL solution provider\n"
                                                                                                             },
                                                                                                             {
-                                                                                                                
+
                                                                                                             }
                                                                                                         ]
                                                                                                     }

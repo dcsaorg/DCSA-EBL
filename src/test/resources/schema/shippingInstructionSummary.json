@@ -1,18 +1,18 @@
 {
     "required": [
-        "shippingInstructionID"
+        "shippingInstructionReference"
     ],
     "type": "object",
     "description": "A 'shallow' representation of the Shipping Instruction. This version of the Shipping Instruction does not contain nested objects. For a 'rich' version of the Shipping Instruction please use the `GET` endPoint.\n",
     "allOf": [
         {
             "type": "object",
-            "description": "The `shippingInstructionID` along with the `documentStatus`, created and updated timestamps is returned\n",
+            "description": "The `shippingInstructionReference` along with the `documentStatus`, created and updated timestamps is returned\n",
             "allOf": [
                 {
                     "type": "object",
                     "properties": {
-                        "shippingInstructionID": {
+                        "shippingInstructionReference": {
                             "allOf": [
                                 {
                                     "maxLength": 100,

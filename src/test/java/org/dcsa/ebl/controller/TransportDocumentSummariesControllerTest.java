@@ -73,7 +73,7 @@ class TransportDocumentSummariesControllerTest {
 
     OffsetDateTime now = OffsetDateTime.now();
     transportDocumentSummary = new TransportDocumentSummary();
-    transportDocumentSummary.setShippingInstructionID(UUID.randomUUID().toString());
+    transportDocumentSummary.setShippingInstructionReference(UUID.randomUUID().toString());
     transportDocumentSummary.setDocumentStatus(ShipmentEventTypeCode.RECE);
     transportDocumentSummary.setTransportDocumentRequestCreatedDateTime(now);
     transportDocumentSummary.setTransportDocumentRequestUpdatedDateTime(now);
@@ -169,7 +169,7 @@ class TransportDocumentSummariesControllerTest {
               exchange
                   .expectBody()
                   .consumeWith(System.out::println)
-                  .jsonPath("$.[0].shippingInstructionID")
+                  .jsonPath("$.[0].shippingInstructionReference")
                   .hasJsonPath()
                   .jsonPath("$.[0].documentStatus")
                   .hasJsonPath()

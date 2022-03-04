@@ -11,7 +11,7 @@ import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.EBL_DOCUMEN
 
 @Data
 public class ShippingInstructionResponseTO {
-  private String shippingInstructionID;
+  private String shippingInstructionReference;
 
   @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
   private ShipmentEventTypeCode documentStatus;

@@ -32,11 +32,11 @@ public class ExtendedTransportDocumentSummaryRequest extends ExtendedRequest<Tra
         super.prepareDBEntityAnalysis();
     return builder
         .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), ShippingInstruction.class)
-        .onFieldEqualsThen("shippingInstructionID", "shippingInstructionID")
+        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
         .registerQueryFieldFromField("documentStatus")
         .onTable(ShippingInstruction.class)
         .chainJoin(CargoItem.class)
-        .onFieldEqualsThen("shippingInstructionID", "shippingInstructionID")
+        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
         .chainJoin(ShipmentEquipment.class)
         .onFieldEqualsThen("shipmentEquipmentID", "id")
         .chainJoin(Shipment.class)

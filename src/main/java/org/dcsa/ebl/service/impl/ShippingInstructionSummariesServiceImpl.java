@@ -45,9 +45,9 @@ public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServ
     return instructions
       .collectList()
       .map(shippingInstructions -> shippingInstructionRepository
-        .findCarrierBookingReferences(shippingInstructions.stream().map(AbstractShippingInstruction::getShippingInstructionID).collect(Collectors.toList()))
+        .findCarrierBookingReferences(shippingInstructions.stream().map(AbstractShippingInstruction::getShippingInstructionReference).collect(Collectors.toList()))
         .map(map -> shippingInstructions.stream()
-          .map(si -> mapDaoToDto(si, map.getOrDefault(si.getShippingInstructionID(), Collections.emptyList())))
+          .map(si -> mapDaoToDto(si, map.getOrDefault(si.getShippingInstructionReference(), Collections.emptyList())))
           .collect(Collectors.toList())
       ))
       .flatMap(Function.identity())
