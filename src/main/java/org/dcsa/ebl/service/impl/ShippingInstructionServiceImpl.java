@@ -23,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -216,7 +217,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     List<String> carrierBookingReferences;
     if (shippingInstructionTO.getCarrierBookingReference() != null) {
-      carrierBookingReferences = Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
+      carrierBookingReferences =
+          Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
     } else {
       carrierBookingReferences =
           shippingInstructionTO.getShipmentEquipments().stream()
