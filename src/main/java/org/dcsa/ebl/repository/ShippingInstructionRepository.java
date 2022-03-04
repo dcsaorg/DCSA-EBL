@@ -7,6 +7,8 @@ import org.springframework.data.r2dbc.repository.Modifying;
 import org.springframework.data.r2dbc.repository.Query;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public interface ShippingInstructionRepository
@@ -31,5 +33,12 @@ public interface ShippingInstructionRepository
           + "WHERE si.id = :shippingInstructionID")
   Flux<String> findCarrierBookingReferenceByShippingInstructionID(String shippingInstructionID);
 
-  Flux<ShippingInstruction> findShippingInstructionByShippingInstructionIDAndDocumentStatus(String id, ShipmentEventTypeCode documentStatus);
+  @Modifying
+  @Query(
+      "UPDATE shipping_instruction SET document_status = :documentStatus, updated_date_time = :updatedDateTime where id = :id")
+  Mono<Boolean> setDocumentStatusByID(
+      ShipmentEventTypeCode documentStatus, OffsetDateTime updatedDateTime, String id);
+
+  Flux<ShippingInstruction> findShippingInstructionByShippingInstructionIDAndDocumentStatus(
+      String id, ShipmentEventTypeCode documentStatus);
 }
