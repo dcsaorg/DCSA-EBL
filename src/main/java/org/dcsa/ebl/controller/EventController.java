@@ -65,10 +65,10 @@ public class EventController extends AbstractEventController<EBLShipmentEventSer
   public Flux<Event> findAll(
       @RequestParam(value = "shipmentEventTypeCode", required = false)
           @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
-          ShipmentEventTypeCode shipmentEventTypeCode,
+          String shipmentEventTypeCode,  // String because it is a comma separated list of values
       @RequestParam(value = "documentTypeCode", required = false)
           @EnumSubset(anyOf = EBL_DOCUMENT_TYPE_CODES)
-          DocumentTypeCode documentTypeCode,
+          String documentTypeCode,  // String because it is a comma separated list of values
       @RequestParam(value = "carrierBookingReference", required = false) @Size(max = 35)
           String carrierBookingReference,
       @RequestParam(value = "carrierBookingRequestReference", required = false)
