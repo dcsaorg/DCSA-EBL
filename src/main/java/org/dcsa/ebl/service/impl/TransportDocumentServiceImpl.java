@@ -10,6 +10,7 @@ import org.dcsa.core.events.model.Carrier;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
+import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.EventType;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
@@ -34,6 +35,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
+
+import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipmentEventFromShippingInstruction;
 
 @RequiredArgsConstructor
 @Service
@@ -185,6 +188,7 @@ public class TransportDocumentServiceImpl
                         "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA"));
               }
 
+              TdTO.setTransportDocumentUpdatedDateTime(now);
               ShippingInstructionTO shippingInstructionTO = TdTO.getShippingInstruction();
               shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.APPR);
               shippingInstructionTO.setShippingInstructionUpdatedDateTime(now);
@@ -230,13 +234,18 @@ public class TransportDocumentServiceImpl
                                                               now)
                                                           .thenReturn(bookingTO);
                                                     })
+                                                .flatMap(
+                                                    bookingTO ->
+                                                        createShipmentEventFromBookingTO(bookingTO)
+                                                            .thenReturn(bookingTO))
                                                 .doOnNext(shipmentTO::setBooking))
                                     .then(Mono.just(shipmentTOs));
                               })
                           .flatMap(
-                              shippings -> {
-                                shippingInstructionTO.setShipments(shippings);
-                                return Mono.just(shippingInstructionTO);
+                            shipmentTOs -> {
+                                shippingInstructionTO.setShipments(shipmentTOs);
+                                return createShipmentEventFromShippingInstruction(shippingInstructionTO)
+                                  .thenReturn(shippingInstructionTO);
                               })
                           .doOnNext(TdTO::setShippingInstruction))
                   .thenReturn(TdTO);
@@ -259,10 +268,36 @@ public class TransportDocumentServiceImpl
                         + " does not exist!")));
   }
 
+  private Mono<ShipmentEvent> shipmentEventFromBookingTO(BookingTO booking, String reason) {
+    ShipmentEvent shipmentEvent = new ShipmentEvent();
+    shipmentEvent.setShipmentEventTypeCode(
+        ShipmentEventTypeCode.valueOf(booking.getDocumentStatus().name()));
+    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.CBR);
+    shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
+    shipmentEvent.setEventType(null);
+    shipmentEvent.setCarrierBookingReference(null);
+    shipmentEvent.setDocumentID(booking.getCarrierBookingRequestReference());
+    shipmentEvent.setEventDateTime(booking.getBookingRequestUpdatedDateTime());
+    shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setReason(reason);
+    return Mono.just(shipmentEvent);
+  }
+
+  Mono<ShipmentEvent> createShipmentEventFromBookingTO(BookingTO bookingTO) {
+
+    return shipmentEventFromBookingTO(bookingTO, "Booking is approved")
+        .flatMap(shipmentEventService::create)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "Failed to create shipment event for transport Document:"
+                        + bookingTO.getCarrierBookingRequestReference())));
+  }
+
   Mono<ShipmentEvent> createShipmentEventFromTransportDocumentTO(
       TransportDocumentTO transportDocumentTO) {
 
-    return shipmentEventFromTransportDocumentTO(transportDocumentTO)
+    return shipmentEventFromTransportDocumentTO(transportDocumentTO, "Transport document is approved")
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -272,17 +307,36 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
-      TransportDocumentTO transportDocumentTO) {
+      TransportDocumentTO transportDocumentTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(
             transportDocumentTO.getShippingInstruction().getDocumentStatus().name()));
     shipmentEvent.setEventType(null);
-    shipmentEvent.setCarrierBookingReference(null);
-    shipmentEvent.setDocumentID(transportDocumentTO.getTransportDocumentReference());
-    shipmentEvent.setEventDateTime(OffsetDateTime.now());
+    shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
+    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
+    shipmentEvent.setCarrierBookingReference(transportDocumentTO.getTransportDocumentReference());
+    shipmentEvent.setDocumentID(transportDocumentTO.getShippingInstruction().getShippingInstructionID());
+    shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
-    shipmentEvent.setEventClassifierCode(EventClassifierCode.PLN);
     return Mono.just(shipmentEvent);
+  }
+
+  private Mono<ShipmentEvent> createShipmentEventFromShippingInstruction(
+      ShippingInstructionTO shippingInstruction) {
+    return shipmentEventFromShippingInstruction(shippingInstruction,
+      "All bookings in shipping instruction are approved")
+        .flatMap(shipmentEventService::create)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.invalidParameter(
+                    "Failed to create shipment event for ShippingInstruction: "
+                        + shippingInstruction.getShippingInstructionID())));
+  }
+
+  private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
+      ShippingInstructionTO shippingInstructionTO, String reason) {
+    return getShipmentEventFromShippingInstruction(reason, shippingInstructionTO.getDocumentStatus(),
+      shippingInstructionTO.getShippingInstructionID(), shippingInstructionTO.getShippingInstructionUpdatedDateTime());
   }
 }
