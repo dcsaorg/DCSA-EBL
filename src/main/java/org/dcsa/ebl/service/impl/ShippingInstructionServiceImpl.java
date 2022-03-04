@@ -337,8 +337,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(String reason, ShipmentEventTypeCode documentStatus, String shippingInstructionID, OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
-    shipmentEvent.setShipmentEventTypeCode(
-        ShipmentEventTypeCode.valueOf(documentStatus.name()));
+    shipmentEvent.setShipmentEventTypeCode(documentStatus);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
