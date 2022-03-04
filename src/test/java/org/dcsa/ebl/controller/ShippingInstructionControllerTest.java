@@ -132,12 +132,11 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
 
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionTO.setShippingInstructionCreatedDateTime(now);
-    shippingInstructionTO.setShippingInstructionUpdatedDateTime(now);
-
     shippingInstructionResponseTO =
         shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO);
     shippingInstructionResponseTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
+    shippingInstructionResponseTO.setShippingInstructionCreatedDateTime(now);
+    shippingInstructionResponseTO.setShippingInstructionUpdatedDateTime(now);
   }
 
   @Test
@@ -263,7 +262,7 @@ class ShippingInstructionControllerTest {
   }
 
   @Test
-  @DisplayName("GET booking should return 404 for invalid shipping instruction ID.")
+  @DisplayName("GET booking should return 404 for invalid shipping instruction reference.")
   void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionReference() {
 
     when(shippingInstructionService.findById(any())).thenReturn(Mono.empty());

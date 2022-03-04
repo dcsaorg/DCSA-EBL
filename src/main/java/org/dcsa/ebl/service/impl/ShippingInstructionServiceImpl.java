@@ -2,21 +2,15 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
+import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.CargoItemTO;
-import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
-import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
-import org.dcsa.core.events.service.DocumentPartyService;
-import org.dcsa.core.events.service.LocationService;
-import org.dcsa.core.events.service.ReferenceService;
-import org.dcsa.core.events.service.ShipmentEquipmentService;
-import org.dcsa.core.events.service.ShipmentEventService;
+import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -29,10 +23,12 @@ import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -46,6 +42,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
   private final ShipmentService shipmentService;
+
+  private final BookingRepository bookingRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -118,8 +116,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
-    return shippingInstructionRepository
-        .save(shippingInstruction)
+    return validateDocumentStatusOnBooking(shippingInstructionTO)
+        .flatMap(ignored -> shippingInstructionRepository.save(shippingInstruction))
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
@@ -161,8 +159,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
 
-    return shippingInstructionRepository
-        .findById(shippingInstructionReference)
+    return validateDocumentStatusOnBooking(shippingInstructionRequest)
+        .flatMap(ignored -> shippingInstructionRepository.findById(shippingInstructionReference))
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
@@ -217,6 +215,50 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
+  }
+
+  Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
+
+    List<String> carrierBookingReferences;
+    if (shippingInstructionTO.getCarrierBookingReference() != null) {
+      carrierBookingReferences =
+          Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
+    } else {
+      carrierBookingReferences =
+          shippingInstructionTO.getShipmentEquipments().stream()
+              .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
+              .distinct()
+              .collect(Collectors.toList());
+    }
+
+    return Flux.fromIterable(carrierBookingReferences)
+        .flatMap(
+            carrierBookingReference ->
+                bookingRepository
+                    .findAllByCarrierBookingReference(carrierBookingReference)
+                    .flatMap(
+                        booking -> {
+                          if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
+                            return Mono.error(
+                                ConcreteRequestErrorMessageException.invalidParameter(
+                                    "DocumentStatus "
+                                        + booking.getDocumentStatus()
+                                        + " for booking "
+                                        + booking.getCarrierBookingRequestReference()
+                                        + " related to carrier booking reference "
+                                        + carrierBookingReference
+                                        + " is not in "
+                                        + ShipmentEventTypeCode.CONF
+                                        + " state!"));
+                          }
+                          return Mono.just(booking);
+                        })
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.notFound(
+                                "No booking found for carrier booking reference: "
+                                    + carrierBookingReference))))
+        .collectList();
   }
 
   private Mono<LocationTO> insertLocationTO(LocationTO placeOfIssue, String shippingInstructionReference) {
@@ -337,8 +379,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(String reason, ShipmentEventTypeCode documentStatus, String shippingInstructionReference, OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
-    shipmentEvent.setShipmentEventTypeCode(
-        ShipmentEventTypeCode.valueOf(documentStatus.name()));
+    shipmentEvent.setShipmentEventTypeCode(documentStatus);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
