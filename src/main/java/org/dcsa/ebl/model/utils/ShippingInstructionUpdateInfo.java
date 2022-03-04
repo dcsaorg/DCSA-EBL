@@ -2,7 +2,7 @@ package org.dcsa.ebl.model.utils;
 
 import lombok.Data;
 import lombok.NonNull;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 
 import java.util.ArrayList;
 import java.util.List;

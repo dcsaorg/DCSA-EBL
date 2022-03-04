@@ -1,8 +1,9 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,19 +25,27 @@ public class ShippingInstructionController {
 
   @GetMapping(path = "/{shippingInstructionID}")
   public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionID) {
-    return shippingInstructionService.findById(shippingInstructionID);
+    return shippingInstructionService
+        .findById(shippingInstructionID)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "ShippingInstructionController.findById is attempting to return an empty Mono.")));
   }
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  public Mono<ShippingInstructionResponseTO> create(@Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
+  public Mono<ShippingInstructionResponseTO> create(
+      @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
     return shippingInstructionService.createShippingInstruction(shippingInstructionTO);
   }
 
   @PutMapping(path = "/{shippingInstructionID}")
-  public Mono<ShippingInstructionTO> update(
+  @ResponseStatus(HttpStatus.OK)
+  public Mono<ShippingInstructionResponseTO> update(
       @PathVariable String shippingInstructionID,
       @Valid @RequestBody ShippingInstructionTO shippingInstructionTO) {
-    return shippingInstructionService.replaceOriginal(shippingInstructionID, shippingInstructionTO);
+    return shippingInstructionService.updateShippingInstructionByShippingInstructionID(
+        shippingInstructionID, shippingInstructionTO);
   }
 }
