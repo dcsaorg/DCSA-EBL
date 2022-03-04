@@ -55,6 +55,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   public Mono<ShippingInstructionTO> findById(String shippingInstructionID) {
     return Mono.justOrEmpty(shippingInstructionID)
         .flatMap(shippingInstructionRepository::findById)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No Shipping Instruction found with ID: " + shippingInstructionID)))
         .flatMap(
             si -> {
               ShippingInstructionTO siTO = shippingInstructionMapper.shippingInstructionToDTO(si);
