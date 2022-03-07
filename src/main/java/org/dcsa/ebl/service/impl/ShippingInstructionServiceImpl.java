@@ -169,23 +169,12 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              ShippingInstruction shippingInstruction =
-                  shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
-              shippingInstruction.setShippingInstructionReference(si.getShippingInstructionReference());
-              shippingInstruction.setShippingInstructionCreatedDateTime(
-                  si.getShippingInstructionCreatedDateTime());
-              shippingInstruction.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
-              shippingInstruction.setDocumentStatus(si.getDocumentStatus());
-              return shippingInstructionRepository.save(shippingInstruction);
-            })
-        .flatMap(
-            si -> {
               shippingInstructionRequest.setShippingInstructionReference(si.getShippingInstructionReference());
               shippingInstructionRequest.setDocumentStatus(si.getDocumentStatus());
               shippingInstructionRequest.setShippingInstructionCreatedDateTime(
                   si.getShippingInstructionCreatedDateTime());
               shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
-                  si.getShippingInstructionUpdatedDateTime());
+                OffsetDateTime.now());
               return Mono.when(
                       locationService
                           .resolveLocationByTO(
@@ -213,8 +202,19 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   .thenReturn(shippingInstructionRequest);
             })
         .flatMap(createShipmentEventFromDocumentStatus)
-        .flatMap(
-            siTO -> Mono.just(shippingInstructionMapper.dtoToShippingInstructionResponseTO(siTO)));
+      .flatMap(
+        siTO -> {
+          ShippingInstruction shippingInstruction =
+            shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
+          shippingInstruction.setShippingInstructionReference(siTO.getShippingInstructionReference());
+          shippingInstruction.setDocumentStatus(siTO.getDocumentStatus());
+          shippingInstruction.setShippingInstructionCreatedDateTime(
+            siTO.getShippingInstructionCreatedDateTime());
+          shippingInstruction.setShippingInstructionUpdatedDateTime(
+            siTO.getShippingInstructionUpdatedDateTime());
+          return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
+        })
+      .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
   Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
