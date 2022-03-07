@@ -35,13 +35,13 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
     @Data
     @RequiredArgsConstructor
     private static class Pair {
-        private final String shippingInstructionId;
+        private final String shippingInstructionReference;
         private final String carrierBookingReference;
     }
 
     @Override
-    public Mono<Map<String, List<String>>> findCarrierBookingReferences(List<String> shippingInstructionIds) {
-        if (shippingInstructionIds.isEmpty()) {
+    public Mono<Map<String, List<String>>> findCarrierBookingReferences(List<String> shippingInstructionReferences) {
+        if (shippingInstructionReferences.isEmpty()) {
             log.debug("No shipping instructions found");
             return Mono.just(Collections.emptyMap());
         }
@@ -50,10 +50,10 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
                 .select(List.of(ShippingInstructionSpec.id, ShipmentSpec.carrierBookingReference))
                 .from(ShippingInstructionSpec.table, CargoItemSpec.table, ShipmentEquipmentSpec.table, ShipmentSpec.table)
                 .where(
-                        isEqual(ShippingInstructionSpec.id, CargoItemSpec.shippingInstructionId)
+                        isEqual(ShippingInstructionSpec.id, CargoItemSpec.shippingInstructionReference)
                                 .and(isEqual(CargoItemSpec.shipmentEquipmentId, ShipmentEquipmentSpec.id))
                                 .and(isEqual(ShipmentEquipmentSpec.shipmentId, ShipmentSpec.id))
-                                .and(columnIn(ShippingInstructionSpec.id, shippingInstructionIds))
+                                .and(columnIn(ShippingInstructionSpec.id, shippingInstructionReferences))
                 ).build();
 
         RenderContextFactory factory = new RenderContextFactory(r2dbcDialect);
@@ -62,7 +62,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         String sql = sqlRenderer.render(query);
         log.debug("select = {}", sql);
 
-        return addBinds(client.sql(sql), shippingInstructionIds)
+        return addBinds(client.sql(sql), shippingInstructionReferences)
                 .map(row ->
                     new Pair(
                             row.get("id", String.class),
@@ -72,7 +72,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
                 .all()
                 .collect(
                         HashMap::new,
-                        (map, value) -> map.computeIfAbsent(value.shippingInstructionId, k -> new ArrayList<>()).add(value.carrierBookingReference)
+                        (map, value) -> map.computeIfAbsent(value.shippingInstructionReference, k -> new ArrayList<>()).add(value.carrierBookingReference)
                 );
     }
 
@@ -100,7 +100,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
     private static class CargoItemSpec {
         public static final Table table = Table.create("cargo_item");
         public static final Column id = Column.create("id", table);
-        public static final Column shippingInstructionId = Column.create("shipping_instruction_id", table);
+        public static final Column shippingInstructionReference = Column.create("shipping_instruction_id", table);
         public static final Column shipmentEquipmentId = Column.create("shipment_equipment_id", table);
     }
 

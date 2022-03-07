@@ -126,7 +126,7 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setIsShippedOnboardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
-    shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
@@ -226,7 +226,7 @@ class ShippingInstructionControllerTest {
         ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
     // mock service method call
-    when(shippingInstructionService.updateShippingInstructionByShippingInstructionID(any(), any()))
+    when(shippingInstructionService.updateShippingInstructionByShippingInstructionReference(any(), any()))
         .thenReturn(Mono.just(shippingInstructionResponseTO));
 
     WebTestClient.ResponseSpec exchange =
@@ -262,8 +262,8 @@ class ShippingInstructionControllerTest {
   }
 
   @Test
-  @DisplayName("GET booking should return 404 for invalid shipping instruction ID.")
-  void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionId() {
+  @DisplayName("GET booking should return 404 for invalid shipping instruction reference.")
+  void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionReference() {
 
     when(shippingInstructionService.findById(any())).thenReturn(Mono.empty());
 
@@ -294,7 +294,7 @@ class ShippingInstructionControllerTest {
               exchange
                   .expectBody()
                   .consumeWith(System.out::println)
-                  .jsonPath("$.shippingInstructionID")
+                  .jsonPath("$.shippingInstructionReference")
                   .hasJsonPath()
                   .jsonPath("$.documentStatus")
                   .hasJsonPath()

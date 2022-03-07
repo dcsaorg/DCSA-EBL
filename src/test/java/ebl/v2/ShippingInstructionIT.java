@@ -39,7 +39,7 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_CREATED)
-        .body("shippingInstructionID", notNullValue())
+        .body("shippingInstructionReference", notNullValue())
         .body("documentStatus", equalTo("PENC"))
         .body("shippingInstructionCreatedDateTime", notNullValue())
         .body("shippingInstructionUpdatedDateTime", notNullValue())

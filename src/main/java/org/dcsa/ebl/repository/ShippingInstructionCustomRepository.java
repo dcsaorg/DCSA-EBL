@@ -6,5 +6,5 @@ import java.util.List;
 import java.util.Map;
 
 public interface ShippingInstructionCustomRepository {
-  Mono<Map<String, List<String>>> findCarrierBookingReferences(List<String> shippingInstructionIds);
+  Mono<Map<String, List<String>>> findCarrierBookingReferences(List<String> shippingInstructionReferences);
 }

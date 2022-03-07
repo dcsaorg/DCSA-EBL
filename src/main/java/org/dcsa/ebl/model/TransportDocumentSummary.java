@@ -27,7 +27,7 @@ public class TransportDocumentSummary {
 
   @NotNull
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  private String shippingInstructionID;
+  private String shippingInstructionReference;
 
   @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
   private ShipmentEventTypeCode documentStatus;

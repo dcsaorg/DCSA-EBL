@@ -15,7 +15,7 @@ import java.util.List;
 public class ShippingInstructionSummaryTO {
     @NotNull
     @Size(max = 100)
-    private String shippingInstructionID;
+    private String shippingInstructionReference;
 
     private ShipmentEventTypeCode documentStatus;
 

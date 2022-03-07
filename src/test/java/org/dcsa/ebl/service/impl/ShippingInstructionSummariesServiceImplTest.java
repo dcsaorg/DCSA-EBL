@@ -66,7 +66,7 @@ public class ShippingInstructionSummariesServiceImplTest {
 
   private void buildShippingInstruction(String id, List<String> carrierBookingReferences) {
     ShippingInstruction si = new ShippingInstruction();
-    si.setShippingInstructionID(id);
+    si.setShippingInstructionReference(id);
 
     shippingInstructions.add(si);
     if (carrierBookingReferences != null) {
@@ -76,7 +76,7 @@ public class ShippingInstructionSummariesServiceImplTest {
 
   private ShippingInstructionSummaryTO createShippingInstructionSummaryTO(String id, List<String> carrierBookingReferences) {
     return ShippingInstructionSummaryTO.builder()
-      .shippingInstructionID(id)
+      .shippingInstructionReference(id)
       .carrierBookingReferences(carrierBookingReferences)
       .build();
   }

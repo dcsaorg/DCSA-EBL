@@ -1,6 +1,6 @@
 {
     "required": [
-        "shippingInstructionID"
+        "shippingInstructionReference"
     ],
     "type": "object",
     "description": "A 'shallow' representation of the Transport Document. This version of the Transport Document does not contain nested objects. For a 'rich' version of the Transport Document please use the `GET` endPoint.\n",
@@ -149,7 +149,7 @@
         {
             "type": "object",
             "properties": {
-                "shippingInstructionID": {
+                "shippingInstructionReference": {
                     "maxLength": 100,
                     "type": "string",
                     "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n",

@@ -27,7 +27,7 @@ public class ShippingInstructionSummariesExtendedRequest extends ExtendedRequest
     DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> builder = super.prepareDBEntityAnalysis();
     return builder
         .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
-        .onFieldEqualsThen("shippingInstructionID", "shippingInstructionID")
+        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
         .chainJoin(ShipmentEquipment.class)
         .onFieldEqualsThen("shipmentEquipmentID", "id")
         .chainJoin(Shipment.class)

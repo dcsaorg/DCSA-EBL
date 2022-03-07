@@ -275,7 +275,7 @@
                                 "properties": {
                                     "documentReferenceType": {
                                         "type": "string",
-                                        "description": "Describes where the documentReferenceValue is pointing to:\n- CBR (Carrier Booking Request Reference)\n- BKG (Carrier Booking Reference)\n- SHI (Shipping Instruction ID)\n- TRD (Transport Document)\n",
+                                        "description": "Describes where the documentReferenceValue is pointing to:\n- CBR (Carrier Booking Request Reference)\n- BKG (Carrier Booking Reference)\n- SHI (Shipping Instruction reference)\n- TRD (Transport Document)\n",
                                         "enum": [
                                             "CBR",
                                             "BKG",

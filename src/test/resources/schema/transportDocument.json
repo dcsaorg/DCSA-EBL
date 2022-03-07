@@ -353,12 +353,12 @@
               "allOf": [
                 {
                   "type": "object",
-                  "description": "The `shippingInstructionID` along with the `documentStatus`, created and updated timestamps is returned\n",
+                  "description": "The `shippingInstructionReference` along with the `documentStatus`, created and updated timestamps is returned\n",
                   "allOf": [
                     {
                       "type": "object",
                       "properties": {
-                        "shippingInstructionID": {
+                        "shippingInstructionReference": {
                           "allOf": [
                             {
                               "maxLength": 100,

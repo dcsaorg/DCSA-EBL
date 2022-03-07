@@ -75,18 +75,18 @@ public class TransportDocumentServiceImpl
         transportDocumentMapper.transportDocumentToTransportDocumentSummary(transportDocument);
 
     return shippingInstructionRepository
-        .findById(transportDocumentSummary.getShippingInstructionID())
+        .findById(transportDocumentSummary.getShippingInstructionReference())
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.internalServerError(
-                    "No shipping instruction was found with ID: "
-                        + transportDocument.getShippingInstructionID())))
+                    "No shipping instruction was found with reference: "
+                        + transportDocument.getShippingInstructionReference())))
         .flatMap(
             shippingInstruction -> {
               transportDocumentSummary.setDocumentStatus(shippingInstruction.getDocumentStatus());
               return shippingInstructionRepository
-                  .findCarrierBookingReferenceByShippingInstructionID(
-                      shippingInstruction.getShippingInstructionID())
+                  .findCarrierBookingReferenceByShippingInstructionReference(
+                      shippingInstruction.getShippingInstructionReference())
                   .collectList()
                   .doOnNext(transportDocumentSummary::setCarrierBookingReferences)
                   .thenReturn(transportDocumentSummary);
@@ -141,12 +141,12 @@ public class TransportDocumentServiceImpl
                           .fetchLocationDeepObjByID(transportDocument.getPlaceOfIssue())
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
                       shippingInstructionService
-                          .findById(transportDocument.getShippingInstructionID())
+                          .findById(transportDocument.getShippingInstructionReference())
                           .switchIfEmpty(
                               Mono.error(
                                   ConcreteRequestErrorMessageException.notFound(
-                                      "No shipping instruction found with shipping instruction id: "
-                                          + transportDocument.getShippingInstructionID())))
+                                      "No shipping instruction found with shipping instruction reference: "
+                                          + transportDocument.getShippingInstructionReference())))
                           .doOnNext(transportDocumentTO::setShippingInstruction),
                       chargeService
                           .fetchChargesByTransportDocumentReference(transportDocumentReference)
@@ -198,10 +198,10 @@ public class TransportDocumentServiceImpl
                       shippingInstructionRepository.setDocumentStatusByID(
                           shippingInstructionTO.getDocumentStatus(),
                           shippingInstructionTO.getShippingInstructionUpdatedDateTime(),
-                          shippingInstructionTO.getShippingInstructionID()),
+                          shippingInstructionTO.getShippingInstructionReference()),
                       shipmentService
-                          .findByShippingInstructionID(
-                              TdTO.getShippingInstruction().getShippingInstructionID())
+                          .findByShippingInstructionReference(
+                            TdTO.getShippingInstruction().getShippingInstructionReference())
                           .flatMap(
                               shipmentTOs -> {
                                 // check if returned list is empty
@@ -217,7 +217,7 @@ public class TransportDocumentServiceImpl
                                             getBooking(
                                                     shipmentTO.getCarrierBookingReference(),
                                                     TdTO.getShippingInstruction()
-                                                        .getShippingInstructionID()) //
+                                                        .getShippingInstructionReference()) //
                                                 .flatMap(
                                                     ignored -> {
                                                       BookingTO bookingTO = shipmentTO.getBooking();
@@ -255,7 +255,7 @@ public class TransportDocumentServiceImpl
         .flatMap(TdTO -> createShipmentEventFromTransportDocumentTO(TdTO).thenReturn(TdTO));
   }
 
-  private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionID) {
+  private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
@@ -266,7 +266,7 @@ public class TransportDocumentServiceImpl
                     "The CarrierBookingReference: "
                         + carrierBookingReference
                         + " specified on ShippingInstruction:"
-                        + shippingInstructionID
+                        + shippingInstructionReference
                         + " does not exist!")));
   }
 
@@ -320,7 +320,7 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setCarrierBookingReference(transportDocumentTO.getTransportDocumentReference());
     shipmentEvent.setDocumentID(
-        transportDocumentTO.getShippingInstruction().getShippingInstructionID());
+        transportDocumentTO.getShippingInstruction().getShippingInstructionReference());
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     return Mono.just(shipmentEvent);
@@ -329,8 +329,8 @@ public class TransportDocumentServiceImpl
   Mono<List<Booking>> validateDocumentStatusOnBooking(TransportDocumentTO transportDocumentTO) {
 
     return bookingRepository
-        .findAllByShippingInstructionID(
-            transportDocumentTO.getShippingInstruction().getShippingInstructionID())
+        .findAllByShippingInstructionReference(
+            transportDocumentTO.getShippingInstruction().getShippingInstructionReference())
         .flatMap(
             booking -> {
               if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
@@ -365,7 +365,7 @@ public class TransportDocumentServiceImpl
             Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "Failed to create shipment event for ShippingInstruction: "
-                        + shippingInstruction.getShippingInstructionID())));
+                        + shippingInstruction.getShippingInstructionReference())));
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
@@ -373,7 +373,7 @@ public class TransportDocumentServiceImpl
     return getShipmentEventFromShippingInstruction(
         reason,
         shippingInstructionTO.getDocumentStatus(),
-        shippingInstructionTO.getShippingInstructionID(),
+        shippingInstructionTO.getShippingInstructionReference(),
         shippingInstructionTO.getShippingInstructionUpdatedDateTime());
   }
 }

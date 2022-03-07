@@ -126,7 +126,7 @@ public class ShippingInstructionSummariesControllerTest {
 
   private ShippingInstructionSummaryTO buildShippingInstructionSummaryTO() {
     return ShippingInstructionSummaryTO.builder()
-      .shippingInstructionID(UUID.randomUUID().toString())
+      .shippingInstructionReference(UUID.randomUUID().toString())
       .documentStatus(ShipmentEventTypeCode.RECE)
       .carrierBookingReferences(List.of("bca68f1d3b804ff88aaa1e43055432f7", "832deb4bd4ea4b728430b857c59bd057"))
       .build();
@@ -134,7 +134,7 @@ public class ShippingInstructionSummariesControllerTest {
 
   private void verifyShippingInstructionSummaryTO(WebTestClient.BodyContentSpec result, ShippingInstructionSummaryTO expectedResult) {
     result
-      .jsonPath("$.[0].shippingInstructionID").isEqualTo(expectedResult.getShippingInstructionID())
+      .jsonPath("$.[0].shippingInstructionReference").isEqualTo(expectedResult.getShippingInstructionReference())
       .jsonPath("$.[0].documentStatus").isEqualTo(expectedResult.getDocumentStatus().name())
       .jsonPath("$.[0].carrierBookingReferences").exists()
       ;

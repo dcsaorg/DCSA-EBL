@@ -96,7 +96,7 @@ class TransportDocumentServiceImplTest {
     carrier.setCarrierName("Klods-Hans");
 
     shippingInstruction = new ShippingInstruction();
-    shippingInstruction.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstruction.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstruction.setShippingInstructionCreatedDateTime(now);
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
@@ -120,10 +120,10 @@ class TransportDocumentServiceImplTest {
     cargoItem.setNumberOfPackages(2);
     cargoItem.setPackageCode("XYZ");
     cargoItem.setShipmentEquipmentID(shipmentEquipment.getId());
-    cargoItem.setShippingInstructionID(shippingInstruction.getShippingInstructionID());
+    cargoItem.setShippingInstructionReference(shippingInstruction.getShippingInstructionReference());
 
     transportDocument = new TransportDocument();
-    transportDocument.setShippingInstructionID(shippingInstruction.getShippingInstructionID());
+    transportDocument.setShippingInstructionReference(shippingInstruction.getShippingInstructionReference());
     transportDocument.setTransportDocumentReference("TransportDocumentReference1");
     transportDocument.setIssuer(carrier.getId());
     transportDocument.setIssueDate(LocalDate.now());
@@ -172,7 +172,7 @@ class TransportDocumentServiceImplTest {
     shippingInstructionTO.setIsShippedOnboardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
-    shippingInstructionTO.setShippingInstructionID(UUID.randomUUID().toString());
+    shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
@@ -202,25 +202,24 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
+        when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionReference(any()))
           .thenReturn(Flux.just(shipment.getCarrierBookingReference()));
-
       StepVerifier.create(transportDocumentServiceImpl.mapDM2TO(transportDocument))
           .assertNext(
-              result -> {
-                assertNotNull(result.getTransportDocumentReference());
-                assertNotNull(result.getIssuerCode());
-                assertNotNull(result.getIssueDate());
-                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
-                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
-                assertNotNull(result.getShippingInstructionID());
-                assertNotNull(result.getReceivedForShipmentDate());
-                assertNotNull(result.getDeclaredValue());
-                assertNotNull(result.getDeclaredValueCurrency());
-                assertNotNull(result.getIssuerCodeListProvider());
-                assertFalse(result.getCarrierBookingReferences().isEmpty());
-                assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
-              })
+            result -> {
+              assertNotNull(result.getTransportDocumentReference());
+              assertNotNull(result.getIssuerCode());
+              assertNotNull(result.getIssueDate());
+              assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
+              assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+              assertNotNull(result.getShippingInstructionReference());
+              assertNotNull(result.getReceivedForShipmentDate());
+              assertNotNull(result.getDeclaredValue());
+              assertNotNull(result.getDeclaredValueCurrency());
+              assertNotNull(result.getIssuerCodeListProvider());
+              assertFalse(result.getCarrierBookingReferences().isEmpty());
+              assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
+            })
           .verifyComplete();
     }
 
@@ -230,25 +229,25 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
+        when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionReference(any()))
           .thenReturn(Flux.empty());
 
       StepVerifier.create(transportDocumentServiceImpl.mapDM2TO(transportDocument))
           .assertNext(
-              result -> {
-                assertNotNull(result.getTransportDocumentReference());
-                assertNotNull(result.getIssuerCode());
-                assertNotNull(result.getIssueDate());
-                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
-                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
-                assertNotNull(result.getShippingInstructionID());
-                assertNotNull(result.getReceivedForShipmentDate());
-                assertNotNull(result.getDeclaredValue());
-                assertNotNull(result.getDeclaredValueCurrency());
-                assertNotNull(result.getIssuerCodeListProvider());
-                assertTrue(result.getCarrierBookingReferences().isEmpty());
-                assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
-              })
+            result -> {
+              assertNotNull(result.getTransportDocumentReference());
+              assertNotNull(result.getIssuerCode());
+              assertNotNull(result.getIssueDate());
+              assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
+              assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+              assertNotNull(result.getShippingInstructionReference());
+              assertNotNull(result.getReceivedForShipmentDate());
+              assertNotNull(result.getDeclaredValue());
+              assertNotNull(result.getDeclaredValueCurrency());
+              assertNotNull(result.getIssuerCodeListProvider());
+              assertTrue(result.getCarrierBookingReferences().isEmpty());
+              assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
+            })
           .verifyComplete();
     }
 
@@ -260,7 +259,7 @@ class TransportDocumentServiceImplTest {
 
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
+        when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionReference(any()))
           .thenReturn(Flux.just(shipment.getCarrierBookingReference()));
 
       StepVerifier.create(transportDocumentServiceImpl.mapDM2TO(transportDocument))
@@ -281,7 +280,7 @@ class TransportDocumentServiceImplTest {
 
       when(shippingInstructionRepository.findById(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
+      when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionReference(any()))
           .thenReturn(Flux.just(shipment.getCarrierBookingReference()));
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.empty());
 
@@ -307,8 +306,8 @@ class TransportDocumentServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No shipping instruction was found with ID: "
-                        + transportDocument.getShippingInstructionID(),
+                    "No shipping instruction was found with reference: "
+                        + transportDocument.getShippingInstructionReference(),
                     throwable.getMessage());
               })
           .verify();
@@ -330,7 +329,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -364,9 +363,9 @@ class TransportDocumentServiceImplTest {
       transportDocument.setPlaceOfIssue(null);
       when(transportDocumentRepository.findById((String) any()))
           .thenReturn(Mono.just(transportDocument));
-      when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
-      when(locationService.fetchLocationDeepObjByID(any())).thenReturn(Mono.empty());
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
+        when(locationService.fetchLocationDeepObjByID(any())).thenReturn(Mono.empty());
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -402,7 +401,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -438,7 +437,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -474,7 +473,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -506,7 +505,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.empty());
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -522,8 +521,8 @@ class TransportDocumentServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No shipping instruction found with shipping instruction id: "
-                        + transportDocument.getShippingInstructionID(),
+                    "No shipping instruction found with shipping instruction reference: "
+                        + transportDocument.getShippingInstructionReference(),
                     throwable.getMessage());
               })
           .verify();
@@ -538,7 +537,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.empty());
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -621,7 +620,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -631,14 +630,14 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.just(booking));
       when(bookingRepository.findByCarrierBookingRequestReference(any()))
           .thenReturn(Mono.just(new Booking()));
       when(bookingRepository
               .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
                   any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shipmentService.findByShippingInstructionID(any()))
+        when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(List.of(shipmentTO))));
       when(shipmentEventService.create(any())).thenReturn(Mono.just(new ShipmentEvent()));
 
@@ -693,7 +692,7 @@ class TransportDocumentServiceImplTest {
         "Approving a transport document that has a SI with invalid status document status  should raise a mono error")
     void testApproveTransportDocumentThatHasShippingInstructionInvalidDocumentStatus() {
 
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.just(booking));
       transportDocumentTO.getShippingInstruction().setDocumentStatus(ShipmentEventTypeCode.RECE);
       assertEquals(
           transportDocumentTO.getShippingInstruction().getDocumentStatus(),
@@ -704,7 +703,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -738,7 +737,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -748,9 +747,9 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shipmentService.findByShippingInstructionID(any()))
+        when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(Collections.emptyList())));
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.just(booking));
 
       StepVerifier.create(
               transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
@@ -778,7 +777,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -788,10 +787,10 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shipmentService.findByShippingInstructionID(any()))
+        when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(List.of(shipmentTO))));
       when(bookingRepository.findByCarrierBookingRequestReference(any())).thenReturn(Mono.empty());
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.just(booking));
 
       StepVerifier.create(
               transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
@@ -806,7 +805,7 @@ class TransportDocumentServiceImplTest {
                                   + " specified on ShippingInstruction:"
                                   + transportDocumentTO
                                       .getShippingInstruction()
-                                      .getShippingInstructionID()
+                                      .getShippingInstructionReference()
                                   + " does not exist!"))
           .verify();
     }
@@ -820,7 +819,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+        when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -830,14 +829,14 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.just(booking));
       when(bookingRepository.findByCarrierBookingRequestReference(any()))
           .thenReturn(Mono.just(new Booking()));
       when(bookingRepository
               .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
                   any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shipmentService.findByShippingInstructionID(any()))
+        when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(List.of(shipmentTO))));
       when(shipmentEventService.create(any())).thenReturn(Mono.empty());
 
@@ -868,7 +867,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+      when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -883,7 +882,7 @@ class TransportDocumentServiceImplTest {
         if (s.equals(ShipmentEventTypeCode.CONF)) continue;
 
         booking.setDocumentStatus(s);
-        when(bookingRepository.findAllByShippingInstructionID(any()))
+        when(bookingRepository.findAllByShippingInstructionReference(any()))
             .thenReturn(Flux.just(booking));
 
         StepVerifier.create(
@@ -917,7 +916,7 @@ class TransportDocumentServiceImplTest {
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
           .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findById(transportDocument.getShippingInstructionID()))
+      when(shippingInstructionService.findById(transportDocument.getShippingInstructionReference()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
@@ -925,7 +924,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
           .thenReturn(Flux.just(carrierClauseTO));
-      when(bookingRepository.findAllByShippingInstructionID(any())).thenReturn(Flux.empty());
+      when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.ApproveTransportDocument(transportDocumentReference))
