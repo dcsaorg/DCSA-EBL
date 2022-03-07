@@ -256,7 +256,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     .switchIfEmpty(
                         Mono.error(
                             ConcreteRequestErrorMessageException.notFound(
-                                "No booking found for carrier booking reference: "
+                                "No bookings found for carrier booking reference: "
                                     + carrierBookingReference))))
         .collectList();
   }

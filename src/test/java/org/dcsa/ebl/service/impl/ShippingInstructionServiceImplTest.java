@@ -686,7 +686,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No booking found for carrier booking reference: "
+                    "No bookings found for carrier booking reference: "
                         + cargoItemTO.getCarrierBookingReference(),
                     throwable.getMessage());
               })
@@ -1280,7 +1280,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No booking found for carrier booking reference: "
+                    "No bookings found for carrier booking reference: "
                         + cargoItemTO.getCarrierBookingReference(),
                     throwable.getMessage());
               })

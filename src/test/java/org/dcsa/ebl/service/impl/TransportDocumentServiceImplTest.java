@@ -932,7 +932,7 @@ class TransportDocumentServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No booking found for carrier booking reference: " + transportDocumentReference,
+                    "No bookings found for carrier booking reference: " + transportDocumentReference,
                     throwable.getMessage());
               })
           .verify();

@@ -49,6 +49,9 @@ class ShippingInstructionIT {
         .asString();
   }
 
+
+  // TODO: custom spring boot exception handlers for @valid and @RequestBody is needed
+  //  to test this appropriately.
   @Test
   void testFailureOnEmptyBodyForPostShippingInstruction() throws JsonProcessingException {
 
@@ -61,14 +64,9 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_BAD_REQUEST)
-        .body("httpMethod", equalTo("POST"))
-        .body("requestUri", containsString("/v2/shipping-instructions"))
-        .body("errors[0].reason", equalTo("invalidInput"))
-        .body("errors[0].message", containsString("isToOrder"))
-        .body("errors[0].message", containsString("shipmentEquipments"))
-        .body("errors[0].message", containsString("isShippedOnboardType"))
-        .body("statusCode", equalTo(400))
-        .body("statusCodeText", equalTo("Bad Request"))
+      .body("status", equalTo(400))
+      .body("error", equalTo("Bad Request"))
+      .body("message", containsString("JSON decoding error"))
         .extract()
         .body()
         .asString();
@@ -87,13 +85,14 @@ class ShippingInstructionIT {
         .post(SHIPPING_INSTRUCTIONS)
         .then()
         .assertThat()
-        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .statusCode(HttpStatus.SC_NOT_FOUND)
         .body("httpMethod", equalTo("POST"))
         .body("requestUri", containsString("/v2/shipping-instructions"))
-        .body("errors[0].reason", equalTo("invalidParameter"))
-        .body("errors[0].message", containsString("No shipment found with carrierBookingReference"))
-        .body("statusCode", equalTo(400))
-        .body("statusCodeText", equalTo("Bad Request"))
+        .body("errors[0].reason", equalTo("notFound"))
+        .body("errors[0].message", containsString(
+          "No bookings found for carrier booking reference: " + map.get("carrierBookingReference")))
+        .body("statusCode", equalTo(404))
+        .body("statusCodeText", equalTo("Not Found"))
         .extract()
         .body()
         .asString();
