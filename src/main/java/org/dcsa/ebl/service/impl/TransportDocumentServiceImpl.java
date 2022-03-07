@@ -13,6 +13,7 @@ import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
+import org.dcsa.core.events.model.transferobjects.CargoItemTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.CarrierRepository;
@@ -33,8 +34,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipmentEventFromShippingInstruction;
 
@@ -180,7 +183,7 @@ public class TransportDocumentServiceImpl
             Mono.error(
                 ConcreteRequestErrorMessageException.notFound(
                     "No Transport Document found with ID: " + transportDocumentReference)))
-        .flatMap(tdTO -> validateDocumentStatusOnBooking(tdTO).thenReturn(tdTO))
+        .flatMap(tdTO -> validateDocumentStatusOnBooking(tdTO.getShippingInstruction()).thenReturn(tdTO))
         .flatMap(
             TdTO -> {
               if (TdTO.getShippingInstruction().getDocumentStatus() != ShipmentEventTypeCode.PENA) {
@@ -255,7 +258,8 @@ public class TransportDocumentServiceImpl
         .flatMap(TdTO -> createShipmentEventFromTransportDocumentTO(TdTO).thenReturn(TdTO));
   }
 
-  private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionReference) {
+  private Mono<Booking> getBooking(
+      String carrierBookingReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
@@ -326,33 +330,46 @@ public class TransportDocumentServiceImpl
     return Mono.just(shipmentEvent);
   }
 
-  Mono<List<Booking>> validateDocumentStatusOnBooking(TransportDocumentTO transportDocumentTO) {
+  Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
+    List<String> carrierBookingReferences;
+    if (shippingInstructionTO.getCarrierBookingReference() != null) {
+      carrierBookingReferences =
+          Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
+    } else {
+      carrierBookingReferences =
+          shippingInstructionTO.getShipmentEquipments().stream()
+              .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
+              .distinct()
+              .collect(Collectors.toList());
+    }
 
-    return bookingRepository
-        .findAllByShippingInstructionReference(
-            transportDocumentTO.getShippingInstruction().getShippingInstructionReference())
+    return Flux.fromIterable(carrierBookingReferences)
         .flatMap(
-            booking -> {
-              if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
-                return Mono.error(
-                    ConcreteRequestErrorMessageException.invalidParameter(
-                        "DocumentStatus "
-                            + booking.getDocumentStatus()
-                            + " for booking "
-                            + booking.getCarrierBookingRequestReference()
-                            + " related to carrier booking reference "
-                            + transportDocumentTO.getTransportDocumentReference()
-                            + " is not in "
-                            + ShipmentEventTypeCode.CONF
-                            + " state!"));
-              }
-              return Mono.just(booking);
-            })
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.notFound(
-                    "No booking found for carrier booking reference: "
-                        + transportDocumentTO.getTransportDocumentReference())))
+            carrierBookingReference ->
+                bookingRepository
+                    .findAllByCarrierBookingReference(carrierBookingReference)
+                    .flatMap(
+                        booking -> {
+                          if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
+                            return Mono.error(
+                                ConcreteRequestErrorMessageException.invalidParameter(
+                                    "DocumentStatus "
+                                        + booking.getDocumentStatus()
+                                        + " for booking "
+                                        + booking.getCarrierBookingRequestReference()
+                                        + " related to carrier booking reference "
+                                        + carrierBookingReference
+                                        + " is not in "
+                                        + ShipmentEventTypeCode.CONF
+                                        + " state!"));
+                          }
+                          return Mono.just(booking);
+                        })
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.notFound(
+                                "No bookings found for carrier booking reference: "
+                                    + carrierBookingReference))))
         .collectList();
   }
 
