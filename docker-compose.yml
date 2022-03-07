@@ -17,7 +17,10 @@ services:
         container_name: dcsa_db
         environment:
             POSTGRES_PASSWORD: "change_this_password"
-        build:
-            DCSA-Information-Model/datamodel/
+        image: postgres:10-alpine
         ports:
             - 5432:5432
+        volumes:
+          - ./DCSA-Information-Model/datamodel/initdb.d:/docker-entrypoint-initdb.d:ro
+          - ./DCSA-Information-Model/datamodel/referencedata.d:/referencedata.d:ro
+          - ./DCSA-Information-Model/datamodel/samples.d:/samples.d:ro
