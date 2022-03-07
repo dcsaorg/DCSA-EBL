@@ -1,0 +1,66 @@
+{
+  "transportDocumentTypeCode": "SWB",
+  "isShippedOnboardType": true,
+  "numberOfCopies": 2,
+  "numberOfOriginals": 4,
+  "isElectronic": true,
+  "isToOrder": false,
+  "areChargesDisplayedOnOriginals": true,
+  "areChargesDisplayedOnCopies": true,
+  "displayedNameForPlaceOfReceipt": "Janesville",
+  "displayedNameForPortOfLoad": "Seysses",
+  "displayedNameForPortOfDischarge": "Ridica",
+  "displayedNameForPlaceOfDelivery": "Masio",
+  "carrierBookingReference": "e8e9d64172934a40aec82e4308cdf97a",
+  "placeOfIssue": {
+    "locationName": "Rotterdam",
+    "latitude": "51.9244° N",
+    "longitude": "4.4777° E",
+    "UNLocationCode": "NLRTM"
+  },
+  "documentParties": [
+    {
+      "party": {
+        "partyName": "Asseco Denmark",
+        "taxReference1": "CVR-25645774",
+        "taxReference2": "CVR-25645774",
+        "publicKey": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFzaW",
+        "address": {
+          "name": "Henrik",
+          "street": "Kronprincessegade",
+          "streetNumber": "54",
+          "floor": "5. sal",
+          "postCode": "1306",
+          "city": "København",
+          "stateRegion": "N/A",
+          "country": "Denmark"
+        },
+        "partyContactDetails": [
+          {
+            "name": "Henrik",
+            "phone": "+45 33364660",
+            "email": "info@dcsa.org"
+          }
+        ],
+        "identifyingCodes": [
+          {
+            "DCSAResponsibleAgencyCode": "SMDG",
+            "partyCode": "MSK",
+            "codeListName": "LCL"
+          }
+        ]
+      },
+      "partyFunction": "DDS",
+      "displayedAddress": [
+        "Kronprincessegade 54"
+      ],
+      "isToBeNotified": true
+    }
+  ],
+  "references": [
+    {
+      "referenceType": "FF",
+      "referenceValue": "zzz"
+    }
+  ]
+}
