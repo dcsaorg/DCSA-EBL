@@ -6,11 +6,9 @@ import ebl.config.TestConfig;
 import org.apache.http.HttpStatus;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.hibernate.validator.constraints.Length;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -179,7 +177,7 @@ class ShippingInstructionIT {
         .body("shipments", hasSize(greaterThan(0)))
         .body("references", hasSize(greaterThan(0)))
         .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
-//        .body("placeOfIssue", equalTo("<{}>")) // doesn't accept hasSize(0) or nullValue
+        //        .body("placeOfIssue", equalTo("<{}>")) // doesn't accept hasSize(0) or nullValue
         .body("isToOrder", notNullValue())
         .body("isShippedOnboardType", notNullValue())
         .body("numberOfCopies", nullValue())
