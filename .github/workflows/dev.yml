@@ -42,14 +42,14 @@ jobs:
           path: DCSA-EBL
           submodules: recursive
 
-      - name: Show directory struture
-        run: cd DCSA-EBL/DCSA-Information-Model && tree
-
       - name: Build eBL API
         run: cd DCSA-EBL && mvn -B package -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT #Need to skip the tests as they depend on a running DB
 
       - name: Start the database
         run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V dcsa-test-db
+
+      - name: Load test data into the database
+        run: sleep 3 && docker exec -i dcsa_db sh -c "cat /testdata.d/* | psql -h localhost -U postgres postgres"
 
       - name: Build and run the EBL microservice
         run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V dcsa-ebl
