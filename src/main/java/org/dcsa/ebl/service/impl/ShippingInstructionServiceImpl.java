@@ -305,12 +305,15 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         && shippingInstructionTO.getIsElectronic()) {
       if (Objects.isNull(shippingInstructionTO.getDocumentParties())
           || shippingInstructionTO.getDocumentParties().isEmpty()) {
-        validationErrors.add("A documentParty with partyFunction=EBL is required for electronic shipping instructions.");
-      }
-      if (shippingInstructionTO.getDocumentParties().stream()
-          .noneMatch(x -> x.getPartyFunction().equals(PartyFunction.EBL))) {
         validationErrors.add(
-            "For electronic Bill of Laden (isElectronic=true) - an EBL solution provider (PartyFunction=EBL) needs to be provided as a DocumentParty");
+            "A documentParty with partyFunction=EBL is required for electronic shipping instructions.");
+      }
+
+      if (shippingInstructionTO.getDocumentParties().stream()
+              .filter(x -> x.getPartyFunction().equals(PartyFunction.EBL))
+              .count()
+          != 1) {
+        validationErrors.add("Only 1 EBL solution provider can be specified in DocumentParties");
       }
     }
 
