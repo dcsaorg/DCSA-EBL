@@ -534,7 +534,7 @@ class ShippingInstructionServiceImplTest {
               b -> {
                 assertEquals(
                     shippingInstruction.getShippingInstructionReference(), b.getShippingInstructionReference());
-                assertEquals("Pending Confirmation", b.getDocumentStatus().getValue());
+                assertEquals("Draft", b.getDocumentStatus().getValue());
                 assertNotNull(b.getShippingInstructionCreatedDateTime());
                 assertNotNull(b.getShippingInstructionUpdatedDateTime());
 
@@ -548,7 +548,7 @@ class ShippingInstructionServiceImplTest {
                         .getShipmentEventTypeCode()
                         .getValue());
                 assertEquals(
-                    "Pending Confirmation",
+                    "Draft",
                     argumentCaptorShipmentEvent
                         .getAllValues()
                         .get(1)
@@ -564,7 +564,7 @@ class ShippingInstructionServiceImplTest {
                     shippingInstruction.getPlaceOfIssueID(),
                     argumentCaptor.getValue().getPlaceOfIssueID());
                 assertEquals(
-                    ShipmentEventTypeCode.PENC, argumentCaptor.getValue().getDocumentStatus());
+                    ShipmentEventTypeCode.DRFT, argumentCaptor.getValue().getDocumentStatus());
 
                 verify(locationService, never()).createLocationByTO(any(), any());
               })
