@@ -309,10 +309,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             "A documentParty with partyFunction=EBL is required for electronic shipping instructions.");
       }
 
-      if (shippingInstructionTO.getDocumentParties().stream()
-              .filter(x -> x.getPartyFunction().equals(PartyFunction.EBL))
-              .count()
-          != 1) {
+      if (Objects.nonNull(shippingInstructionTO.getDocumentParties())
+          && shippingInstructionTO.getDocumentParties().stream()
+                  .filter(x -> x.getPartyFunction().equals(PartyFunction.EBL))
+                  .count()
+              != 1) {
         validationErrors.add("Only 1 EBL solution provider can be specified in DocumentParties");
       }
     }
