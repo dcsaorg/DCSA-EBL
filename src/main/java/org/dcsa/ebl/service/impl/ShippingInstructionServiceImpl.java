@@ -298,6 +298,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             "number of originals is required for non electronic shipping instructions.");
       }
     }
+
+    // Check if documentParties is not empty and that partyFunction on DocumentParty set properly
+    // for a non-electronic shipping instruction
     if (Objects.nonNull(shippingInstructionTO.getIsElectronic())
         && shippingInstructionTO.getIsElectronic()) {
       if (Objects.isNull(shippingInstructionTO.getDocumentParties())
