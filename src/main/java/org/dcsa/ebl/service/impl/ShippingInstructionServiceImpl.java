@@ -302,7 +302,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         && shippingInstructionTO.getIsElectronic()) {
       if (Objects.isNull(shippingInstructionTO.getDocumentParties())
           || shippingInstructionTO.getDocumentParties().isEmpty()) {
-        validationErrors.add("Document parties is required for electronic shipping instructions.");
+        validationErrors.add("A documentParty with partyFunction=EBL is required for electronic shipping instructions.");
       }
       if (shippingInstructionTO.getDocumentParties().stream()
           .noneMatch(x -> x.getPartyFunction().equals(PartyFunction.EBL))) {
