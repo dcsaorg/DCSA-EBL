@@ -80,7 +80,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .fetchLocationByID(si.getPlaceOfIssueID())
                           .doOnNext(siTO::setPlaceOfIssue),
                       shippingInstructionRepository
-                          .findShipmentIDsByShippingInstructionReference(si.getShippingInstructionReference())
+                          .findShipmentIDsByShippingInstructionReference(
+                              si.getShippingInstructionReference())
                           .flatMap(shipmentEquipmentService::findShipmentEquipmentByShipmentID)
                           .flatMap(Flux::fromIterable)
                           .collectList()
@@ -122,7 +123,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionTO.setShippingInstructionReference(si.getShippingInstructionReference());
+              shippingInstructionTO.setShippingInstructionReference(
+                  si.getShippingInstructionReference());
               shippingInstructionTO.setDocumentStatus(si.getDocumentStatus());
               shippingInstructionTO.setShippingInstructionCreatedDateTime(
                   si.getShippingInstructionCreatedDateTime());
@@ -151,8 +153,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   @Override
-  public Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionReference(
-      String shippingInstructionReference, ShippingInstructionTO shippingInstructionRequest) {
+  public Mono<ShippingInstructionResponseTO>
+      updateShippingInstructionByShippingInstructionReference(
+          String shippingInstructionReference, ShippingInstructionTO shippingInstructionRequest) {
 
     try {
       shippingInstructionRequest.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
@@ -170,12 +173,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionRequest.setShippingInstructionReference(si.getShippingInstructionReference());
+              shippingInstructionRequest.setShippingInstructionReference(
+                  si.getShippingInstructionReference());
               shippingInstructionRequest.setDocumentStatus(si.getDocumentStatus());
               shippingInstructionRequest.setShippingInstructionCreatedDateTime(
                   si.getShippingInstructionCreatedDateTime());
               shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
-                OffsetDateTime.now());
+                  OffsetDateTime.now());
               return Mono.when(
                       locationService
                           .resolveLocationByTO(
@@ -203,19 +207,20 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   .thenReturn(shippingInstructionRequest);
             })
         .flatMap(createShipmentEventFromDocumentStatus)
-      .flatMap(
-        siTO -> {
-          ShippingInstruction shippingInstruction =
-            shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
-          shippingInstruction.setShippingInstructionReference(siTO.getShippingInstructionReference());
-          shippingInstruction.setDocumentStatus(siTO.getDocumentStatus());
-          shippingInstruction.setShippingInstructionCreatedDateTime(
-            siTO.getShippingInstructionCreatedDateTime());
-          shippingInstruction.setShippingInstructionUpdatedDateTime(
-            siTO.getShippingInstructionUpdatedDateTime());
-          return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
-        })
-      .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
+        .flatMap(
+            siTO -> {
+              ShippingInstruction shippingInstruction =
+                  shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
+              shippingInstruction.setShippingInstructionReference(
+                  siTO.getShippingInstructionReference());
+              shippingInstruction.setDocumentStatus(siTO.getDocumentStatus());
+              shippingInstruction.setShippingInstructionCreatedDateTime(
+                  siTO.getShippingInstructionCreatedDateTime());
+              shippingInstruction.setShippingInstructionUpdatedDateTime(
+                  siTO.getShippingInstructionUpdatedDateTime());
+              return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
+            })
+        .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
   Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
@@ -262,7 +267,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .collectList();
   }
 
-  private Mono<LocationTO> insertLocationTO(LocationTO placeOfIssue, String shippingInstructionReference) {
+  private Mono<LocationTO> insertLocationTO(
+      LocationTO placeOfIssue, String shippingInstructionReference) {
     if (placeOfIssue == null) return Mono.empty();
     return locationService.createLocationByTO(
         placeOfIssue,
@@ -281,7 +287,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     // Check if number of copies and number of originals are set properly for a non-electronic
     // shipping instruction
-    if (Objects.nonNull(shippingInstructionTO.getIsElectronic()) && !shippingInstructionTO.getIsElectronic()) {
+    if (Objects.nonNull(shippingInstructionTO.getIsElectronic())
+        && !shippingInstructionTO.getIsElectronic()) {
       if (Objects.isNull(shippingInstructionTO.getNumberOfCopies())) {
         validationErrors.add(
             "number of copies is required for non electronic shipping instructions.");
@@ -291,12 +298,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             "number of originals is required for non electronic shipping instructions.");
       }
     }
-    if (Objects.nonNull(shippingInstructionTO.getIsElectronic()) && shippingInstructionTO.getIsElectronic()) {
-      if (Objects.isNull(shippingInstructionTO.getDocumentParties()) || shippingInstructionTO.getDocumentParties().isEmpty()) {
+    if (Objects.nonNull(shippingInstructionTO.getIsElectronic())
+        && shippingInstructionTO.getIsElectronic()) {
+      if (Objects.isNull(shippingInstructionTO.getDocumentParties())
+          || shippingInstructionTO.getDocumentParties().isEmpty()) {
         validationErrors.add("Document parties is required for electronic shipping instructions.");
       }
-      if (shippingInstructionTO.getDocumentParties().stream().noneMatch(x -> x.getPartyFunction().equals(PartyFunction.EBL))) {
-        validationErrors.add("For electronic Bill of Laden (isElectronic=true) - an EBL solution provider (PartyFunction=EBL) needs to be provided as a DocumentParty");
+      if (shippingInstructionTO.getDocumentParties().stream()
+          .noneMatch(x -> x.getPartyFunction().equals(PartyFunction.EBL))) {
+        validationErrors.add(
+            "For electronic Bill of Laden (isElectronic=true) - an EBL solution provider (PartyFunction=EBL) needs to be provided as a DocumentParty");
       }
     }
 
@@ -382,10 +393,18 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
       ShippingInstruction shippingInstruction, String reason) {
-    return getShipmentEventFromShippingInstruction(reason, shippingInstruction.getDocumentStatus(), shippingInstruction.getShippingInstructionReference(), shippingInstruction.getShippingInstructionUpdatedDateTime());
+    return getShipmentEventFromShippingInstruction(
+        reason,
+        shippingInstruction.getDocumentStatus(),
+        shippingInstruction.getShippingInstructionReference(),
+        shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
 
-  static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(String reason, ShipmentEventTypeCode documentStatus, String shippingInstructionReference, OffsetDateTime shippingInstructionUpdatedDateTime) {
+  static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(
+      String reason,
+      ShipmentEventTypeCode documentStatus,
+      String shippingInstructionReference,
+      OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(documentStatus);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
