@@ -42,7 +42,7 @@ class ShippingInstructionIT {
         .assertThat()
         .statusCode(HttpStatus.SC_CREATED)
         .body("shippingInstructionReference", notNullValue())
-        .body("documentStatus", equalTo("PENC"))
+        .body("documentStatus", equalTo("DRFT"))
         .body("shippingInstructionCreatedDateTime", notNullValue())
         .body("shippingInstructionUpdatedDateTime", notNullValue())
         .body(jsonSchemaValidator("shippingInstructionRequest"))

@@ -366,7 +366,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               si.setDocumentStatus(ShipmentEventTypeCode.PENU);
               shipmentEvent = createShipmentEvent(si, String.join("\n", validationResult));
             } else {
-              si.setDocumentStatus(ShipmentEventTypeCode.PENC);
+              si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
               shipmentEvent = createShipmentEvent(si);
             }
             return shipmentEvent.thenReturn(si);
