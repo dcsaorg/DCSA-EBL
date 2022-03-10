@@ -7,6 +7,7 @@ import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
+import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
@@ -280,8 +281,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     // Check if number of copies and number of originals are set properly for a non-electronic
     // shipping instruction
-    if (Objects.nonNull(shippingInstructionTO.getIsElectronic())
-        && !shippingInstructionTO.getIsElectronic()) {
+    if (Objects.nonNull(shippingInstructionTO.getIsElectronic()) && !shippingInstructionTO.getIsElectronic()) {
       if (Objects.isNull(shippingInstructionTO.getNumberOfCopies())) {
         validationErrors.add(
             "number of copies is required for non electronic shipping instructions.");
@@ -289,6 +289,14 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       if (Objects.isNull(shippingInstructionTO.getNumberOfOriginals())) {
         validationErrors.add(
             "number of originals is required for non electronic shipping instructions.");
+      }
+    }
+    if (Objects.nonNull(shippingInstructionTO.getIsElectronic()) && shippingInstructionTO.getIsElectronic()) {
+      if (Objects.isNull(shippingInstructionTO.getDocumentParties()) || shippingInstructionTO.getDocumentParties().isEmpty()) {
+        validationErrors.add("Document parties is required for electronic shipping instructions.");
+      }
+      if (shippingInstructionTO.getDocumentParties().stream().noneMatch(x -> x.getPartyFunction().equals(PartyFunction.EBL))) {
+        validationErrors.add("For electronic Bill of Laden (isElectronic=true) - an EBL solution provider (PartyFunction=EBL) needs to be provided as a DocumentParty");
       }
     }
 
