@@ -43,10 +43,10 @@ jobs:
           submodules: recursive
 
       - name: Build eBL API
-        run: cd DCSA-EBL && mvn package -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT #Need to skip the tests as they depend on a running DB
+        run: cd DCSA-EBL && mvn -B package -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT #Need to skip the tests as they depend on a running DB
 
       - name: Build and run the microservices
-        run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V
+        run: cd DCSA-EBL && docker-compose -f docker-compose.yml up -d -V --build
 
       - name: Fetch Backend Status
         run: |
@@ -68,4 +68,4 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          cd DCSA-EBL &&  mvn failsafe:integration-test -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT
+          cd DCSA-EBL && mvn -B failsafe:integration-test -Ddcsa.events.version=$DCSA_EVENT_CORE_PROJECT_VERSION -Ddcsa.event.tag=dev-ebl -Ddcsa.artifacttype=-SNAPSHOT
