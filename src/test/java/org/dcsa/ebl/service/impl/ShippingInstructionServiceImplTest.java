@@ -501,7 +501,7 @@ class ShippingInstructionServiceImplTest {
     }
 
     @Test
-    @DisplayName("Method should save a shipping instruction with isElectronic and EBL documentParties and return shipping response PENC")
+    @DisplayName("Method should save a shipping instruction with isElectronic and EBL documentParties and return shipping response DRFT")
     void testCreateShippingInstructionShallowIsElectronicTrueOneEBLDocumentParty() {
 
       shippingInstructionTO.setIsElectronic(true);
