@@ -9,9 +9,17 @@ import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.model.transferobjects.CargoItemTO;
+import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
+import org.dcsa.core.events.model.transferobjects.LocationTO;
+import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.core.events.service.*;
+import org.dcsa.core.events.service.DocumentPartyService;
+import org.dcsa.core.events.service.LocationService;
+import org.dcsa.core.events.service.ReferenceService;
+import org.dcsa.core.events.service.ShipmentEquipmentService;
+import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -149,6 +157,18 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   .thenReturn(shippingInstructionTO);
             })
         .flatMap(createShipmentEventFromDocumentStatus)
+        .flatMap(
+          siTO -> {
+            ShippingInstruction shippingInstruction2 =
+              shippingInstructionMapper.dtoToShippingInstruction(siTO);
+            shippingInstruction2.setShippingInstructionReference(siTO.getShippingInstructionReference());
+            shippingInstruction2.setDocumentStatus(siTO.getDocumentStatus());
+            shippingInstruction2.setShippingInstructionCreatedDateTime(
+              siTO.getShippingInstructionCreatedDateTime());
+            shippingInstruction2.setShippingInstructionUpdatedDateTime(
+              siTO.getShippingInstructionUpdatedDateTime());
+            return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
+          })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
