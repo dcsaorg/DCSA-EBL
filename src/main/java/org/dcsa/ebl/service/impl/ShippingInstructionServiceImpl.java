@@ -341,8 +341,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     Supplier<Stream<ShipmentEquipmentTO>> shipmentEquipmentTOStream =
         () ->
             Stream.ofNullable(shippingInstructionTO.getShipmentEquipments())
-                .flatMap(shipmentEquipmentTOS -> Stream.ofNullable(shipmentEquipmentTOS.stream()))
-                .flatMap(Function.identity());
+                .flatMap(Collection::stream);
 
     // Check if carrierBooking reference is only set on one place,
     // either shipping instruction or cargo item
