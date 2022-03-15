@@ -1,7 +1,6 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.data.Offset;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
@@ -23,7 +22,6 @@ import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
-import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -167,7 +165,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
             })
-        .flatMap(this::doStuff)
+        .flatMap(this::createTransportDocumentFromShippingInstructionTO).checkpoint()
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -239,7 +237,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
             })
-        .flatMap(this::doStuff)
+        .flatMap(this::createTransportDocumentFromShippingInstructionTO)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -448,22 +446,24 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return Mono.just(shipmentEvent);
   }
 
-  private Mono<ShippingInstructionTO> doStuff(
-      ShippingInstructionTO shippingInstructionTO) {
-    if (shippingInstructionTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
-      OffsetDateTime now = OffsetDateTime.now();
-      TransportDocument transportDocument = new TransportDocument();
-      transportDocument.setTransportDocumentReference(
-          UUID.randomUUID().toString().substring(0, 20));
-      transportDocument.setShippingInstructionReference(
-          shippingInstructionTO.getShippingInstructionReference());
-      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
-
-      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
-    } else {
+  private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(ShippingInstructionTO shippingInstructionTO) {
+//    System.out.println("Are we here?");
+//    if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
+//      System.out.println("Are we inside the if-clause?");
+//      OffsetDateTime now = OffsetDateTime.now();
+//      TransportDocument transportDocument = new TransportDocument();
+//      transportDocument.setTransportDocumentReference(
+//          UUID.randomUUID().toString().substring(0, 20));
+//      transportDocument.setShippingInstructionReference(
+//          shippingInstructionTO.getShippingInstructionReference());
+//      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
+//      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+//      System.out.println("Are we about to save the transport document?");
+//      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+//    } else {
+//      System.out.println("Are we inside the else-clause?");
       return Mono.just(shippingInstructionTO);
-    }
+//    }
   }
 
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>

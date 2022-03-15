@@ -35,7 +35,6 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipmentEventFromShippingInstruction;
 
@@ -254,17 +253,6 @@ public class TransportDocumentServiceImpl
                   .thenReturn(TdTO);
             })
         .flatMap(TdTO -> createShipmentEventFromTransportDocumentTO(TdTO).thenReturn(TdTO));
-  }
-
-  @Override
-  public Mono<TransportDocument> createTransportDocumentFromShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
-    OffsetDateTime now = OffsetDateTime.now();
-    TransportDocument transportDocument = new TransportDocument();
-    transportDocument.setTransportDocumentReference(UUID.randomUUID().toString().substring(0, 20));
-    transportDocument.setShippingInstructionReference(shippingInstructionTO.getShippingInstructionReference());
-    transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-    transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
-    return transportDocumentRepository.save(transportDocument);
   }
 
   private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionReference) {
