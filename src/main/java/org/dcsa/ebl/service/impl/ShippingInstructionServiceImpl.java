@@ -20,6 +20,7 @@ import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
+import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -46,6 +47,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
   private final ShipmentService shipmentService;
+  private final TransportDocumentService transportDocumentService;
 
   private final BookingRepository bookingRepository;
 
@@ -153,17 +155,28 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             })
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
-          siTO -> {
-            ShippingInstruction shippingInstruction2 =
-              shippingInstructionMapper.dtoToShippingInstruction(siTO);
-            shippingInstruction2.setShippingInstructionReference(siTO.getShippingInstructionReference());
-            shippingInstruction2.setDocumentStatus(siTO.getDocumentStatus());
-            shippingInstruction2.setShippingInstructionCreatedDateTime(
-              siTO.getShippingInstructionCreatedDateTime());
-            shippingInstruction2.setShippingInstructionUpdatedDateTime(
-              siTO.getShippingInstructionUpdatedDateTime());
-            return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
-          })
+            siTO -> {
+              ShippingInstruction shippingInstruction2 =
+                  shippingInstructionMapper.dtoToShippingInstruction(siTO);
+              shippingInstruction2.setShippingInstructionReference(
+                  siTO.getShippingInstructionReference());
+              shippingInstruction2.setDocumentStatus(siTO.getDocumentStatus());
+              shippingInstruction2.setShippingInstructionCreatedDateTime(
+                  siTO.getShippingInstructionCreatedDateTime());
+              shippingInstruction2.setShippingInstructionUpdatedDateTime(
+                  siTO.getShippingInstructionUpdatedDateTime());
+              return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
+            })
+        .flatMap(
+            siTO -> {
+              if (siTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
+                return transportDocumentService
+                    .createTransportDocumentFromShippingInstruction(siTO)
+                    .thenReturn(siTO);
+              } else {
+                return Mono.just(siTO);
+              }
+            })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -234,6 +247,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               shippingInstruction.setShippingInstructionUpdatedDateTime(
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
+            })
+        .flatMap(
+            siTO -> {
+              if (siTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
+                return transportDocumentService
+                    .createTransportDocumentFromShippingInstruction(siTO)
+                    .thenReturn(siTO);
+              } else {
+                return Mono.just(siTO);
+              }
             })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
