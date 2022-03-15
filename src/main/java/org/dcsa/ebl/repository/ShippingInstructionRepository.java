@@ -39,6 +39,12 @@ public interface ShippingInstructionRepository
   Mono<Boolean> setDocumentStatusByID(
       ShipmentEventTypeCode documentStatus, OffsetDateTime updatedDateTime, String id);
 
+  @Query("SELECT si.* FROM shipping_instrution si "
+    + "JOIN transport_document td ON (si.id = td.shipping_instruction_id) "
+    + "WHERE td.transport_document_reference = :transportDocumentReference"
+  )
+  Mono<ShippingInstruction> findByTransportDocumentReference(String transportDocumentReference);
+
   Flux<ShippingInstruction> findShippingInstructionByShippingInstructionReferenceAndDocumentStatus(
       String id, ShipmentEventTypeCode documentStatus);
 }
