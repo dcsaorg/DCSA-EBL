@@ -165,7 +165,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
             })
-        .flatMap(this::createTransportDocumentFromShippingInstructionTO).checkpoint()
+        .flatMap(this::createTransportDocumentFromShippingInstructionTO)
+        .checkpoint()
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -446,24 +447,21 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return Mono.just(shipmentEvent);
   }
 
-  private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(ShippingInstructionTO shippingInstructionTO) {
-//    System.out.println("Are we here?");
-//    if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
-//      System.out.println("Are we inside the if-clause?");
-//      OffsetDateTime now = OffsetDateTime.now();
-//      TransportDocument transportDocument = new TransportDocument();
-//      transportDocument.setTransportDocumentReference(
-//          UUID.randomUUID().toString().substring(0, 20));
-//      transportDocument.setShippingInstructionReference(
-//          shippingInstructionTO.getShippingInstructionReference());
-//      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-//      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
-//      System.out.println("Are we about to save the transport document?");
-//      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
-//    } else {
-//      System.out.println("Are we inside the else-clause?");
+  private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(
+      ShippingInstructionTO shippingInstructionTO) {
+    if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
+      OffsetDateTime now = OffsetDateTime.now();
+      TransportDocument transportDocument = new TransportDocument();
+      transportDocument.setTransportDocumentReference(
+          UUID.randomUUID().toString().substring(0, 20));
+      transportDocument.setShippingInstructionReference(
+          shippingInstructionTO.getShippingInstructionReference());
+      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
+      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+    } else {
       return Mono.just(shippingInstructionTO);
-//    }
+    }
   }
 
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
