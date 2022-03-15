@@ -360,7 +360,7 @@ class ShippingInstructionServiceImplTest {
         "Method should save shipping instruction and return shipping response when carrierBookingReference is set on cargoItem")
     void testCreateShippingInstructionWithCarrierBookingReferenceOnCargoItem() {
       shippingInstructionTO.setCarrierBookingReference(null);
-      cargoItemTO.setCarrierBookingReference("carrierBookingRequestReference");
+      shipmentEquipmentTO.setCarrierBookingReference("carrierBookingRequestReference");
 
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
@@ -832,7 +832,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference needs to be defined on either ShippingInstruction or CargoItemTO level.",
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction or ShipmentEquipmentTO level.",
                     throwable.getMessage());
               })
           .verify();
@@ -844,8 +844,8 @@ class ShippingInstructionServiceImplTest {
     void testCreateBookingShouldFailWithNoCarrierBookingReference() {
 
       shippingInstructionTO.setCarrierBookingReference(null);
-      cargoItemTO.setCarrierBookingReference(null);
       shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
+      shipmentEquipmentTO.setCarrierBookingReference(null);
       shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
 
       StepVerifier.create(
@@ -854,7 +854,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference needs to be defined on either ShippingInstruction or CargoItemTO level.",
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction or ShipmentEquipmentTO level.",
                     throwable.getMessage());
               })
           .verify();
@@ -884,7 +884,7 @@ class ShippingInstructionServiceImplTest {
                           + " for booking "
                           + booking.getCarrierBookingRequestReference()
                           + " related to carrier booking reference "
-                          + cargoItemTO.getCarrierBookingReference()
+                          + shipmentEquipmentTO.getCarrierBookingReference()
                           + " is not in CONF state!",
                       throwable.getMessage());
                 })
@@ -905,7 +905,7 @@ class ShippingInstructionServiceImplTest {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
                     "No booking found for carrier booking reference: "
-                        + cargoItemTO.getCarrierBookingReference(),
+                        + shipmentEquipmentTO.getCarrierBookingReference(),
                     throwable.getMessage());
               })
           .verify();
@@ -913,10 +913,10 @@ class ShippingInstructionServiceImplTest {
 
     @Test
     @DisplayName(
-        "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
-    void testCreateShippingInstructionShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
+        "Fail if ShippingInstruction contains carrierBookingReference on both root and in ShipmentEquipments")
+    void testCreateShippingInstructionShouldFailWithCarrierBookingReferenceInRootAndInShipmentEquipment() {
 
-      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+      shipmentEquipmentTO.setCarrierBookingReference("CarrierBookingReference");
 
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
@@ -924,7 +924,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.",
+                    "CarrierBookingReference defined on both ShippingInstruction and ShipmentEquipmentTO level.",
                     throwable.getMessage());
               })
           .verify();
@@ -1264,7 +1264,7 @@ class ShippingInstructionServiceImplTest {
         "Fail if ShippingInstruction contains carrierBookingReference on both root and in CargoItems")
     void testUpdateBookingShouldFailWithCarrierBookingReferenceInRootAndInCargoItem() {
 
-      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+      shipmentEquipmentTO.setCarrierBookingReference("CarrierBookingReference");
 
       StepVerifier.create(
               shippingInstructionServiceImpl.updateShippingInstructionByShippingInstructionReference(
@@ -1273,7 +1273,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference defined on both ShippingInstruction and CargoItemTO level.",
+                    "CarrierBookingReference defined on both ShippingInstruction and ShipmentEquipmentTO level.",
                     throwable.getMessage());
               })
           .verify();
@@ -1311,7 +1311,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Test validateShippingInstruction with no carrierBookingReferences")
     void testWithoutCarrierBookingReferences() {
       shippingInstructionTO.setCarrierBookingReference(null);
-      cargoItemTO.setCarrierBookingReference(null);
+      shipmentEquipmentTO.setCarrierBookingReference(null);
       List<String> validationResult =
           shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
       assertEquals(1, validationResult.size());
@@ -1325,7 +1325,7 @@ class ShippingInstructionServiceImplTest {
         "Test validateShippingInstruction with carrierBookingReference defined on both shipping instruction as well as cargoItems")
     void testWithDuplicateCarrierBookingReference() {
       shippingInstructionTO.setCarrierBookingReference("CarrierBookingReference");
-      cargoItemTO.setCarrierBookingReference("CarrierBookingReference");
+      shipmentEquipmentTO.setCarrierBookingReference("CarrierBookingReference");
       List<String> validationResult =
           shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
       assertEquals(1, validationResult.size());
@@ -1476,7 +1476,7 @@ class ShippingInstructionServiceImplTest {
                           + " for booking "
                           + booking.getCarrierBookingRequestReference()
                           + " related to carrier booking reference "
-                          + cargoItemTO.getCarrierBookingReference()
+                          + shipmentEquipmentTO.getCarrierBookingReference()
                           + " is not in CONF state!",
                       throwable.getMessage());
                 })
@@ -1497,7 +1497,7 @@ class ShippingInstructionServiceImplTest {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
                     "No booking found for carrier booking reference: "
-                        + cargoItemTO.getCarrierBookingReference(),
+                        + shipmentEquipmentTO.getCarrierBookingReference(),
                     throwable.getMessage());
               })
           .verify();

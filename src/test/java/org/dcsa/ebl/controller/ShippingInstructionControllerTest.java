@@ -79,7 +79,6 @@ class ShippingInstructionControllerTest {
 
     CargoItemTO cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
-    cargoItemTO.setCarrierBookingReference("XYZ12345");
     cargoItemTO.setHsCode("x".repeat(10));
     cargoItemTO.setDescriptionOfGoods("Some description of the goods!");
     cargoItemTO.setNumberOfPackages(2);
@@ -95,6 +94,7 @@ class ShippingInstructionControllerTest {
     activeReeferSettingsTO.setVentilationMin(5f);
 
     ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
+    shipmentEquipmentTO.setCarrierBookingReference("XYZ12345");
     shipmentEquipmentTO.setEquipment(equipmentTO);
     shipmentEquipmentTO.setSeals(List.of(sealsTO));
     shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
@@ -226,7 +226,8 @@ class ShippingInstructionControllerTest {
         ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
     // mock service method call
-    when(shippingInstructionService.updateShippingInstructionByShippingInstructionReference(any(), any()))
+    when(shippingInstructionService.updateShippingInstructionByShippingInstructionReference(
+            any(), any()))
         .thenReturn(Mono.just(shippingInstructionResponseTO));
 
     WebTestClient.ResponseSpec exchange =

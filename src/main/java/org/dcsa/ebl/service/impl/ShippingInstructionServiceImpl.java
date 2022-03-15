@@ -9,17 +9,12 @@ import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.CargoItemTO;
 import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.core.events.service.DocumentPartyService;
-import org.dcsa.core.events.service.LocationService;
-import org.dcsa.core.events.service.ReferenceService;
-import org.dcsa.core.events.service.ShipmentEquipmentService;
-import org.dcsa.core.events.service.ShipmentEventService;
+import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -114,7 +109,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       ShippingInstructionTO shippingInstructionTO) {
 
     try {
-      shippingInstructionTO.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+      shippingInstructionTO.pushCarrierBookingReferenceIntoShipmentEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
@@ -178,7 +173,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
           String shippingInstructionReference, ShippingInstructionTO shippingInstructionRequest) {
 
     try {
-      shippingInstructionRequest.pushCarrierBookingReferenceIntoCargoItemsIfNecessary();
+      shippingInstructionRequest.pushCarrierBookingReferenceIntoShipmentEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
@@ -252,7 +247,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     } else {
       carrierBookingReferences =
           shippingInstructionTO.getShipmentEquipments().stream()
-              .flatMap(x -> x.getCargoItems().stream().map(CargoItemTO::getCarrierBookingReference))
+              .map(ShipmentEquipmentTO::getCarrierBookingReference)
               .distinct()
               .collect(Collectors.toList());
     }
@@ -351,11 +346,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     // Check if carrierBooking reference is only set on one place,
     // either shipping instruction or cargo item
-    // ToDo needs refactoring in: https://dcsa.atlassian.net/browse/DDT-854
     shipmentEquipmentTOStream
         .get()
-        .flatMap(shipmentEquipmentTO -> shipmentEquipmentTO.getCargoItems().stream())
-        .map(CargoItemTO::getCarrierBookingReference)
+        .map(ShipmentEquipmentTO::getCarrierBookingReference)
         .forEach(
             carrierBookingReferenceOnCargoItem -> {
               if (Objects.nonNull(carrierBookingReferenceOnCargoItem)
