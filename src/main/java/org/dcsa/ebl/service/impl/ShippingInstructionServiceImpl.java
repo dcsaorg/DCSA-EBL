@@ -1,10 +1,12 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.data.Offset;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
@@ -14,6 +16,7 @@ import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -27,10 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,9 +47,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
   private final ShipmentService shipmentService;
-  private final TransportDocumentService transportDocumentService;
 
   private final BookingRepository bookingRepository;
+  private final TransportDocumentRepository transportDocumentRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -167,16 +167,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
             })
-        .flatMap(
-            siTO -> {
-              if (siTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
-                return transportDocumentService
-                    .createTransportDocumentFromShippingInstruction(siTO)
-                    .thenReturn(siTO);
-              } else {
-                return Mono.just(siTO);
-              }
-            })
+        .flatMap(this::doStuff)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -248,16 +239,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
             })
-        .flatMap(
-            siTO -> {
-              if (siTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
-                return transportDocumentService
-                    .createTransportDocumentFromShippingInstruction(siTO)
-                    .thenReturn(siTO);
-              } else {
-                return Mono.just(siTO);
-              }
-            })
+        .flatMap(this::doStuff)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -464,6 +446,24 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shipmentEvent.setEventDateTime(shippingInstructionUpdatedDateTime);
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
+  }
+
+  private Mono<ShippingInstructionTO> doStuff(
+      ShippingInstructionTO shippingInstructionTO) {
+    if (shippingInstructionTO.getDocumentStatus().equals(ShipmentEventTypeCode.DRFT)) {
+      OffsetDateTime now = OffsetDateTime.now();
+      TransportDocument transportDocument = new TransportDocument();
+      transportDocument.setTransportDocumentReference(
+          UUID.randomUUID().toString().substring(0, 20));
+      transportDocument.setShippingInstructionReference(
+          shippingInstructionTO.getShippingInstructionReference());
+      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
+      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+
+      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+    } else {
+      return Mono.just(shippingInstructionTO);
+    }
   }
 
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>

@@ -10,11 +10,13 @@ import org.dcsa.core.events.model.mappers.LocationMapper;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.ShipmentRepository;
+import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
+import org.dcsa.ebl.service.TransportDocumentService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -51,6 +53,7 @@ class ShippingInstructionServiceImplTest {
   @Mock ShipmentEventService shipmentEventService;
   @Mock DocumentPartyService documentPartyService;
   @Mock ShipmentService shipmentService;
+  @Mock TransportDocumentRepository transportDocumentRepository;
 
   @InjectMocks ShippingInstructionServiceImpl shippingInstructionServiceImpl;
 
@@ -295,6 +298,7 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(referenceService.createReferencesByShippingInstructionReferenceAndTOs(any(), any()))
           .thenReturn(Mono.just(List.of(referenceTO)));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -372,6 +376,7 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(List.of(referenceTO)));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
 
@@ -517,6 +522,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(documentPartyService.createDocumentPartiesByShippingInstructionReference(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(shipmentEventService.create(any()))
@@ -662,6 +668,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEquipmentService.addShipmentEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -948,6 +955,7 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(locationTO));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -1042,6 +1050,7 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(locationTO));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
