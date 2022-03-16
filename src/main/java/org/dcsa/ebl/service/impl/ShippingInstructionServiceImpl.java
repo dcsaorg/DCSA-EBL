@@ -122,24 +122,32 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
     return Mono.justOrEmpty(shippingInstructionTO.getAmendmentToTransportDocument())
-        .flatMap(tdReference ->
-          // If this is an amendment, verify that the TD exist and is in the correct status.
-          shippingInstructionRepository.findByTransportDocumentReference(tdReference)
-          .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-            "Shipping Instruction",
-            "amendmentToTransportDocument",
-            "Unknown Transport Document Reference: " + tdReference
-          ))).flatMap(siForTD -> {
-              if (siForTD.getDocumentStatus() != ShipmentEventTypeCode.ISSU) {
-                return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-                  "Shipping Instruction",
-                  "amendmentToTransportDocument",
-                    "The referenced transport document (" + tdReference + ") must be in state ISSU, but had state: " + siForTD.getDocumentStatus()
-                  ));
-              }
-              return Mono.empty();
-          })
-        ).then(validateDocumentStatusOnBooking(shippingInstructionTO))
+        .flatMap(
+            tdReference ->
+                // If this is an amendment, verify that the TD exist and is in the correct status.
+                shippingInstructionRepository
+                    .findByTransportDocumentReference(tdReference)
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.invalidParameter(
+                                "Shipping Instruction",
+                                "amendmentToTransportDocument",
+                                "Unknown Transport Document Reference: " + tdReference)))
+                    .flatMap(
+                        siForTD -> {
+                          if (siForTD.getDocumentStatus() != ShipmentEventTypeCode.ISSU) {
+                            return Mono.error(
+                                ConcreteRequestErrorMessageException.invalidParameter(
+                                    "Shipping Instruction",
+                                    "amendmentToTransportDocument",
+                                    "The referenced transport document ("
+                                        + tdReference
+                                        + ") must be in state ISSU, but had state: "
+                                        + siForTD.getDocumentStatus()));
+                          }
+                          return Mono.empty();
+                        }))
+        .then(validateDocumentStatusOnBooking(shippingInstructionTO))
         .flatMap(ignored -> shippingInstructionRepository.save(shippingInstruction))
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
@@ -205,17 +213,22 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "No Shipping Instruction found with ID: " + shippingInstructionReference)))
         .flatMap(checkUpdateShippingInstructionStatus)
-        .flatMap(si -> {
-          // We do not allow the amendmentToTransportDocument to change in PUT. It is not required and a lot of hassle.
-          if (!Objects.equals(si.getAmendmentToTransportDocument(), shippingInstructionRequest.getAmendmentToTransportDocument())) {
-            return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-              "Shipping Instruction",
-              "amendmentToTransportDocument",
-              "The update would change the value of amendmentToTransportDocument, which is not allowed."
-            ));
-          }
-          return Mono.just(si);
-        }).flatMap(si -> createShipmentEvent(si).thenReturn(si))
+        .flatMap(
+            si -> {
+              // We do not allow the amendmentToTransportDocument to change in PUT. It is not
+              // required and a lot of hassle.
+              if (!Objects.equals(
+                  si.getAmendmentToTransportDocument(),
+                  shippingInstructionRequest.getAmendmentToTransportDocument())) {
+                return Mono.error(
+                    ConcreteRequestErrorMessageException.invalidParameter(
+                        "Shipping Instruction",
+                        "amendmentToTransportDocument",
+                        "The update would change the value of amendmentToTransportDocument, which is not allowed."));
+              }
+              return Mono.just(si);
+            })
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               shippingInstructionRequest.setShippingInstructionReference(

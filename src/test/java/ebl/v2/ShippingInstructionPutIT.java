@@ -71,6 +71,8 @@ public class ShippingInstructionPutIT {
   void failWrongDocumentStatus() throws IOException {
     ShippingInstructionTO shippingInstruction = createShippingInstruction(false);
 
+    assert shippingInstruction.getShippingInstructionReference() != null;
+
     given()
       .contentType("application/json")
       .body(objectMapper.writeValueAsString(shippingInstruction))
@@ -156,14 +158,17 @@ public class ShippingInstructionPutIT {
     }
 
     Response response =
-      given()
-        .contentType("application/json")
-        .body(objectMapper.writeValueAsString(shippingInstruction))
-        .post(SHIPPING_INSTRUCTIONS);
+        given()
+            .contentType("application/json")
+            .body(objectMapper.writeValueAsString(shippingInstruction))
+            .post(SHIPPING_INSTRUCTIONS);
     String reference = response.body().jsonPath().getString("shippingInstructionReference");
 
+    System.out.println("Reference: " + reference);
+    assert response.statusCode() == HttpStatus.SC_CREATED;
+    assert reference != null;
+
     shippingInstruction.setShippingInstructionReference(reference);
-    System.out.println("ref = " + reference);
     return shippingInstruction;
   }
 }
