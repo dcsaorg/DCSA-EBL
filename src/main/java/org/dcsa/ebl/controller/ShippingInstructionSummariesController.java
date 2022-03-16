@@ -38,7 +38,6 @@ public class ShippingInstructionSummariesController extends AsymmetricQueryContr
     @RequestParam(value = "documentStatus", required = false) @EnumSubset(anyOf = ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES) ShipmentEventTypeCode documentStatus,
     ServerHttpResponse response, ServerHttpRequest request
   ) {
-    log.debug("findShippingInstructionSummaries: carrierBookingReference='{}', documentStatus='{}'", carrierBookingReference, documentStatus);
     return super.findAll(response, request);
   }
 
