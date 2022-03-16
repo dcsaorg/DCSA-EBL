@@ -53,25 +53,6 @@ public class ShippingInstructionSummariesIT {
   }
 
   @Test
-  void shippingInstructionWithOneCarrierBookingReference() {
-    given()
-      .contentType("application/json")
-      .queryParam("carrierBookingReference", "02c965382f5a41feb9f19b24b5fe2906")
-      .get(SUMMARIES_ENDPOINT)
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_OK)
-      .body("size()", is(1))
-      .body("[0].shippingInstructionReference", equalTo("cb6354c9-1ceb-452c-aed0-3cb25a04647a"))
-      .body("[0].documentStatus", equalTo("PENU"))
-      .body("[0].carrierBookingReferences.size()", is(1))
-      .body("[0].carrierBookingReferences", containsInAnyOrder(equalTo("02c965382f5a41feb9f19b24b5fe2906")))
-      .extract()
-      .body()
-      .asString();
-  }
-
-  @Test
   void shippingInstructionWithTwoCarrierBookingReferences() {
     given()
       .contentType("application/json")
