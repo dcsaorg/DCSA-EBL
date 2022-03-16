@@ -28,7 +28,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -166,7 +169,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
             })
         .flatMap(this::createTransportDocumentFromShippingInstructionTO)
-        .checkpoint()
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -452,8 +454,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
       OffsetDateTime now = OffsetDateTime.now();
       TransportDocument transportDocument = new TransportDocument();
-      transportDocument.setTransportDocumentReference(
-          UUID.randomUUID().toString().substring(0, 20));
       transportDocument.setShippingInstructionReference(
           shippingInstructionTO.getShippingInstructionReference());
       transportDocument.setTransportDocumentRequestCreatedDateTime(now);
