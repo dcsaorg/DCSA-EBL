@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class ShippingInstructionPutIT {
   // ObjectMapper with the same config as the main app
-  private ObjectMapper objectMapper = new Application().objectMapper();
+  private final ObjectMapper objectMapper = new Application().objectMapper();
 
   @BeforeAll
   static void configs() throws IOException {
@@ -32,18 +32,18 @@ public class ShippingInstructionPutIT {
     ShippingInstructionTO shippingInstruction = createShippingInstruction(true);
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_OK)
-      .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
-      .body("documentStatus", equalTo("PENU"))
-      .body(jsonSchemaValidator("shippingInstructionResponse"))
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
+        .body("documentStatus", equalTo("PENU"))
+        .body(jsonSchemaValidator("shippingInstructionResponse"))
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -53,18 +53,20 @@ public class ShippingInstructionPutIT {
     shippingInstruction.setNumberOfCopies(5);
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_OK)
-      .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
-      .body("documentStatus", equalTo("DRFT"))
-      .body(jsonSchemaValidator("shippingInstructionResponse"))
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body(
+            "shippingInstructionReference",
+            equalTo(shippingInstruction.getShippingInstructionReference()))
+        .body("documentStatus", equalTo("DRFT"))
+        .body(jsonSchemaValidator("shippingInstructionResponse"))
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -74,22 +76,27 @@ public class ShippingInstructionPutIT {
     assert shippingInstruction.getShippingInstructionReference() != null;
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
-      .body("httpMethod", equalTo("PUT"))
-      .body("requestUri", containsString(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference()))
-      .body("errors[0].reason", equalTo("invalidParameter"))
-      .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU"))
-      .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
-      .body("statusCodeText", equalTo("Bad Request"))
-      // .body(jsonSchemaValidator("error")) // invalid JSON Schema
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .body("httpMethod", equalTo("PUT"))
+        .body(
+            "requestUri",
+            containsString(
+                SHIPPING_INSTRUCTIONS
+                    + "/"
+                    + shippingInstruction.getShippingInstructionReference()))
+        .body("errors[0].reason", equalTo("invalidParameter"))
+        .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU"))
+        .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
+        .body("statusCodeText", equalTo("Bad Request"))
+        // .body(jsonSchemaValidator("error")) // invalid JSON Schema
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -99,21 +106,26 @@ public class ShippingInstructionPutIT {
     shippingInstruction.setNumberOfCopies(5);
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_NOT_FOUND)
-      .body("httpMethod", equalTo("PUT"))
-      .body("requestUri", containsString(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference()))
-      .body("errors[0].reason", equalTo("notFound"))
-      .body("statusCode", equalTo(HttpStatus.SC_NOT_FOUND))
-      .body("statusCodeText", equalTo("Not Found"))
-      // .body(jsonSchemaValidator("error")) // invalid JSON Schema
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_NOT_FOUND)
+        .body("httpMethod", equalTo("PUT"))
+        .body(
+            "requestUri",
+            containsString(
+                SHIPPING_INSTRUCTIONS
+                    + "/"
+                    + shippingInstruction.getShippingInstructionReference()))
+        .body("errors[0].reason", equalTo("notFound"))
+        .body("statusCode", equalTo(HttpStatus.SC_NOT_FOUND))
+        .body("statusCodeText", equalTo("Not Found"))
+        // .body(jsonSchemaValidator("error")) // invalid JSON Schema
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -123,29 +135,34 @@ public class ShippingInstructionPutIT {
     shippingInstruction.setNumberOfCopies(5);
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
-      .body("httpMethod", equalTo("PUT"))
-      .body("requestUri", containsString(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference()))
-      .body("errors[0].reason", equalTo("invalidParameter"))
-      .body("errors[0].message", containsString("is not in CONF state"))
-      .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
-      .body("statusCodeText", equalTo("Bad Request"))
-      // .body(jsonSchemaValidator("error")) // invalid JSON Schema
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .body("httpMethod", equalTo("PUT"))
+        .body(
+            "requestUri",
+            containsString(
+                SHIPPING_INSTRUCTIONS
+                    + "/"
+                    + shippingInstruction.getShippingInstructionReference()))
+        .body("errors[0].reason", equalTo("invalidParameter"))
+        .body("errors[0].message", containsString("is not in CONF state"))
+        .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
+        .body("statusCodeText", equalTo("Bad Request"))
+        // .body(jsonSchemaValidator("error")) // invalid JSON Schema
+        .extract()
+        .body()
+        .asString();
   }
 
-  /**
-   * Create a ShippingInstruction that can be manipulated.
-   */
+  /** Create a ShippingInstruction that can be manipulated. */
   private ShippingInstructionTO createShippingInstruction(boolean canBeChanged) throws IOException {
-    ShippingInstructionTO shippingInstruction = objectMapper.readValue(loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
+    ShippingInstructionTO shippingInstruction =
+        objectMapper.readValue(
+            loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
 
     if (canBeChanged) {
       shippingInstruction.setDocumentStatus(null);
