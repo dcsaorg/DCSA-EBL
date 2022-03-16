@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ebl.config.TestConfig;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.Application;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,11 +22,30 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class ShippingInstructionPutIT {
   // ObjectMapper with the same config as the main app
-  private ObjectMapper objectMapper = new Application().objectMapper();
+  private final ObjectMapper objectMapper = new Application().objectMapper();
 
   @BeforeAll
   static void configs() throws IOException {
     TestConfig.init();
+  }
+
+  @Test
+  void acceptChangeToDRFT() throws IOException {
+    ShippingInstructionTO shippingInstruction = createShippingInstruction(false);
+
+    given()
+      .contentType("application/json")
+      .body(objectMapper.writeValueAsString(shippingInstruction))
+      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+      .then()
+      .assertThat()
+      .statusCode(HttpStatus.SC_OK)
+      .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
+      .body("documentStatus", equalTo("APPR"))
+      .body(jsonSchemaValidator("shippingInstructionResponse"))
+      .extract()
+      .body()
+      .asString();
   }
 
   @Test
@@ -69,19 +90,21 @@ public class ShippingInstructionPutIT {
 
   @Test
   void failWrongDocumentStatus() throws IOException {
-    ShippingInstructionTO shippingInstruction = createShippingInstruction(false);
+    String siReference = "8fbb78cc-e7c6-4e17-9a23-24dc3ad0378d";
+    ShippingInstructionTO shippingInstruction = objectMapper.readValue(loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
+    shippingInstruction.setShippingInstructionReference(siReference);
 
     given()
       .contentType("application/json")
       .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+      .put(SHIPPING_INSTRUCTIONS + "/" + siReference)
       .then()
       .assertThat()
       .statusCode(HttpStatus.SC_BAD_REQUEST)
       .body("httpMethod", equalTo("PUT"))
       .body("requestUri", containsString(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference()))
       .body("errors[0].reason", equalTo("invalidParameter"))
-      .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU"))
+      .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU or DRFT"))
       .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
       .body("statusCodeText", equalTo("Bad Request"))
       // .body(jsonSchemaValidator("error")) // invalid JSON Schema
@@ -142,10 +165,10 @@ public class ShippingInstructionPutIT {
   /**
    * Create a ShippingInstruction that can be manipulated.
    */
-  private ShippingInstructionTO createShippingInstruction(boolean canBeChanged) throws IOException {
+  private ShippingInstructionTO createShippingInstruction(boolean withMinorErrors) throws IOException {
     ShippingInstructionTO shippingInstruction = objectMapper.readValue(loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
 
-    if (canBeChanged) {
+    if (withMinorErrors) {
       shippingInstruction.setDocumentStatus(null);
       shippingInstruction.setIsElectronic(false);
       shippingInstruction.setNumberOfCopies(null);
