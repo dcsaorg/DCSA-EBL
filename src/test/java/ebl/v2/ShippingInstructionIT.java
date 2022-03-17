@@ -93,7 +93,11 @@ class ShippingInstructionIT {
         .body("httpMethod", equalTo("POST"))
         .body("requestUri", containsString("/v2/shipping-instructions"))
         .body("errors[0].reason", equalTo("notFound"))
-        .body("errors[0].message", containsString("No booking found for carrier booking reference: " + map.get("carrierBookingReference")))
+        .body(
+            "errors[0].message",
+            containsString(
+                "No booking found for carrier booking reference: "
+                    + map.get("carrierBookingReference")))
         .body("statusCode", equalTo(404))
         .body("statusCodeText", equalTo("Not Found"))
         .extract()
