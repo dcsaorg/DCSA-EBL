@@ -17,6 +17,7 @@ public class TestConfig {
 
   // API endpoints
   public static final String SHIPPING_INSTRUCTIONS = "/v2/shipping-instructions";
+  public static final String TRANSPORT_DOCUMENT_SUMMARIES = "/v2/transport-document-summaries";
 
   private TestConfig() {}
 
@@ -30,8 +31,9 @@ public class TestConfig {
     }
   }
 
-  public static Matcher<?> jsonSchemaValidator(String fileName) {
-    return matchesJsonSchemaInClasspath("schema/" + fileName + ".json")
+  public static Matcher<?> jsonSchemaValidator(String filename) {
+    if (!filename.endsWith(".json")) filename += ".json";
+    return matchesJsonSchemaInClasspath("schema/" + filename)
         .using(
             JsonSchemaFactory.newBuilder()
                 .setValidationConfiguration(

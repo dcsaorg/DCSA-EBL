@@ -1,0 +1,171 @@
+{
+  "transportDocumentTypeCode": "SWB",
+  "isShippedOnboardType": true,
+  "numberOfCopies": 2,
+  "numberOfOriginals": 4,
+  "isElectronic": true,
+  "isToOrder": false,
+  "areChargesDisplayedOnOriginals": true,
+  "areChargesDisplayedOnCopies": true,
+  "displayedNameForPlaceOfReceipt": "Janesville",
+  "displayedNameForPortOfLoad": "Seysses",
+  "displayedNameForPortOfDischarge": "Ridica",
+  "displayedNameForPlaceOfDelivery": "Masio",
+  "placeOfIssue": {
+    "locationName": "Rotterdam",
+    "latitude": "51.9244° N",
+    "longitude": "4.4777° E",
+    "UNLocationCode": "NLRTM"
+  },
+  "utilizedTransportEquipments": [
+    {
+      "carrierBookingReference": "43f615138efc4d3286b36402405f851b",
+      "equipment": {
+        "equipmentReference": "BMOU2149612",
+        "ISOEquipmentCode": "22G1",
+        "tareWeight": 12000,
+        "weightUnit": "KGM"
+      },
+      "cargoGrossWeightUnit": "KGM",
+      "cargoGrossWeight": 12000,
+      "isShipperOwned": true,
+      "cargoItems": [
+        {
+          "cargoLineItems": [
+            {
+              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
+              "shippingMarks": "squashed"
+            }
+          ],
+          "descriptionOfGoods": "Shoes",
+          "HSCode": "411510",
+          "weight": 13000.3,
+          "volume": 12,
+          "weightUnit": "KGM",
+          "volumeUnit": "CBM",
+          "numberOfPackages": 18,
+          "packageCode": "5H4",
+          "references": [
+            {
+              "referenceType": "FF",
+              "referenceValue": "7b46"
+            }
+          ]
+        }
+      ],
+      "activeReeferSettings": {
+        "temperatureMin": -18.1,
+        "temperatureMax": 64.3,
+        "temperatureUnit": "CEL",
+        "humidityMin": 80,
+        "humidityMax": 100,
+        "ventilationMin": 266,
+        "ventilationMax": 296
+      },
+      "seals": [
+        {
+          "sealNumber": "1111",
+          "sealSource": "CUS",
+          "sealType": "WIR"
+        }
+      ]
+    },
+    {
+      "carrierBookingReference": "5dc92988f48a420495b786c224efce7d",
+      "equipment": {
+        "equipmentReference": "BMOU2149612",
+        "ISOEquipmentCode": "22G1",
+        "tareWeight": 12000,
+        "weightUnit": "KGM"
+      },
+      "cargoGrossWeightUnit": "KGM",
+      "cargoGrossWeight": 12000,
+      "isShipperOwned": true,
+      "cargoItems": [
+        {
+          "cargoLineItems": [
+            {
+              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
+              "shippingMarks": "squashed"
+            }
+          ],
+          "descriptionOfGoods": "Shoes",
+          "HSCode": "411510",
+          "weight": 13000.3,
+          "volume": 12,
+          "weightUnit": "KGM",
+          "volumeUnit": "CBM",
+          "numberOfPackages": 18,
+          "packageCode": "5H4",
+          "references": [
+            {
+              "referenceType": "FF",
+              "referenceValue": "7b46"
+            }
+          ]
+        }
+      ],
+      "activeReeferSettings": {
+        "temperatureMin": -18.1,
+        "temperatureMax": 64.3,
+        "temperatureUnit": "CEL",
+        "humidityMin": 80,
+        "humidityMax": 100,
+        "ventilationMin": 266,
+        "ventilationMax": 296
+      },
+      "seals": [
+        {
+          "sealNumber": "1111",
+          "sealSource": "CUS",
+          "sealType": "WIR"
+        }
+      ]
+    }
+  ],
+  "documentParties": [
+    {
+      "party": {
+        "partyName": "Asseco Denmark",
+        "taxReference1": "CVR-25645774",
+        "taxReference2": "CVR-25645774",
+        "publicKey": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkFzaW",
+        "address": {
+          "name": "Henrik",
+          "street": "Kronprincessegade",
+          "streetNumber": "54",
+          "floor": "5. sal",
+          "postCode": "1306",
+          "city": "København",
+          "stateRegion": "N/A",
+          "country": "Denmark"
+        },
+        "partyContactDetails": [
+          {
+            "name": "Henrik",
+            "phone": "+45 33364660",
+            "email": "info@dcsa.org"
+          }
+        ],
+        "identifyingCodes": [
+          {
+            "DCSAResponsibleAgencyCode": "SMDG",
+            "partyCode": "MSK",
+            "codeListName": "LCL"
+          }
+        ]
+      },
+      "partyFunction": "EBL",
+      "displayedAddress": [
+        "Kronprincessegade 54"
+      ],
+      "isToBeNotified": true
+    }
+  ],
+  "references": [
+    {
+      "referenceType": "FF",
+      "referenceValue": "zzz"
+    }
+  ]
+}
