@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ebl.config.TestConfig;
 import org.apache.http.HttpStatus;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
-import static ebl.config.TestConfig.*;
+import static ebl.config.TestConfig.SHIPPING_INSTRUCTIONS;
+import static ebl.config.TestConfig.jsonSchemaValidator;
 import static ebl.config.TestUtil.jsonToMap;
 import static ebl.config.TestUtil.loadFileAsString;
 import static io.restassured.RestAssured.given;
@@ -91,12 +93,120 @@ class ShippingInstructionIT {
         .body("httpMethod", equalTo("POST"))
         .body("requestUri", containsString("/v2/shipping-instructions"))
         .body("errors[0].reason", equalTo("notFound"))
-        .body("errors[0].message", containsString(
-          "No booking found for carrier booking reference: " + map.get("carrierBookingReference")))
+        .body(
+            "errors[0].message",
+            containsString(
+                "No booking found for carrier booking reference: "
+                    + map.get("carrierBookingReference")))
         .body("statusCode", equalTo(404))
         .body("statusCodeText", equalTo("Not Found"))
         .extract()
         .body()
         .asString();
+  }
+
+  @Test
+  void testInvalidGetShippingInstruction() {
+
+    UUID invalidShippingInstructionReference = UUID.randomUUID();
+
+    given()
+        .contentType("application/json")
+        .get(SHIPPING_INSTRUCTIONS + "/" + invalidShippingInstructionReference)
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_NOT_FOUND)
+        .body("httpMethod", equalTo("GET"))
+        .body("requestUri", containsString("/v2/shipping-instructions"))
+        .body("errors[0].reason", equalTo("notFound"))
+        .body(
+            "errors[0].message",
+            containsString(
+                "No Shipping Instruction found with ID: " + invalidShippingInstructionReference))
+        .body("statusCode", equalTo(404))
+        .body("statusCodeText", equalTo("Not Found"))
+        .extract()
+        .body()
+        .asString();
+  }
+
+  @Test
+  void testValidGetShippingInstruction() {
+    Map<String, Object> map = jsonToMap(VALID_SHIPPING_INSTRUCTION);
+    assert map != null;
+
+    ShippingInstructionResponseTO response = createShippingInstruction(map);
+
+    given()
+        .contentType("application/json")
+        .get(SHIPPING_INSTRUCTIONS + "/" + response.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body("documentParties", hasSize(greaterThan(0)))
+        .body("shipments", hasSize(greaterThan(0)))
+        .body("references", hasSize(greaterThan(0)))
+        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
+        .body("placeOfIssue", notNullValue())
+        .body("isToOrder", notNullValue())
+        .body("isShippedOnboardType", notNullValue())
+        .body(jsonSchemaValidator("shippingInstruction"))
+        .extract()
+        .body()
+        .asString();
+  }
+
+  @Test
+  void testValidGetShippingInstructionShallow() {
+    Map<String, Object> map = jsonToMap(VALID_SHIPPING_INSTRUCTION);
+    assert map != null;
+    map.put("placeOfIssue", null);
+    map.put("placeOfIssueID", null);
+    map.put("documentParties", null);
+    map.put("numberOfCopies", null);
+    map.put("numberOfOriginals", null);
+    map.put("isElectronic", null);
+    map.put("areChargesDisplayedOnOriginals", null);
+    map.put("areChargesDisplayedOnCopies", null);
+
+    ShippingInstructionResponseTO response = createShippingInstruction(map);
+
+    given()
+        .contentType("application/json")
+        .get(SHIPPING_INSTRUCTIONS + "/" + response.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body("documentParties", nullValue())
+        .body("shipments", hasSize(greaterThan(0)))
+        .body("references", hasSize(greaterThan(0)))
+        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
+        //        .body("placeOfIssue", equalTo("<{}>")) // doesn't accept hasSize(0) or nullValue
+        .body("isToOrder", notNullValue())
+        .body("isShippedOnboardType", notNullValue())
+        .body("numberOfCopies", nullValue())
+        .body("numberOfOriginals", nullValue())
+        .body("isElectronic", nullValue())
+        .body("areChargesDisplayedOnOriginals", nullValue())
+        .body("areChargesDisplayedOnCopies", nullValue())
+        .body(jsonSchemaValidator("shippingInstruction"))
+        .extract()
+        .body()
+        .asString();
+  }
+
+  ShippingInstructionResponseTO createShippingInstruction(Map<String, Object> map) {
+
+    System.out.println(map);
+    return given()
+        .contentType("application/json")
+        .body(map)
+        .post(SHIPPING_INSTRUCTIONS)
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_CREATED)
+        .extract()
+        .response()
+        .as(ShippingInstructionResponseTO.class);
   }
 }
