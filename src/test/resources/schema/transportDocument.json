@@ -2256,8 +2256,8 @@
                                                     "type": "string",
                                                     "description": "Transport obligations, costs and risks as agreed between buyer and seller.\n",
                                                     "enum": [
-                                                      "FCA (Free Carrier)",
-                                                      "FOB (Free on Board)"
+                                                      "FCA",
+                                                      "FOB"
                                                     ],
                                                     "$schema": "http://json-schema.org/schema#"
                                                   }
