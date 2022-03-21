@@ -431,10 +431,21 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             List<String> validationResult = validateShippingInstruction(si);
             Mono<ShipmentEvent> shipmentEvent;
             if (!validationResult.isEmpty()) {
-              si.setDocumentStatus(ShipmentEventTypeCode.PENU);
+              if (si.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
+                // UC5 / UC7 that was rejected goes back to DRFT.
+                // TODO: We ought to rollback the TD at this point as well but that requires versioning.
+                si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
+              } else {
+                si.setDocumentStatus(ShipmentEventTypeCode.PENU);
+              }
               shipmentEvent = createShipmentEvent(si, String.join("\n", validationResult));
             } else {
-              si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
+              if (si.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
+                // UC5 / UC7 that was accepted goes directly to APPR.
+                si.setDocumentStatus(ShipmentEventTypeCode.APPR);
+              } else {
+                si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
+              }
               shipmentEvent = createShipmentEvent(si);
             }
             return shipmentEvent.thenReturn(si);
@@ -470,13 +481,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
-            if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU) {
+            if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU
+              || shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
               return Mono.just(shippingInstruction);
             }
             return Mono.error(
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "DocumentStatus needs to be set to "
                         + ShipmentEventTypeCode.PENU
+                        + " or "
+                        + ShipmentEventTypeCode.DRFT
                         + " when updating Shipping Instruction"));
           };
 }
