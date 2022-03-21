@@ -39,25 +39,20 @@ class TransportDocumentSummariesIT {
   @Test
   void testValidGetTransportDocumentSummariesWithoutParameters() {
 
-    TransportDocumentSummary[] result =
-        given()
-            .contentType("application/json")
-            .get(TRANSPORT_DOCUMENT_SUMMARIES)
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.SC_OK)
-            .body("size()", greaterThan(0))
-            .body("shippingInstructionReference", everyItem(notNullValue()))
-            .body("transportDocumentReference", everyItem(notNullValue()))
-            .body("documentStatus", everyItem(notNullValue()))
-            .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
-            .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
-            .extract()
-            .as(TransportDocumentSummary[].class);
-
-    Assertions.assertEquals(Optional.empty(), Arrays.stream(result).findAny().filter(x -> x.getShippingInstructionReference() == null));
-    Assertions.assertEquals(Optional.empty(), Arrays.stream(result).findAny().filter(x -> x.getTransportDocumentReference() == null));
-    Assertions.assertEquals(Optional.empty(), Arrays.stream(result).findAny().filter(x -> x.getDocumentStatus() == null));
+    given()
+        .contentType("application/json")
+        .get(TRANSPORT_DOCUMENT_SUMMARIES)
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body("size()", greaterThan(0))
+        .body("shippingInstructionReference", everyItem(notNullValue()))
+        .body("transportDocumentReference", everyItem(notNullValue()))
+        .body("documentStatus", everyItem(notNullValue()))
+        .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
+        .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
+        .extract()
+        .asString();
   }
 
   @Test
@@ -181,8 +176,7 @@ class TransportDocumentSummariesIT {
   void testValidGetTransportDocumentSummariesWithCarrierBookingReferenceAndDocumentStatus() {
 
     ShipmentEventTypeCode documentStatus = ShipmentEventTypeCode.RECE;
-    String carrierBookingReference =
-        "castlesofronburgundy";
+    String carrierBookingReference = "castlesofronburgundy";
 
     given()
         .contentType("application/json")
