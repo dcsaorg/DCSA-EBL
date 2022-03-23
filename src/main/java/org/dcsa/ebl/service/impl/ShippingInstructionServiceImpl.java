@@ -5,6 +5,7 @@ import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
@@ -14,6 +15,7 @@ import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -45,6 +47,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final ShipmentService shipmentService;
 
   private final BookingRepository bookingRepository;
+  private final TransportDocumentRepository transportDocumentRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -119,24 +122,32 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shippingInstruction.setShippingInstructionUpdatedDateTime(now);
 
     return Mono.justOrEmpty(shippingInstructionTO.getAmendmentToTransportDocument())
-        .flatMap(tdReference ->
-          // If this is an amendment, verify that the TD exist and is in the correct status.
-          shippingInstructionRepository.findByTransportDocumentReference(tdReference)
-          .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-            "Shipping Instruction",
-            "amendmentToTransportDocument",
-            "Unknown Transport Document Reference: " + tdReference
-          ))).flatMap(siForTD -> {
-              if (siForTD.getDocumentStatus() != ShipmentEventTypeCode.ISSU) {
-                return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-                  "Shipping Instruction",
-                  "amendmentToTransportDocument",
-                    "The referenced transport document (" + tdReference + ") must be in state ISSU, but had state: " + siForTD.getDocumentStatus()
-                  ));
-              }
-              return Mono.empty();
-          })
-        ).then(validateDocumentStatusOnBooking(shippingInstructionTO))
+        .flatMap(
+            tdReference ->
+                // If this is an amendment, verify that the TD exist and is in the correct status.
+                shippingInstructionRepository
+                    .findByTransportDocumentReference(tdReference)
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.invalidParameter(
+                                "Shipping Instruction",
+                                "amendmentToTransportDocument",
+                                "Unknown Transport Document Reference: " + tdReference)))
+                    .flatMap(
+                        siForTD -> {
+                          if (siForTD.getDocumentStatus() != ShipmentEventTypeCode.ISSU) {
+                            return Mono.error(
+                                ConcreteRequestErrorMessageException.invalidParameter(
+                                    "Shipping Instruction",
+                                    "amendmentToTransportDocument",
+                                    "The referenced transport document ("
+                                        + tdReference
+                                        + ") must be in state ISSU, but had state: "
+                                        + siForTD.getDocumentStatus()));
+                          }
+                          return Mono.empty();
+                        }))
+        .then(validateDocumentStatusOnBooking(shippingInstructionTO))
         .flatMap(ignored -> shippingInstructionRepository.save(shippingInstruction))
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
@@ -168,17 +179,19 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             })
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
-          siTO -> {
-            ShippingInstruction shippingInstruction2 =
-              shippingInstructionMapper.dtoToShippingInstruction(siTO);
-            shippingInstruction2.setShippingInstructionReference(siTO.getShippingInstructionReference());
-            shippingInstruction2.setDocumentStatus(siTO.getDocumentStatus());
-            shippingInstruction2.setShippingInstructionCreatedDateTime(
-              siTO.getShippingInstructionCreatedDateTime());
-            shippingInstruction2.setShippingInstructionUpdatedDateTime(
-              siTO.getShippingInstructionUpdatedDateTime());
-            return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
-          })
+            siTO -> {
+              ShippingInstruction shippingInstruction2 =
+                  shippingInstructionMapper.dtoToShippingInstruction(siTO);
+              shippingInstruction2.setShippingInstructionReference(
+                  siTO.getShippingInstructionReference());
+              shippingInstruction2.setDocumentStatus(siTO.getDocumentStatus());
+              shippingInstruction2.setShippingInstructionCreatedDateTime(
+                  siTO.getShippingInstructionCreatedDateTime());
+              shippingInstruction2.setShippingInstructionUpdatedDateTime(
+                  siTO.getShippingInstructionUpdatedDateTime());
+              return shippingInstructionRepository.save(shippingInstruction2).thenReturn(siTO);
+            })
+        .flatMap(this::createTransportDocumentFromShippingInstructionTO)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -200,17 +213,22 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                 ConcreteRequestErrorMessageException.invalidParameter(
                     "No Shipping Instruction found with ID: " + shippingInstructionReference)))
         .flatMap(checkUpdateShippingInstructionStatus)
-        .flatMap(si -> {
-          // We do not allow the amendmentToTransportDocument to change in PUT. It is not required and a lot of hassle.
-          if (!Objects.equals(si.getAmendmentToTransportDocument(), shippingInstructionRequest.getAmendmentToTransportDocument())) {
-            return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(
-              "Shipping Instruction",
-              "amendmentToTransportDocument",
-              "The update would change the value of amendmentToTransportDocument, which is not allowed."
-            ));
-          }
-          return Mono.just(si);
-        }).flatMap(si -> createShipmentEvent(si).thenReturn(si))
+        .flatMap(
+            si -> {
+              // We do not allow the amendmentToTransportDocument to change in PUT. It is not
+              // required and a lot of hassle.
+              if (!Objects.equals(
+                  si.getAmendmentToTransportDocument(),
+                  shippingInstructionRequest.getAmendmentToTransportDocument())) {
+                return Mono.error(
+                    ConcreteRequestErrorMessageException.invalidParameter(
+                        "Shipping Instruction",
+                        "amendmentToTransportDocument",
+                        "The update would change the value of amendmentToTransportDocument, which is not allowed."));
+              }
+              return Mono.just(si);
+            })
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               shippingInstructionRequest.setShippingInstructionReference(
@@ -260,6 +278,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository.save(shippingInstruction).thenReturn(siTO);
             })
+        .flatMap(this::createTransportDocumentFromShippingInstructionTO)
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
   }
 
@@ -476,6 +495,21 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shipmentEvent.setEventDateTime(shippingInstructionUpdatedDateTime);
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
+  }
+
+  private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(
+      ShippingInstructionTO shippingInstructionTO) {
+    if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
+      OffsetDateTime now = OffsetDateTime.now();
+      TransportDocument transportDocument = new TransportDocument();
+      transportDocument.setShippingInstructionReference(
+          shippingInstructionTO.getShippingInstructionReference());
+      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
+      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+    } else {
+      return Mono.just(shippingInstructionTO);
+    }
   }
 
   private final Function<ShippingInstruction, Mono<ShippingInstruction>>
