@@ -1,21 +1,21 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.edocumentation.model.transferobject.ValueAddedServiceRequestTO;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
-import org.dcsa.core.events.model.Booking;
-import org.dcsa.core.events.model.ShipmentEvent;
-import org.dcsa.core.events.model.ShippingInstruction;
-import org.dcsa.core.events.model.TransportDocument;
+import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
+import org.dcsa.core.events.model.mapper.ValueAddedServiceRequestMapper;
 import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
 import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
+import org.dcsa.core.events.repository.ValueAddedServiceRequestRepository;
 import org.dcsa.core.events.service.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
@@ -48,9 +48,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   private final BookingRepository bookingRepository;
   private final TransportDocumentRepository transportDocumentRepository;
+  private final ValueAddedServiceRequestRepository valueAddedServiceRequestRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
+  private final ValueAddedServiceRequestMapper valueAddedServiceRequestMapper;
 
   @Transactional(readOnly = true)
   @Override
@@ -93,6 +95,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .fetchDocumentPartiesByByShippingInstructionReference(
                               si.getShippingInstructionReference())
                           .doOnNext(siTO::setDocumentParties),
+                      valueAddedServiceRequestRepository
+                          .findByShippingInstructionID(si.getShippingInstructionReference())
+                          .map(valueAddedServiceRequestMapper::ValueAddedServiceRequestToDTO)
+                          .collectList(),
                       referenceService
                           .findByShippingInstructionReference(si.getShippingInstructionReference())
                           .doOnNext(siTO::setReferences),
@@ -172,6 +178,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .addShipmentEquipmentToShippingInstruction(
                               shippingInstructionTO.getShipmentEquipments(), shippingInstructionTO)
                           .doOnNext(shippingInstructionTO::setShipmentEquipments),
+                      createValueAddedServiceRequestsByShippingInstructionIDAndTOs(
+                          si.getShippingInstructionReference(),
+                          shippingInstructionTO.getValueAddedServiceRequests()),
+                      createValueAddedServiceRequestsByShippingInstructionIDAndTOs(
+                              si.getShippingInstructionReference(),
+                              shippingInstructionTO.getValueAddedServiceRequests())
+                          .doOnNext(shippingInstructionTO::setValueAddedServiceRequests),
                       referenceService.createReferencesByShippingInstructionReferenceAndTOs(
                           shippingInstructionTO.getShippingInstructionReference(),
                           shippingInstructionTO.getReferences()))
@@ -257,6 +270,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                               si.getShippingInstructionReference(),
                               shippingInstructionRequest.getDocumentParties())
                           .doOnNext(shippingInstructionRequest::setDocumentParties),
+                      resolveValueAddedServiceReqForShippingInstructionID(
+                              shippingInstructionRequest.getValueAddedServiceRequests(),
+                              si.getShippingInstructionReference())
+                          .doOnNext(shippingInstructionRequest::setValueAddedServiceRequests),
                       referenceService
                           .resolveReferencesForShippingInstructionReference(
                               shippingInstructionRequest.getReferences(),
@@ -324,6 +341,41 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                                 "No booking found for carrier booking reference: "
                                     + carrierBookingReference))))
         .collectList();
+  }
+
+  private Mono<List<ValueAddedServiceRequestTO>>
+      createValueAddedServiceRequestsByShippingInstructionIDAndTOs(
+          String shippingInstructionID,
+          List<ValueAddedServiceRequestTO> valueAddedServiceRequests) {
+
+    if (Objects.isNull(valueAddedServiceRequests) || valueAddedServiceRequests.isEmpty()) {
+      return Mono.empty();
+    }
+
+    Stream<ValueAddedServiceRequest> valueAddedServiceRequestStream =
+        valueAddedServiceRequests.stream()
+            .map(
+                valueAddedServiceRequestTO ->
+                    valueAddedServiceRequestMapper
+                        .dtoToValueAddedServiceRequestWithShippingInstructionID(
+                            valueAddedServiceRequestTO, shippingInstructionID));
+
+    return valueAddedServiceRequestRepository
+        .saveAll(Flux.fromStream(valueAddedServiceRequestStream))
+        .map(valueAddedServiceRequestMapper::ValueAddedServiceRequestToDTO)
+        .collectList();
+  }
+
+  private Mono<List<ValueAddedServiceRequestTO>>
+      resolveValueAddedServiceReqForShippingInstructionID(
+          List<ValueAddedServiceRequestTO> valueAddedServiceRequestTOs,
+          String shippingInstructionID) {
+
+    return valueAddedServiceRequestRepository
+        .deleteByShippingInstructionID(shippingInstructionID)
+        .then(
+            createValueAddedServiceRequestsByShippingInstructionIDAndTOs(
+                shippingInstructionID, valueAddedServiceRequestTOs));
   }
 
   private Mono<LocationTO> insertLocationTO(
@@ -452,7 +504,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             if (!validationResult.isEmpty()) {
               if (si.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
                 // UC5 / UC7 that was rejected goes back to DRFT.
-                // TODO: We ought to rollback the TD at this point as well but that requires versioning.
+                // TODO: We ought to rollback the TD at this point as well but that requires
+                // versioning.
                 si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
               } else {
                 si.setDocumentStatus(ShipmentEventTypeCode.PENU);
@@ -515,7 +568,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
             if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU
-              || shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
+                || shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
               return Mono.just(shippingInstruction);
             }
             return Mono.error(
