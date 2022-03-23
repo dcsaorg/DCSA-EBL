@@ -2,7 +2,6 @@ package org.dcsa.ebl.model.transferobjects;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.With;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 
 import javax.validation.constraints.NotNull;

@@ -277,7 +277,6 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.CBR);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
-    shipmentEvent.setCarrierBookingReference(null);
     shipmentEvent.setDocumentID(booking.getCarrierBookingRequestReference());
     shipmentEvent.setEventDateTime(booking.getBookingRequestUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
@@ -318,7 +317,6 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setEventType(null);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
-    shipmentEvent.setCarrierBookingReference(transportDocumentTO.getTransportDocumentReference());
     shipmentEvent.setDocumentID(
         transportDocumentTO.getShippingInstruction().getShippingInstructionReference());
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
