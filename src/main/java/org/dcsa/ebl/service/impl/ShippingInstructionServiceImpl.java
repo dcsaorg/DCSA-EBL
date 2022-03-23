@@ -489,7 +489,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
-    shipmentEvent.setCarrierBookingReference(null);
     shipmentEvent.setDocumentID(shippingInstructionReference);
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     shipmentEvent.setEventDateTime(shippingInstructionUpdatedDateTime);

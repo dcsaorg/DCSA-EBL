@@ -65,7 +65,6 @@ public class EventControllerTest {
         event.setEventClassifierCode(EventClassifierCode.PLN);
         event.setEventDateTime(OffsetDateTime.now());
         event.setEventCreatedDateTime(OffsetDateTime.now());
-        event.setCarrierBookingReference("DUMMY");
 
         shipmentEvent = new ShipmentEvent();
         shipmentEvent.setEventID(UUID.fromString("5e51e72c-d872-11ea-811c-0f8f10a32ea1"));
