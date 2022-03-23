@@ -77,7 +77,7 @@ class TransportDocumentSummariesIT {
         .body("[0].carrierBookingReferences", hasItem("e8e9d64172934a40aec82e4308cdf97a"))
         .body("[0].transportDocumentReference", notNullValue())
         .body("[0].shippingInstructionReference", notNullValue())
-        .body("[0].documentStatus", equalTo(String.valueOf(ShipmentEventTypeCode.DRFT)))
+        .body("[0].documentStatus", equalTo(String.valueOf(ShipmentEventTypeCode.APPR)))
         .body("[0].transportDocumentRequestCreatedDateTime", notNullValue())
         .body("[0].transportDocumentRequestUpdatedDateTime", notNullValue())
         //        .body(jsonSchemaValidator("shippingInstructionRequest"))
