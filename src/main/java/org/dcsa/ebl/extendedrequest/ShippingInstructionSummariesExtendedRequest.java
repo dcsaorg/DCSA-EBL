@@ -2,7 +2,7 @@ package org.dcsa.ebl.extendedrequest;
 
 import org.dcsa.core.events.model.CargoItem;
 import org.dcsa.core.events.model.Shipment;
-import org.dcsa.core.events.model.ShipmentEquipment;
+import org.dcsa.core.events.model.UtilizedTransportEquipment;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
@@ -28,8 +28,8 @@ public class ShippingInstructionSummariesExtendedRequest extends ExtendedRequest
     return builder
         .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
         .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
-        .chainJoin(ShipmentEquipment.class)
-        .onFieldEqualsThen("shipmentEquipmentID", "id")
+        .chainJoin(UtilizedTransportEquipment.class)
+        .onFieldEqualsThen("utilizedTransportEquipmentID", "id")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
         .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER, QueryFieldConditionGenerator.inCommaSeparatedList());

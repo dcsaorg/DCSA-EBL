@@ -93,15 +93,15 @@ class ShippingInstructionControllerTest {
     activeReeferSettingsTO.setVentilationMax(15f);
     activeReeferSettingsTO.setVentilationMin(5f);
 
-    ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
-    shipmentEquipmentTO.setCarrierBookingReference("XYZ12345");
-    shipmentEquipmentTO.setEquipment(equipmentTO);
-    shipmentEquipmentTO.setSeals(List.of(sealsTO));
-    shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
-    shipmentEquipmentTO.setCargoGrossWeight(120f);
-    shipmentEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
-    shipmentEquipmentTO.setActiveReeferSettings(activeReeferSettingsTO);
-    shipmentEquipmentTO.setIsShipperOwned(true);
+    UtilizedTransportEquipmentTO utilizedTransportEquipmentTO = new UtilizedTransportEquipmentTO();
+    utilizedTransportEquipmentTO.setCarrierBookingReference("XYZ12345");
+    utilizedTransportEquipmentTO.setEquipment(equipmentTO);
+    utilizedTransportEquipmentTO.setSeals(List.of(sealsTO));
+    utilizedTransportEquipmentTO.setCargoItems(List.of(cargoItemTO));
+    utilizedTransportEquipmentTO.setCargoGrossWeight(120f);
+    utilizedTransportEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
+    utilizedTransportEquipmentTO.setActiveReeferSettings(activeReeferSettingsTO);
+    utilizedTransportEquipmentTO.setIsShipperOwned(true);
 
     PartyContactDetailsTO partyContactDetailsTO = new PartyContactDetailsTO();
 
@@ -120,7 +120,7 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO = new ShippingInstructionTO();
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
     shippingInstructionTO.setPlaceOfIssue(locationTO);
-    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+    shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setDocumentParties(List.of(documentPartyTO));
     shippingInstructionTO.setReferences(List.of(referenceTO));
     shippingInstructionTO.setIsShippedOnboardType(true);
@@ -170,7 +170,7 @@ class ShippingInstructionControllerTest {
   @DisplayName("POST shipping-instructions should return 400 when no cargo items are present.")
   void postShippingInstructionsShouldReturn400ForMissingCargoItems() {
 
-    shippingInstructionTO.getShipmentEquipments().get(0).setCargoItems(Collections.emptyList());
+    shippingInstructionTO.getUtilizedTransportEquipments().get(0).setCargoItems(Collections.emptyList());
 
     WebTestClient.ResponseSpec exchange =
         webTestClient
@@ -184,10 +184,10 @@ class ShippingInstructionControllerTest {
   }
 
   @DisplayName(
-      "POST shipping-instructions should return 400 when no shipment equipments are present.")
-  void postShippingInstructionsShouldReturn400ForShipmentEquipments() {
+      "POST shipping-instructions should return 400 when no UtilizedTransportEquipment are present.")
+  void postShippingInstructionsShouldReturn400ForUtilizedTransportEquipments() {
 
-    shippingInstructionTO.setShipmentEquipments(Collections.emptyList());
+    shippingInstructionTO.setUtilizedTransportEquipments(Collections.emptyList());
 
     WebTestClient.ResponseSpec exchange =
         webTestClient
