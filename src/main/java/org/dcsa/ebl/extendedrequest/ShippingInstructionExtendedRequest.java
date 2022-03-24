@@ -2,7 +2,7 @@ package org.dcsa.ebl.extendedrequest;
 
 import org.dcsa.core.events.model.CargoItem;
 import org.dcsa.core.events.model.Shipment;
-import org.dcsa.core.events.model.ShipmentEquipment;
+import org.dcsa.core.events.model.UtilizedTransportEquipment;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
@@ -24,7 +24,7 @@ public class ShippingInstructionExtendedRequest<T extends ShippingInstruction> e
         DBEntityAnalysis.DBEntityAnalysisBuilder<T> builder = super.prepareDBEntityAnalysis();
         return builder.join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
                 .onEqualsThen("id", "shipping_instruction_id")
-                .chainJoin(ShipmentEquipment.class)
+                .chainJoin(UtilizedTransportEquipment.class)
                 .onEqualsThen("shipment_equipment_id", "id")
                 .chainJoin(Shipment.class)
                 .onEqualsThen("shipment_id", "id")
