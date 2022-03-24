@@ -48,11 +48,11 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
 
         Select query = Select.builder()
                 .select(List.of(ShippingInstructionSpec.id, ShipmentSpec.carrierBookingReference))
-                .from(ShippingInstructionSpec.table, CargoItemSpec.table, ShipmentEquipmentSpec.table, ShipmentSpec.table)
+                .from(ShippingInstructionSpec.table, CargoItemSpec.table, UtilizedTransportEquipmentSpec.table, ShipmentSpec.table)
                 .where(
                         isEqual(ShippingInstructionSpec.id, CargoItemSpec.shippingInstructionReference)
-                                .and(isEqual(CargoItemSpec.shipmentEquipmentId, ShipmentEquipmentSpec.id))
-                                .and(isEqual(ShipmentEquipmentSpec.shipmentId, ShipmentSpec.id))
+                                .and(isEqual(CargoItemSpec.utilizedTransportEquipmentID, UtilizedTransportEquipmentSpec.id))
+                                .and(isEqual(UtilizedTransportEquipmentSpec.shipmentId, ShipmentSpec.id))
                                 .and(columnIn(ShippingInstructionSpec.id, shippingInstructionReferences))
                 ).build();
 
@@ -101,7 +101,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         public static final Table table = Table.create("cargo_item");
         public static final Column id = Column.create("id", table);
         public static final Column shippingInstructionReference = Column.create("shipping_instruction_id", table);
-        public static final Column shipmentEquipmentId = Column.create("shipment_equipment_id", table);
+        public static final Column utilizedTransportEquipmentID = Column.create("shipment_equipment_id", table);
     }
 
     private static class ShipmentSpec {
@@ -110,7 +110,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         public static final Column carrierBookingReference = Column.create("carrier_booking_reference", table);
     }
 
-    private static class ShipmentEquipmentSpec {
+    private static class UtilizedTransportEquipmentSpec {
         public static final Table table = Table.create("shipment_equipment");
         public static final Column id = Column.create("id", table);
         public static final Column shipmentId = Column.create("shipment_id", table);

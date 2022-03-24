@@ -31,8 +31,8 @@ public class TransportDocumentExtendedRequest<T extends TransportDocument> exten
                 .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
                 .chainJoin(CargoItem.class)
                 .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
-                .chainJoin(ShipmentEquipment.class)
-                .onFieldEqualsThen("shipmentEquipmentID", "id")
+                .chainJoin(UtilizedTransportEquipment.class)
+                .onFieldEqualsThen("utilizedTransportEquipmentID", "id")
                 .chainJoin(Shipment.class)
                 .onFieldEqualsThen("shipmentID", "id")
                 .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER);
