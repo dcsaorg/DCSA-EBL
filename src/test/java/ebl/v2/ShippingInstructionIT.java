@@ -67,7 +67,7 @@ class ShippingInstructionIT {
         .body("requestUri", containsString("/v2/shipping-instructions"))
         .body("errors[0].reason", equalTo("invalidInput"))
         .body("errors[0].message", containsString("isToOrder"))
-        .body("errors[0].message", containsString("shipmentEquipments"))
+        .body("errors[0].message", containsString("utilizedTransportEquipments"))
         .body("errors[0].message", containsString("isShippedOnboardType"))
         .body("statusCode", equalTo(400))
         .body("statusCodeText", equalTo("Bad Request"))

@@ -12,7 +12,7 @@ import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShipmentEquipmentTO;
+import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
@@ -40,7 +40,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   private final ShippingInstructionRepository shippingInstructionRepository;
   private final LocationService locationService;
-  private final ShipmentEquipmentService shipmentEquipmentService;
+  private final UtilizedTransportEquipmentService utilizedTransportEquipmentService;
   private final ShipmentEventService shipmentEventService;
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
@@ -85,10 +85,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                       shippingInstructionRepository
                           .findShipmentIDsByShippingInstructionReference(
                               si.getShippingInstructionReference())
-                          .flatMap(shipmentEquipmentService::findShipmentEquipmentByShipmentID)
+                          .flatMap(utilizedTransportEquipmentService::findUtilizedTransportEquipmentByShipmentID)
                           .flatMap(Flux::fromIterable)
                           .collectList()
-                          .doOnNext(siTO::setShipmentEquipments),
+                          .doOnNext(siTO::setUtilizedTransportEquipments),
                       documentPartyService
                           .fetchDocumentPartiesByByShippingInstructionReference(
                               si.getShippingInstructionReference())
@@ -109,7 +109,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       ShippingInstructionTO shippingInstructionTO) {
 
     try {
-      shippingInstructionTO.pushCarrierBookingReferenceIntoShipmentEquipmentIfNecessary();
+      shippingInstructionTO.pushCarrierBookingReferenceIntoUtilizedTransportEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
@@ -168,10 +168,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                               shippingInstructionTO.getDocumentParties(),
                               shippingInstructionTO.getShippingInstructionReference())
                           .doOnNext(shippingInstructionTO::setDocumentParties),
-                      shipmentEquipmentService
-                          .addShipmentEquipmentToShippingInstruction(
-                              shippingInstructionTO.getShipmentEquipments(), shippingInstructionTO)
-                          .doOnNext(shippingInstructionTO::setShipmentEquipments),
+                      utilizedTransportEquipmentService
+                          .addUtilizedTransportEquipmentToShippingInstruction(
+                              shippingInstructionTO.getUtilizedTransportEquipments(), shippingInstructionTO)
+                          .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
                       referenceService.createReferencesByShippingInstructionReferenceAndTOs(
                           shippingInstructionTO.getShippingInstructionReference(),
                           shippingInstructionTO.getReferences()))
@@ -201,7 +201,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
           String shippingInstructionReference, ShippingInstructionTO shippingInstructionRequest) {
 
     try {
-      shippingInstructionRequest.pushCarrierBookingReferenceIntoShipmentEquipmentIfNecessary();
+      shippingInstructionRequest.pushCarrierBookingReferenceIntoUtilizedTransportEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
@@ -247,11 +247,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                                   shippingInstructionRepository.setPlaceOfIssueFor(
                                       placeOfIssue, si.getShippingInstructionReference()))
                           .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
-                      shipmentEquipmentService
-                          .resolveShipmentEquipmentsForShippingInstructionReference(
-                              shippingInstructionRequest.getShipmentEquipments(),
+                      utilizedTransportEquipmentService
+                          .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
+                              shippingInstructionRequest.getUtilizedTransportEquipments(),
                               shippingInstructionRequest)
-                          .doOnNext(shippingInstructionRequest::setShipmentEquipments),
+                          .doOnNext(shippingInstructionRequest::setUtilizedTransportEquipments),
                       documentPartyService
                           .resolveDocumentPartiesForShippingInstructionReference(
                               si.getShippingInstructionReference(),
@@ -290,8 +290,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
           Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
     } else {
       carrierBookingReferences =
-          shippingInstructionTO.getShipmentEquipments().stream()
-              .map(ShipmentEquipmentTO::getCarrierBookingReference)
+          shippingInstructionTO.getUtilizedTransportEquipments().stream()
+              .map(UtilizedTransportEquipmentTO::getCarrierBookingReference)
               .distinct()
               .collect(Collectors.toList());
     }
@@ -382,16 +382,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       }
     }
 
-    Supplier<Stream<ShipmentEquipmentTO>> shipmentEquipmentTOStream =
+    Supplier<Stream<UtilizedTransportEquipmentTO>> utilizedTransportEquipmentTOStream =
         () ->
-            Stream.ofNullable(shippingInstructionTO.getShipmentEquipments())
+            Stream.ofNullable(shippingInstructionTO.getUtilizedTransportEquipments())
                 .flatMap(Collection::stream);
 
     // Check if carrierBooking reference is only set on one place,
     // either shipping instruction or cargo item
-    shipmentEquipmentTOStream
+    utilizedTransportEquipmentTOStream
         .get()
-        .map(ShipmentEquipmentTO::getCarrierBookingReference)
+        .map(UtilizedTransportEquipmentTO::getCarrierBookingReference)
         .forEach(
             carrierBookingReferenceOnCargoItem -> {
               if (Objects.nonNull(carrierBookingReferenceOnCargoItem)
@@ -406,12 +406,12 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             });
 
     // Check if equipment tare weight is set on shipper owned equipment
-    shipmentEquipmentTOStream
+    utilizedTransportEquipmentTOStream
         .get()
         .forEach(
-            shipmentEquipmentTO -> {
-              if (shipmentEquipmentTO.getIsShipperOwned()
-                  && Objects.isNull(shipmentEquipmentTO.getEquipment().getTareWeight())) {
+            utilizedTransportEquipmentTO -> {
+              if (utilizedTransportEquipmentTO.getIsShipperOwned()
+                  && Objects.isNull(utilizedTransportEquipmentTO.getEquipment().getTareWeight())) {
                 validationErrors.add(
                     "equipment tare weight is required for shipper owned equipment.");
               }

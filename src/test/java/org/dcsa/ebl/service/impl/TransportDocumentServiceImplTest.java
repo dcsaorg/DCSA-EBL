@@ -72,7 +72,7 @@ class TransportDocumentServiceImplTest {
 
   CargoItem cargoItem;
   Shipment shipment;
-  ShipmentEquipment shipmentEquipment;
+  UtilizedTransportEquipment utilizedTransportEquipment;
   TransportDocument transportDocument;
   ShippingInstruction shippingInstruction;
   Carrier carrier;
@@ -105,13 +105,13 @@ class TransportDocumentServiceImplTest {
     shipment.setShipmentID(UUID.randomUUID());
     shipment.setCarrierBookingReference("x".repeat(35));
 
-    shipmentEquipment = new ShipmentEquipment();
-    shipmentEquipment.setId(UUID.randomUUID());
-    shipmentEquipment.setShipmentID(shipment.getShipmentID());
-    shipmentEquipment.setIsShipperOwned(false);
-    shipmentEquipment.setCargoGrossWeightUnit(WeightUnit.KGM);
-    shipmentEquipment.setCargoGrossWeight(21f);
-    shipmentEquipment.setShipmentID(shipment.getShipmentID());
+    utilizedTransportEquipment = new UtilizedTransportEquipment();
+    utilizedTransportEquipment.setId(UUID.randomUUID());
+    utilizedTransportEquipment.setShipmentID(shipment.getShipmentID());
+    utilizedTransportEquipment.setIsShipperOwned(false);
+    utilizedTransportEquipment.setCargoGrossWeightUnit(WeightUnit.KGM);
+    utilizedTransportEquipment.setCargoGrossWeight(21f);
+    utilizedTransportEquipment.setShipmentID(shipment.getShipmentID());
 
     cargoItem = new CargoItem();
     cargoItem.setId(UUID.randomUUID());
@@ -119,7 +119,7 @@ class TransportDocumentServiceImplTest {
     cargoItem.setDescriptionOfGoods("Some description of the goods!");
     cargoItem.setNumberOfPackages(2);
     cargoItem.setPackageCode("XYZ");
-    cargoItem.setShipmentEquipmentID(shipmentEquipment.getId());
+    cargoItem.setUtilizedTransportEquipmentID(utilizedTransportEquipment.getId());
     cargoItem.setShippingInstructionReference(shippingInstruction.getShippingInstructionReference());
 
     transportDocument = new TransportDocument();

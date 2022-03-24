@@ -37,8 +37,8 @@ public class ExtendedTransportDocumentSummaryRequest extends ExtendedRequest<Tra
         .onTable(ShippingInstruction.class)
         .chainJoin(CargoItem.class)
         .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
-        .chainJoin(ShipmentEquipment.class)
-        .onFieldEqualsThen("shipmentEquipmentID", "id")
+        .chainJoin(UtilizedTransportEquipment.class)
+        .onFieldEqualsThen("utilizedTransportEquipmentID", "id")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
         .registerQueryFieldFromField("carrierBookingReference", QueryFieldConditionGenerator.inCommaSeparatedList());
