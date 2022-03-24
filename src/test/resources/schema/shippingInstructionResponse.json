@@ -1848,7 +1848,7 @@
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
-                                                                            "expectedArrivalDateAtFinalDestinationStart": {
+                                                                            "expectedArrivalDateAtRPlaceOfDeliveryStart": {
                                                                                 "type": "string",
                                                                                 "description": "The start date (provided as a range together with `expectedArrivalDateEnd`) for when the shipment is expected to arrive at final destination. If vessel/voyage or expected date of departure is not provided, this is mandatory together with `expectedArrivalDateEnd`\n",
                                                                                 "format": "date",
@@ -1859,7 +1859,7 @@
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
-                                                                            "expectedArrivalDateAtFinalDestinationEnd": {
+                                                                            "expectedArrivalDateAtPlaceOfDeliveryEnd": {
                                                                                 "type": "string",
                                                                                 "description": "The end date (provided as a range together with `expectedArrivalDateStart`) for when the shipment is expected to arrive at final destination. If vessel/voyage or expected date of departure is not provided, this is mandatory together with `expectedArrivalDateStart`\n",
                                                                                 "format": "date",
