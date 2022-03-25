@@ -276,9 +276,8 @@ class ShippingInstructionServiceImplTest {
 
     // Date & Time
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO = new ShippingInstructionResponseTO();
-    shippingInstructionResponseTO.setShippingInstructionCreatedDateTime(now);
-    shippingInstructionResponseTO.setShippingInstructionUpdatedDateTime(now);
+    shippingInstructionResponseTO = ShippingInstructionResponseTO.builder().shippingInstructionUpdatedDateTime(now)
+        .shippingInstructionCreatedDateTime(now).build();
   }
 
   @Nested
