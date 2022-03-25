@@ -89,12 +89,12 @@ class TransportDocumentControllerTest {
     EquipmentTO equipmentTO = new EquipmentTO();
     equipmentTO.setEquipmentReference("ref");
 
-    ShipmentEquipmentTO shipmentEquipmentTO = new ShipmentEquipmentTO();
-    shipmentEquipmentTO.setIsShipperOwned(false);
-    shipmentEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
-    shipmentEquipmentTO.setCargoGrossWeight(10F);
-    shipmentEquipmentTO.setCargoItems(List.of(cargoItemTO));
-    shipmentEquipmentTO.setEquipment(equipmentTO);
+    UtilizedTransportEquipmentTO utilizedTransportEquipmentTO = new UtilizedTransportEquipmentTO();
+    utilizedTransportEquipmentTO.setIsShipperOwned(false);
+    utilizedTransportEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
+    utilizedTransportEquipmentTO.setCargoGrossWeight(10F);
+    utilizedTransportEquipmentTO.setCargoItems(List.of(cargoItemTO));
+    utilizedTransportEquipmentTO.setEquipment(equipmentTO);
 
     TransportTO transportTO = new TransportTO();
     transportTO.setTransportPlanStageSequenceNumber(1);
@@ -137,7 +137,7 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
-    shippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+    shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setShipments(List.of(shipmentTO));
 
     ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
@@ -148,7 +148,7 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
     approveShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
-    approveShippingInstructionTO.setShipmentEquipments(List.of(shipmentEquipmentTO));
+    approveShippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     approveShippingInstructionTO.setShipments(List.of(approveShipmentTO));
 
 

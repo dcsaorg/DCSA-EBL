@@ -33,12 +33,11 @@ public class ShippingInstructionSummariesController extends AsymmetricQueryContr
   private final ShippingInstructionSummariesServiceImpl service;
 
   @GetMapping
-  public Flux<ShippingInstructionSummaryTO> findAll(
+  public Flux<ShippingInstructionSummaryTO> findShippingInstructionSummaries(
     @RequestParam(value = "carrierBookingReference", required = false) String carrierBookingReference,
     @RequestParam(value = "documentStatus", required = false) @EnumSubset(anyOf = ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES) ShipmentEventTypeCode documentStatus,
     ServerHttpResponse response, ServerHttpRequest request
   ) {
-    log.debug("getBookingConfirmationSummaries: carrierBookingReference='{}', documentStatus='{}'", carrierBookingReference, documentStatus);
     return super.findAll(response, request);
   }
 

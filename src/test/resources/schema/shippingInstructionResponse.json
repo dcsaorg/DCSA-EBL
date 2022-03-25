@@ -1848,7 +1848,7 @@
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
-                                                                            "expectedArrivalDateAtFinalDestinationStart": {
+                                                                            "expectedArrivalDateAtRPlaceOfDeliveryStart": {
                                                                                 "type": "string",
                                                                                 "description": "The start date (provided as a range together with `expectedArrivalDateEnd`) for when the shipment is expected to arrive at final destination. If vessel/voyage or expected date of departure is not provided, this is mandatory together with `expectedArrivalDateEnd`\n",
                                                                                 "format": "date",
@@ -1859,7 +1859,7 @@
                                                                     {
                                                                         "type": "object",
                                                                         "properties": {
-                                                                            "expectedArrivalDateAtFinalDestinationEnd": {
+                                                                            "expectedArrivalDateAtPlaceOfDeliveryEnd": {
                                                                                 "type": "string",
                                                                                 "description": "The end date (provided as a range together with `expectedArrivalDateStart`) for when the shipment is expected to arrive at final destination. If vessel/voyage or expected date of departure is not provided, this is mandatory together with `expectedArrivalDateStart`\n",
                                                                                 "format": "date",
@@ -3341,7 +3341,7 @@
                                                                                     "properties": {
                                                                                         "shipmentLocationTypeCode": {
                                                                                             "type": "string",
-                                                                                            "description": "Links to the Location Type Code defined by DCSA.\n- PRE (Place of Receipt)\n- POL (Port of Loading)\n- POD (Port of Discharge)\n- PDE (Place of Delivery)\n- PCF (Pre-carriage From)\n- PSR (Pre-carriage under shipper\u00e2\u20ac\u2122s responsibility)\n- OIR (Onward In-land Routing)\n- DRL (Depot release location)\n- ORI (Origin of goods)\n- IEL (Container intermediate export stop off location)\n- PTP (Prohibited transshipment port)\n- RTP (Requested transshipment port)\n- FCD (Full container drop-off location)\n- ECP (Empty container pick-up date and time)\n- IPA (Invoice payable at)\n- FDE (Final destination)\n",
+                                                                                            "description": "Links to the Location Type Code defined by DCSA.\n- PRE (Place of Receipt)\n- POL (Port of Loading)\n- POD (Port of Discharge)\n- PDE (Place of Delivery)\n- PCF (Pre-carriage From)\n- PSR (Pre-carriage under shipper\u00e2\u20ac\u2122s responsibility)\n- OIR (Onward In-land Routing)\n- DRL (Depot release location)\n- ORI (Origin of goods)\n- IEL (Container intermediate export stop off location)\n- PTP (Prohibited transshipment port)\n- RTP (Requested transshipment port)\n- FCD (Full container drop-off location)\n- ECP (Empty container pick-up date and time)\n- IPA (Invoice payable at)\n",
                                                                                             "enum": [
                                                                                                 "PRE",
                                                                                                 "POL",
@@ -3357,8 +3357,7 @@
                                                                                                 "RTP",
                                                                                                 "FCD",
                                                                                                 "ECP",
-                                                                                                "IPA",
-                                                                                                "FDE"
+                                                                                                "IPA"
                                                                                             ],
                                                                                             "$schema": "http://json-schema.org/schema#"
                                                                                         }
@@ -4202,7 +4201,7 @@
                                                     "properties": {
                                                         "shipmentLocationTypeCode": {
                                                             "type": "string",
-                                                            "description": "Links to the Location Type Code defined by DCSA.\n- PRE (Place of Receipt)\n- POL (Port of Loading)\n- POD (Port of Discharge)\n- PDE (Place of Delivery)\n- PCF (Pre-carriage From)\n- PSR (Pre-carriage under shipper\u00e2\u20ac\u2122s responsibility)\n- OIR (Onward In-land Routing)\n- DRL (Depot release location)\n- ORI (Origin of goods)\n- IEL (Container intermediate export stop off location)\n- PTP (Prohibited transshipment port)\n- RTP (Requested transshipment port)\n- FCD (Full container drop-off location)\n- ECP (Empty container pick-up date and time)\n- IPA (Invoice payable at)\n- FDE (Final destination)\n",
+                                                            "description": "Links to the Location Type Code defined by DCSA.\n- PRE (Place of Receipt)\n- POL (Port of Loading)\n- POD (Port of Discharge)\n- PDE (Place of Delivery)\n- PCF (Pre-carriage From)\n- PSR (Pre-carriage under shipper\u00e2\u20ac\u2122s responsibility)\n- OIR (Onward In-land Routing)\n- DRL (Depot release location)\n- ORI (Origin of goods)\n- IEL (Container intermediate export stop off location)\n- PTP (Prohibited transshipment port)\n- RTP (Requested transshipment port)\n- FCD (Full container drop-off location)\n- ECP (Empty container pick-up date and time)\n- IPA (Invoice payable at)\n",
                                                             "enum": [
                                                                 "PRE",
                                                                 "POL",
@@ -4218,8 +4217,7 @@
                                                                 "RTP",
                                                                 "FCD",
                                                                 "ECP",
-                                                                "IPA",
-                                                                "FDE"
+                                                                "IPA"
                                                             ],
                                                             "$schema": "http://json-schema.org/schema#"
                                                         }
