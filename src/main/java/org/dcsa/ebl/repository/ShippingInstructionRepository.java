@@ -19,17 +19,17 @@ public interface ShippingInstructionRepository
   Mono<Boolean> setPlaceOfIssueFor(String placeOfIssue, String id);
 
   @Query(
-      "SELECT DISTINCT se.shipment_id FROM shipping_instruction si "
+      "SELECT DISTINCT ute.shipment_id FROM shipping_instruction si "
           + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
-          + "JOIN shipment_equipment se ON se.id = ci.shipment_equipment_id "
+          + "JOIN utilized_transport_equipment ute ON ute.id = ci.utilized_transport_equipment_id "
           + "WHERE si.id = :shippingInstructionReference")
   Flux<UUID> findShipmentIDsByShippingInstructionReference(String shippingInstructionReference);
 
   @Query(
       "SELECT DISTINCT s.carrier_booking_reference FROM shipping_instruction si "
           + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
-          + "JOIN shipment_equipment se ON se.id = ci.shipment_equipment_id "
-          + "JOIN shipment s ON s.id = se.shipment_id "
+          + "JOIN utilized_transport_equipment ute ON ute.id = ci.utilized_transport_equipment_id "
+          + "JOIN shipment s ON s.id = ute.shipment_id "
           + "WHERE si.id = :shippingInstructionReference")
   Flux<String> findCarrierBookingReferenceByShippingInstructionReference(String shippingInstructionReference);
 
