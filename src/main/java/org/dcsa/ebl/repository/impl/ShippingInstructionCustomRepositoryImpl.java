@@ -101,7 +101,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
         public static final Table table = Table.create("cargo_item");
         public static final Column id = Column.create("id", table);
         public static final Column shippingInstructionReference = Column.create("shipping_instruction_id", table);
-        public static final Column utilizedTransportEquipmentID = Column.create("shipment_equipment_id", table);
+        public static final Column utilizedTransportEquipmentID = Column.create("utilized_transport_equipment_id", table);
     }
 
     private static class ShipmentSpec {
@@ -111,7 +111,7 @@ public class ShippingInstructionCustomRepositoryImpl implements ShippingInstruct
     }
 
     private static class UtilizedTransportEquipmentSpec {
-        public static final Table table = Table.create("shipment_equipment");
+        public static final Table table = Table.create("utilized_transport_equipment");
         public static final Column id = Column.create("id", table);
         public static final Column shipmentId = Column.create("shipment_id", table);
     }
