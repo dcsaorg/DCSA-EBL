@@ -1,7 +1,9 @@
 package org.dcsa.ebl.model.transferobjects;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.validator.EnumSubset;
 
@@ -9,16 +11,17 @@ import java.time.OffsetDateTime;
 
 import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES;
 
-@Data
+@Value
+@Builder(toBuilder = true)
+@AllArgsConstructor
 public class ShippingInstructionResponseTO {
-  private String shippingInstructionReference;
-
+  String shippingInstructionReference;
   @EnumSubset(anyOf = EBL_DOCUMENT_STATUSES)
-  private ShipmentEventTypeCode documentStatus;
+  ShipmentEventTypeCode documentStatus;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private OffsetDateTime shippingInstructionCreatedDateTime;
+  OffsetDateTime shippingInstructionCreatedDateTime;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  private OffsetDateTime shippingInstructionUpdatedDateTime;
+  OffsetDateTime shippingInstructionUpdatedDateTime;
 }
