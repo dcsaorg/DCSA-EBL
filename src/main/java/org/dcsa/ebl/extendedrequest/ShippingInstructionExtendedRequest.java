@@ -25,7 +25,7 @@ public class ShippingInstructionExtendedRequest<T extends ShippingInstruction> e
         return builder.join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
                 .onEqualsThen("id", "shipping_instruction_id")
                 .chainJoin(UtilizedTransportEquipment.class)
-                .onEqualsThen("shipment_equipment_id", "id")
+                .onEqualsThen("utilized_transport_equipment_id", "id")
                 .chainJoin(Shipment.class)
                 .onEqualsThen("shipment_id", "id")
                 .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER);
