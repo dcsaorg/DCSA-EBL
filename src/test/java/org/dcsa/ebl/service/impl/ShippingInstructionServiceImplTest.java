@@ -835,7 +835,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference needs to be defined on either ShippingInstruction or UtilizedTransportEquipment level.",
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction, UtilizedTransportEquipment or ConsignmentItem level.",
                     throwable.getMessage());
               })
           .verify();
@@ -857,7 +857,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "CarrierBookingReference needs to be defined on either ShippingInstruction or UtilizedTransportEquipment level.",
+                    "CarrierBookingReference needs to be defined on either ShippingInstruction, UtilizedTransportEquipment or ConsignmentItem level.",
                     throwable.getMessage());
               })
           .verify();
