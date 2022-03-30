@@ -1,8 +1,7 @@
 package org.dcsa.ebl.extendedrequest;
 
-import org.dcsa.core.events.model.CargoItem;
+import org.dcsa.core.events.edocumentation.model.ConsignmentItem;
 import org.dcsa.core.events.model.Shipment;
-import org.dcsa.core.events.model.UtilizedTransportEquipment;
 import org.dcsa.core.events.model.ShippingInstruction;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
@@ -26,10 +25,8 @@ public class ShippingInstructionSummariesExtendedRequest extends ExtendedRequest
   protected DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> prepareDBEntityAnalysis() {
     DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> builder = super.prepareDBEntityAnalysis();
     return builder
-        .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), CargoItem.class)
-        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
-        .chainJoin(UtilizedTransportEquipment.class)
-        .onFieldEqualsThen("utilizedTransportEquipmentID", "id")
+      .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), ConsignmentItem.class)
+      .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionID")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
         .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER, QueryFieldConditionGenerator.inCommaSeparatedList());

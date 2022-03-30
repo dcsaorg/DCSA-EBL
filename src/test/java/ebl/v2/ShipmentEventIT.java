@@ -135,6 +135,27 @@ class ShipmentEventIT {
   }
 
   @Test
+  void testGetAllEventsByCarrierBookingRequestReference() {
+    given()
+      .contentType("application/json")
+      .queryParam("carrierBookingRequestReference", "CARRIER_BOOKING_REQUEST_REFERENCE_01")
+      .get("/v2/events")
+      .then()
+      .assertThat()
+      .statusCode(200)
+      .contentType(ContentType.JSON)
+      // The test data includes at least 3 shipment events related to the reference. But something adding additional
+      // events.
+      .body("size()", greaterThanOrEqualTo(3))
+      .body("eventType", everyItem(equalTo("SHIPMENT")))
+      .body("eventClassifierCode", everyItem(equalTo("ACT")))
+      .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
+    // TODO: Assert that document references contain the carrier booking request reference CARRIER_BOOKING_REQUEST_REFERENCE_01
+    // (Needs a fix for DDT-928 first)
+    ;
+  }
+
+  @Test
   void testGetAllEventsByCarrierBookingReferenceWithEventCreatedDateTimeRange() {
     String rangeStart = "2021-01-08T00:00:00Z";
     String rangeEnd = "2021-01-09T00:00:00Z";
