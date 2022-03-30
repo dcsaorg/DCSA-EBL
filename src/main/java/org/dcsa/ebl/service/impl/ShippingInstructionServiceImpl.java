@@ -1,7 +1,6 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.dcsa.core.events.edocumentation.repository.ConsignmentItemRepository;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
@@ -197,7 +196,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     .createConsignmentItemsByShippingInstructionReferenceAndTOs(
                         shippingInstructionTO.getShippingInstructionReference(),
                         shippingInstructionTO.getConsignmentItems(),
-                      shippingInstructionTO.getUtilizedTransportEquipments())
+                        shippingInstructionTO.getUtilizedTransportEquipments())
                     .doOnNext(shippingInstructionTO::setConsignmentItems)
                     .thenReturn(shippingInstructionTO))
         .flatMap(createShipmentEventFromDocumentStatus)
@@ -262,32 +261,51 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   si.getShippingInstructionCreatedDateTime());
               shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
                   OffsetDateTime.now());
-              return Mono.when(
-                      locationService
-                          .resolveLocationByTO(
-                              si.getPlaceOfIssueID(),
-                              shippingInstructionRequest.getPlaceOfIssue(),
-                              placeOfIssue ->
-                                  shippingInstructionRepository.setPlaceOfIssueFor(
-                                      placeOfIssue, si.getShippingInstructionReference()))
-                          .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
-                      utilizedTransportEquipmentService
-                          .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
-                              shippingInstructionRequest.getUtilizedTransportEquipments(),
-                              shippingInstructionRequest)
-                          .doOnNext(shippingInstructionRequest::setUtilizedTransportEquipments),
-                      documentPartyService
-                          .resolveDocumentPartiesForShippingInstructionReference(
-                              si.getShippingInstructionReference(),
-                              shippingInstructionRequest.getDocumentParties())
-                          .doOnNext(shippingInstructionRequest::setDocumentParties),
-                      referenceService
-                          .resolveReferencesForShippingInstructionReference(
-                              shippingInstructionRequest.getReferences(),
-                              si.getShippingInstructionReference())
-                          .doOnNext(shippingInstructionRequest::setReferences))
-                  .thenReturn(shippingInstructionRequest);
+              return consignmentItemService
+                  .removeConsignmentItemsByShippingInstructionReference(
+                      shippingInstructionReference)
+                  .thenReturn(si)
+                  .flatMap(
+                      ignored ->
+                          Mono.when(
+                                  locationService
+                                      .resolveLocationByTO(
+                                          si.getPlaceOfIssueID(),
+                                          shippingInstructionRequest.getPlaceOfIssue(),
+                                          placeOfIssue ->
+                                              shippingInstructionRepository.setPlaceOfIssueFor(
+                                                  placeOfIssue,
+                                                  si.getShippingInstructionReference()))
+                                      .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
+                                  utilizedTransportEquipmentService
+                                      .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
+                                          shippingInstructionRequest
+                                              .getUtilizedTransportEquipments(),
+                                          shippingInstructionRequest)
+                                      .doOnNext(
+                                          shippingInstructionRequest
+                                              ::setUtilizedTransportEquipments),
+                                  documentPartyService
+                                      .resolveDocumentPartiesForShippingInstructionReference(
+                                          si.getShippingInstructionReference(),
+                                          shippingInstructionRequest.getDocumentParties())
+                                      .doOnNext(shippingInstructionRequest::setDocumentParties),
+                                  referenceService
+                                      .resolveReferencesForShippingInstructionReference(
+                                          shippingInstructionRequest.getReferences(),
+                                          si.getShippingInstructionReference())
+                                      .doOnNext(shippingInstructionRequest::setReferences))
+                              .thenReturn(shippingInstructionRequest));
             })
+        .flatMap(
+            si ->
+                consignmentItemService
+                    .createConsignmentItemsByShippingInstructionReferenceAndTOs(
+                        shippingInstructionRequest.getShippingInstructionReference(),
+                        shippingInstructionRequest.getConsignmentItems(),
+                        shippingInstructionRequest.getUtilizedTransportEquipments())
+                    .doOnNext(shippingInstructionRequest::setConsignmentItems)
+                    .thenReturn(shippingInstructionRequest))
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> {
