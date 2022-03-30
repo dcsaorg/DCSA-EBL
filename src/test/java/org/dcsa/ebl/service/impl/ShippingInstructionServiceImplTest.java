@@ -187,8 +187,6 @@ class ShippingInstructionServiceImplTest {
 
     cargoItem = new CargoItem();
     cargoItem.setId(UUID.randomUUID());
-    cargoItem.setHsCode("x".repeat(10));
-    cargoItem.setDescriptionOfGoods("Some description of the goods!");
     cargoItem.setNumberOfPackages(2);
     cargoItem.setPackageCode("XYZ");
     cargoItem.setUtilizedTransportEquipmentID(utilizedTransportEquipment.getId());
@@ -226,8 +224,6 @@ class ShippingInstructionServiceImplTest {
 
     cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
-    cargoItemTO.setHsCode("x".repeat(10));
-    cargoItemTO.setDescriptionOfGoods("Some description of the goods!");
     cargoItemTO.setNumberOfPackages(2);
     cargoItemTO.setPackageCode("XYZ");
 
