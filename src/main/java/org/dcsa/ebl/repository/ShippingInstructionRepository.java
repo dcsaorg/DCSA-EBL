@@ -18,6 +18,7 @@ public interface ShippingInstructionRepository
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")
   Mono<Boolean> setPlaceOfIssueFor(String placeOfIssue, String id);
 
+  // TODO DDT-994
   @Query(
       "SELECT DISTINCT ute.shipment_id FROM shipping_instruction si "
           + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
@@ -27,9 +28,8 @@ public interface ShippingInstructionRepository
 
   @Query(
       "SELECT DISTINCT s.carrier_booking_reference FROM shipping_instruction si "
-          + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
-          + "JOIN utilized_transport_equipment ute ON ute.id = ci.utilized_transport_equipment_id "
-          + "JOIN shipment s ON s.id = ute.shipment_id "
+          + "JOIN consignment_item ci ON ci.shipping_instruction_id = si.id "
+          + "JOIN shipment s ON s.id = ci.shipment_id "
           + "WHERE si.id = :shippingInstructionReference")
   Flux<String> findCarrierBookingReferenceByShippingInstructionReference(String shippingInstructionReference);
 
