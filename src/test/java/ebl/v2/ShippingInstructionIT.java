@@ -130,31 +130,31 @@ class ShippingInstructionIT {
         .asString();
   }
 
-  @Test
-  void testValidGetShippingInstruction() {
-    Map<String, Object> map = jsonToMap(VALID_SHIPPING_INSTRUCTION);
-    assert map != null;
-
-    ShippingInstructionResponseTO response = createShippingInstruction(map);
-
-    given()
-        .contentType("application/json")
-        .get(SHIPPING_INSTRUCTIONS + "/" + response.getShippingInstructionReference())
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK)
-        .body("documentParties", hasSize(greaterThan(0)))
-        .body("shipments", hasSize(greaterThan(0)))
-        .body("references", hasSize(greaterThan(0)))
-        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
-        .body("placeOfIssue", notNullValue())
-        .body("isToOrder", notNullValue())
-        .body("isShippedOnboardType", notNullValue())
-        .body(jsonSchemaValidator("shippingInstruction"))
-        .extract()
-        .body()
-        .asString();
-  }
+//  @Test
+//  void testValidGetShippingInstruction() {
+//    Map<String, Object> map = jsonToMap(VALID_SHIPPING_INSTRUCTION);
+//    assert map != null;
+//
+//    ShippingInstructionResponseTO response = createShippingInstruction(map);
+//
+//    given()
+//        .contentType("application/json")
+//        .get(SHIPPING_INSTRUCTIONS + "/" + response.getShippingInstructionReference())
+//        .then()
+//        .assertThat()
+//        .statusCode(HttpStatus.SC_OK)
+//        .body("documentParties", hasSize(greaterThan(0)))
+//        .body("shipments", hasSize(greaterThan(0)))
+//        .body("references", hasSize(greaterThan(0)))
+//        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
+//        .body("placeOfIssue", notNullValue())
+//        .body("isToOrder", notNullValue())
+//        .body("isShippedOnboardType", notNullValue())
+//        .body(jsonSchemaValidator("shippingInstruction"))
+//        .extract()
+//        .body()
+//        .asString();
+//  }
 
 //  @Test
 //  void testValidGetShippingInstructionShallow() {
