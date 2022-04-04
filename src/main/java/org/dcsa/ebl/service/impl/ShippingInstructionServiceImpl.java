@@ -1,6 +1,7 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
@@ -12,8 +13,8 @@ import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
 import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.*;
@@ -45,6 +46,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
   private final ShipmentService shipmentService;
+  private final ConsignmentItemService consignmentItemService;
 
   private final BookingRepository bookingRepository;
   private final TransportDocumentRepository transportDocumentRepository;
@@ -98,7 +100,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .doOnNext(siTO::setReferences),
                       shipmentService
                           .findByShippingInstructionReference(si.getShippingInstructionReference())
-                          .doOnNext(siTO::setShipments))
+                          .doOnNext(siTO::setShipments),
+                      consignmentItemService
+                          .fetchConsignmentItemsTOByShippingInstructionReference(
+                              siTO.getShippingInstructionReference())
+                          .doOnNext(siTO::setConsignmentItems))
                   .thenReturn(siTO);
             });
   }
