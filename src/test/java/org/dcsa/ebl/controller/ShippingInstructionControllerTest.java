@@ -79,8 +79,6 @@ class ShippingInstructionControllerTest {
 
     CargoItemTO cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
-    cargoItemTO.setHsCode("x".repeat(10));
-    cargoItemTO.setDescriptionOfGoods("Some description of the goods!");
     cargoItemTO.setNumberOfPackages(2);
     cargoItemTO.setPackageCode("XYZ");
 
