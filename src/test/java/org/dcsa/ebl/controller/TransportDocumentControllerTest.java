@@ -78,10 +78,8 @@ class TransportDocumentControllerTest {
     carrierClauseTO.setClauseContent("CarrierClause");
 
     CargoItemTO cargoItemTO = new CargoItemTO();
-    cargoItemTO.setHsCode("hs");
     cargoItemTO.setWeight(10F);
     cargoItemTO.setWeightUnit(WeightUnit.KGM);
-    cargoItemTO.setDescriptionOfGoods("desc");
     cargoItemTO.setNumberOfPackages(1);
     cargoItemTO.setPackageCode("123");
 
