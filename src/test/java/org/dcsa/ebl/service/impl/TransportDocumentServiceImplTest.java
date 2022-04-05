@@ -115,8 +115,6 @@ class TransportDocumentServiceImplTest {
 
     cargoItem = new CargoItem();
     cargoItem.setId(UUID.randomUUID());
-    cargoItem.setHsCode("x".repeat(10));
-    cargoItem.setDescriptionOfGoods("Some description of the goods!");
     cargoItem.setNumberOfPackages(2);
     cargoItem.setPackageCode("XYZ");
     cargoItem.setUtilizedTransportEquipmentID(utilizedTransportEquipment.getId());

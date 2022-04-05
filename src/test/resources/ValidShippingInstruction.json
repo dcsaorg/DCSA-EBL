@@ -18,6 +18,39 @@
     "longitude": "4.4777° E",
     "UNLocationCode": "NLRTM"
   },
+  "consignmentItems": [
+    {
+      "weight": 13000.3,
+      "volume": 12,
+      "weightUnit": "KGM",
+      "volumeUnit": "CBM",
+      "descriptionOfGoods": "shoes",
+      "HSCode": "411510",
+      "cargoItems": [
+        {
+          "equipmentReference": "BMOU2149612",
+          "cargoLineItems": [
+            {
+              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
+              "shippingMarks": "squashed"
+            }
+          ],
+          "weight": 13000.3,
+          "volume": 12,
+          "weightUnit": "KGM",
+          "volumeUnit": "CBM",
+          "numberOfPackages": 18,
+          "packageCode": "5H4"
+        }
+      ],
+      "references": [
+        {
+          "referenceType": "FF",
+          "referenceValue": "7b46"
+        }
+      ]
+    }
+  ],
   "utilizedTransportEquipments": [
     {
       "equipment": {
@@ -29,30 +62,6 @@
       "cargoGrossWeightUnit": "KGM",
       "cargoGrossWeight": 12000,
       "isShipperOwned": true,
-      "cargoItems": [
-        {
-          "cargoLineItems": [
-            {
-              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
-              "shippingMarks": "squashed"
-            }
-          ],
-          "descriptionOfGoods": "Shoes",
-          "HSCode": "411510",
-          "weight": 13000.3,
-          "volume": 12,
-          "weightUnit": "KGM",
-          "volumeUnit": "CBM",
-          "numberOfPackages": 18,
-          "packageCode": "5H4",
-          "references": [
-            {
-              "referenceType": "FF",
-              "referenceValue": "7b46"
-            }
-          ]
-        }
-      ],
       "activeReeferSettings": {
         "temperatureMin": -18.1,
         "temperatureMax": 64.3,
