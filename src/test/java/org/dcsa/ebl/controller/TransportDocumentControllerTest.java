@@ -2,7 +2,6 @@ package org.dcsa.ebl.controller;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.model.Address;
-
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -79,10 +78,8 @@ class TransportDocumentControllerTest {
     carrierClauseTO.setClauseContent("CarrierClause");
 
     CargoItemTO cargoItemTO = new CargoItemTO();
-    cargoItemTO.setHsCode("hs");
     cargoItemTO.setWeight(10F);
     cargoItemTO.setWeightUnit(WeightUnit.KGM);
-    cargoItemTO.setDescriptionOfGoods("desc");
     cargoItemTO.setNumberOfPackages(1);
     cargoItemTO.setPackageCode("123");
 
@@ -169,10 +166,12 @@ class TransportDocumentControllerTest {
     approvedTransportDocument.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
 
     // request body for valid & invalid approval request body
-    validTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
-    validTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.APPR);
-    invalidTransportDocumentRequestTO = new ApproveTransportDocumentRequestTO();
-    invalidTransportDocumentRequestTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
+    validTransportDocumentRequestTO = ApproveTransportDocumentRequestTO.builder()
+      .documentStatus(ShipmentEventTypeCode.APPR)
+      .build();
+    invalidTransportDocumentRequestTO = ApproveTransportDocumentRequestTO.builder()
+      .documentStatus(ShipmentEventTypeCode.RECE)
+      .build();
   }
 
   @Test

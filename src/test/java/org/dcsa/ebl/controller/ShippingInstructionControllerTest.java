@@ -1,5 +1,6 @@
 package org.dcsa.ebl.controller;
 
+import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
@@ -52,6 +53,8 @@ class ShippingInstructionControllerTest {
 
   private ShippingInstructionTO shippingInstructionTO;
   private ShippingInstructionResponseTO shippingInstructionResponseTO;
+  ConsignmentItemTO consignmentItemTO;
+  ConsignmentItemTO noCargoItemsConsignmentItemTO;
 
   @BeforeEach
   void init() {
@@ -79,8 +82,6 @@ class ShippingInstructionControllerTest {
 
     CargoItemTO cargoItemTO = new CargoItemTO();
     cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
-    cargoItemTO.setHsCode("x".repeat(10));
-    cargoItemTO.setDescriptionOfGoods("Some description of the goods!");
     cargoItemTO.setNumberOfPackages(2);
     cargoItemTO.setPackageCode("XYZ");
 
@@ -97,7 +98,6 @@ class ShippingInstructionControllerTest {
     utilizedTransportEquipmentTO.setCarrierBookingReference("XYZ12345");
     utilizedTransportEquipmentTO.setEquipment(equipmentTO);
     utilizedTransportEquipmentTO.setSeals(List.of(sealsTO));
-    utilizedTransportEquipmentTO.setCargoItems(List.of(cargoItemTO));
     utilizedTransportEquipmentTO.setCargoGrossWeight(120f);
     utilizedTransportEquipmentTO.setCargoGrossWeightUnit(WeightUnit.KGM);
     utilizedTransportEquipmentTO.setActiveReeferSettings(activeReeferSettingsTO);
@@ -117,6 +117,17 @@ class ShippingInstructionControllerTest {
     referenceTO.setReferenceType(ReferenceTypeCode.EQ);
     referenceTO.setReferenceValue("Some reference value");
 
+    ConsignmentItemTO.ConsignmentItemTOBuilder consignmentItemTOBuilder =
+        ConsignmentItemTO.builder();
+    consignmentItemTOBuilder.cargoItems(List.of(cargoItemTO));
+    consignmentItemTOBuilder.references(List.of(referenceTO));
+    consignmentItemTO = consignmentItemTOBuilder.build();
+
+    consignmentItemTOBuilder = ConsignmentItemTO.builder();
+    consignmentItemTOBuilder.references(List.of(referenceTO));
+    consignmentItemTOBuilder.cargoItems(Collections.emptyList());
+    noCargoItemsConsignmentItemTO = consignmentItemTOBuilder.build();
+
     shippingInstructionTO = new ShippingInstructionTO();
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
     shippingInstructionTO.setPlaceOfIssue(locationTO);
@@ -132,11 +143,11 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
 
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO =
-        shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO);
-    shippingInstructionResponseTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
-    shippingInstructionResponseTO.setShippingInstructionCreatedDateTime(now);
-    shippingInstructionResponseTO.setShippingInstructionUpdatedDateTime(now);
+    shippingInstructionResponseTO = shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO)
+      .toBuilder()
+      .documentStatus(ShipmentEventTypeCode.RECE)
+      .shippingInstructionCreatedDateTime(now)
+      .shippingInstructionUpdatedDateTime(now).build();
   }
 
   @Test
@@ -170,7 +181,7 @@ class ShippingInstructionControllerTest {
   @DisplayName("POST shipping-instructions should return 400 when no cargo items are present.")
   void postShippingInstructionsShouldReturn400ForMissingCargoItems() {
 
-    shippingInstructionTO.getUtilizedTransportEquipments().get(0).setCargoItems(Collections.emptyList());
+    shippingInstructionTO.setConsignmentItems(List.of(noCargoItemsConsignmentItemTO));
 
     WebTestClient.ResponseSpec exchange =
         webTestClient
