@@ -1,7 +1,6 @@
 package org.dcsa.ebl.service.impl;
 
 import org.dcsa.core.events.edocumentation.model.mapper.ShipmentMapper;
-import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
@@ -86,7 +85,6 @@ class ShippingInstructionServiceImplTest {
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
-  ConsignmentItemTO consignmentItemTO;
   ShippingInstructionResponseTO shippingInstructionResponseTO;
   UtilizedTransportEquipmentTO utilizedTransportEquipmentTO;
   ActiveReeferSettingsTO activeReeferSettingsTO;
@@ -274,12 +272,6 @@ class ShippingInstructionServiceImplTest {
     documentPartyTO2.setPartyFunction(PartyFunction.EBL);
     documentPartyTO2.setDisplayedAddress(List.of("displayedAddress"));
 
-    ConsignmentItemTO.ConsignmentItemTOBuilder consignmentItemTOBuilder =
-        ConsignmentItemTO.builder();
-    consignmentItemTOBuilder.cargoItems(List.of(cargoItemTO));
-    consignmentItemTOBuilder.references(List.of(referenceTO));
-    consignmentItemTO = consignmentItemTOBuilder.build();
-
     shipmentTO = shipmentMapper.shipmentToDTO(shipment);
     shipmentTO.setTermsAndConditions("Fail Fast, Fail Early, Fail Often");
 
@@ -293,9 +285,8 @@ class ShippingInstructionServiceImplTest {
 
     // Date & Time
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO = new ShippingInstructionResponseTO();
-    shippingInstructionResponseTO.setShippingInstructionCreatedDateTime(now);
-    shippingInstructionResponseTO.setShippingInstructionUpdatedDateTime(now);
+    shippingInstructionResponseTO = ShippingInstructionResponseTO.builder().shippingInstructionUpdatedDateTime(now)
+        .shippingInstructionCreatedDateTime(now).build();
   }
 
   @Nested
