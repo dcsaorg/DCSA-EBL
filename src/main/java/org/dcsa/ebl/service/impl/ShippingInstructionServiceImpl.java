@@ -11,10 +11,7 @@ import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.PartyFunction;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
-import org.dcsa.core.events.model.transferobjects.LocationTO;
-import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
-import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
+import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.*;
@@ -87,7 +84,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                       shippingInstructionRepository
                           .findShipmentIDsByShippingInstructionReference(
                               si.getShippingInstructionReference())
-                          .flatMap(utilizedTransportEquipmentService::findUtilizedTransportEquipmentByShipmentID)
+                          .flatMap(
+                              utilizedTransportEquipmentService
+                                  ::findUtilizedTransportEquipmentByShipmentID)
                           .flatMap(Flux::fromIterable)
                           .collectList()
                           .doOnNext(siTO::setUtilizedTransportEquipments),
@@ -118,6 +117,17 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       shippingInstructionTO.pushCarrierBookingReferenceIntoUtilizedTransportEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
+    }
+
+    List<String> equipmentReferences =
+        shippingInstructionTO.getUtilizedTransportEquipments().stream()
+            .map(UtilizedTransportEquipmentTO::getEquipment)
+            .map(EquipmentTO::getEquipmentReference)
+            .collect(Collectors.toList());
+    if (equipmentReferences.size() != equipmentReferences.stream().distinct().count()) {
+      return Mono.error(
+          ConcreteRequestErrorMessageException.invalidParameter(
+              "Equipment references need to be unique!"));
     }
 
     OffsetDateTime now = OffsetDateTime.now();
@@ -176,13 +186,23 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .doOnNext(shippingInstructionTO::setDocumentParties),
                       utilizedTransportEquipmentService
                           .addUtilizedTransportEquipmentToShippingInstruction(
-                              shippingInstructionTO.getUtilizedTransportEquipments(), shippingInstructionTO)
+                              shippingInstructionTO.getUtilizedTransportEquipments(),
+                              shippingInstructionTO)
                           .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
                       referenceService.createReferencesByShippingInstructionReferenceAndTOs(
                           shippingInstructionTO.getShippingInstructionReference(),
                           shippingInstructionTO.getReferences()))
                   .thenReturn(shippingInstructionTO);
             })
+        .flatMap(
+            si ->
+                consignmentItemService
+                    .createConsignmentItemsByShippingInstructionReferenceAndTOs(
+                        shippingInstructionTO.getShippingInstructionReference(),
+                        shippingInstructionTO.getConsignmentItems(),
+                        shippingInstructionTO.getUtilizedTransportEquipments())
+                    .doOnNext(shippingInstructionTO::setConsignmentItems)
+                    .thenReturn(shippingInstructionTO))
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> {
@@ -207,7 +227,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
           String shippingInstructionReference, ShippingInstructionTO shippingInstructionRequest) {
 
     try {
-      shippingInstructionRequest.pushCarrierBookingReferenceIntoUtilizedTransportEquipmentIfNecessary();
+      shippingInstructionRequest
+          .pushCarrierBookingReferenceIntoUtilizedTransportEquipmentIfNecessary();
     } catch (IllegalStateException e) {
       return Mono.error(ConcreteRequestErrorMessageException.invalidParameter(e.getMessage()));
     }
@@ -244,32 +265,51 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   si.getShippingInstructionCreatedDateTime());
               shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
                   OffsetDateTime.now());
-              return Mono.when(
-                      locationService
-                          .resolveLocationByTO(
-                              si.getPlaceOfIssueID(),
-                              shippingInstructionRequest.getPlaceOfIssue(),
-                              placeOfIssue ->
-                                  shippingInstructionRepository.setPlaceOfIssueFor(
-                                      placeOfIssue, si.getShippingInstructionReference()))
-                          .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
-                      utilizedTransportEquipmentService
-                          .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
-                              shippingInstructionRequest.getUtilizedTransportEquipments(),
-                              shippingInstructionRequest)
-                          .doOnNext(shippingInstructionRequest::setUtilizedTransportEquipments),
-                      documentPartyService
-                          .resolveDocumentPartiesForShippingInstructionReference(
-                              si.getShippingInstructionReference(),
-                              shippingInstructionRequest.getDocumentParties())
-                          .doOnNext(shippingInstructionRequest::setDocumentParties),
-                      referenceService
-                          .resolveReferencesForShippingInstructionReference(
-                              shippingInstructionRequest.getReferences(),
-                              si.getShippingInstructionReference())
-                          .doOnNext(shippingInstructionRequest::setReferences))
-                  .thenReturn(shippingInstructionRequest);
+              return consignmentItemService
+                  .removeConsignmentItemsByShippingInstructionReference(
+                      shippingInstructionReference)
+                  .thenReturn(si)
+                  .flatMap(
+                      ignored ->
+                          Mono.when(
+                                  locationService
+                                      .resolveLocationByTO(
+                                          si.getPlaceOfIssueID(),
+                                          shippingInstructionRequest.getPlaceOfIssue(),
+                                          placeOfIssue ->
+                                              shippingInstructionRepository.setPlaceOfIssueFor(
+                                                  placeOfIssue,
+                                                  si.getShippingInstructionReference()))
+                                      .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
+                                  utilizedTransportEquipmentService
+                                      .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
+                                          shippingInstructionRequest
+                                              .getUtilizedTransportEquipments(),
+                                          shippingInstructionRequest)
+                                      .doOnNext(
+                                          shippingInstructionRequest
+                                              ::setUtilizedTransportEquipments),
+                                  documentPartyService
+                                      .resolveDocumentPartiesForShippingInstructionReference(
+                                          si.getShippingInstructionReference(),
+                                          shippingInstructionRequest.getDocumentParties())
+                                      .doOnNext(shippingInstructionRequest::setDocumentParties),
+                                  referenceService
+                                      .resolveReferencesForShippingInstructionReference(
+                                          shippingInstructionRequest.getReferences(),
+                                          si.getShippingInstructionReference())
+                                      .doOnNext(shippingInstructionRequest::setReferences))
+                              .thenReturn(shippingInstructionRequest));
             })
+        .flatMap(
+            si ->
+                consignmentItemService
+                    .createConsignmentItemsByShippingInstructionReferenceAndTOs(
+                        shippingInstructionRequest.getShippingInstructionReference(),
+                        shippingInstructionRequest.getConsignmentItems(),
+                        shippingInstructionRequest.getUtilizedTransportEquipments())
+                    .doOnNext(shippingInstructionRequest::setConsignmentItems)
+                    .thenReturn(shippingInstructionRequest))
         .flatMap(createShipmentEventFromDocumentStatus)
         .flatMap(
             siTO -> {
@@ -458,7 +498,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             if (!validationResult.isEmpty()) {
               if (si.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
                 // UC5 / UC7 that was rejected goes back to DRFT.
-                // TODO: We ought to rollback the TD at this point as well but that requires versioning.
+                // TODO: We ought to rollback the TD at this point as well but that requires
+                // versioning.
                 si.setDocumentStatus(ShipmentEventTypeCode.DRFT);
               } else {
                 si.setDocumentStatus(ShipmentEventTypeCode.PENU);
@@ -521,7 +562,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       checkUpdateShippingInstructionStatus =
           shippingInstruction -> {
             if (shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.PENU
-              || shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
+                || shippingInstruction.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
               return Mono.just(shippingInstruction);
             }
             return Mono.error(

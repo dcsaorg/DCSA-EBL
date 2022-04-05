@@ -1,6 +1,9 @@
 package org.dcsa.ebl.extendedrequest;
 
-import org.dcsa.core.events.model.*;
+import org.dcsa.core.events.edocumentation.model.ConsignmentItem;
+import org.dcsa.core.events.model.Shipment;
+import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.extendedrequest.QueryField;
@@ -35,10 +38,8 @@ public class ExtendedTransportDocumentSummaryRequest extends ExtendedRequest<Tra
         .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
         .registerQueryFieldFromField("documentStatus")
         .onTable(ShippingInstruction.class)
-        .chainJoin(CargoItem.class)
-        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
-        .chainJoin(UtilizedTransportEquipment.class)
-        .onFieldEqualsThen("utilizedTransportEquipmentID", "id")
+        .chainJoin(ConsignmentItem.class)
+        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionID")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
         .registerQueryFieldFromField("carrierBookingReference", QueryFieldConditionGenerator.inCommaSeparatedList());
