@@ -24,9 +24,10 @@ public class ShippingInstructionController {
   private final ShippingInstructionService shippingInstructionService;
 
   @GetMapping(path = "/{shippingInstructionReference}")
-  public Mono<ShippingInstructionTO> findById(@PathVariable String shippingInstructionReference) {
+  public Mono<ShippingInstructionTO> findByReference(
+      @PathVariable String shippingInstructionReference) {
     return shippingInstructionService
-        .findById(shippingInstructionReference)
+        .findByReference(shippingInstructionReference)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.internalServerError(

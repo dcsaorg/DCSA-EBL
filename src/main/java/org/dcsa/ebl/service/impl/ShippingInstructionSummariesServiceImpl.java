@@ -14,13 +14,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServiceImpl<ShippingInstructionRepository, ShippingInstruction, ShippingInstructionSummaryTO, String> {
+public class ShippingInstructionSummariesServiceImpl
+    extends AsymmetricQueryServiceImpl<
+        ShippingInstructionRepository, ShippingInstruction, ShippingInstructionSummaryTO, UUID> {
   private final ShippingInstructionRepository shippingInstructionRepository;
   private final ShippingInstructionSummaryMapper shippingInstructionSummaryMapper;
 
@@ -39,23 +42,38 @@ public class ShippingInstructionSummariesServiceImpl extends AsymmetricQueryServ
     return shippingInstructionRepository;
   }
 
-  private Flux<ShippingInstructionSummaryTO> convertAndPopulateShippingInstructions(Flux<ShippingInstruction> instructions) {
+  private Flux<ShippingInstructionSummaryTO> convertAndPopulateShippingInstructions(
+      Flux<ShippingInstruction> instructions) {
     log.debug("convertAndPopulateShippingInstructions");
 
     return instructions
-      .collectList()
-      .map(shippingInstructions -> shippingInstructionRepository
-        .findCarrierBookingReferences(shippingInstructions.stream().map(AbstractShippingInstruction::getShippingInstructionReference).collect(Collectors.toList()))
-        .map(map -> shippingInstructions.stream()
-          .map(si -> mapDaoToDto(si, map.getOrDefault(si.getShippingInstructionReference(), Collections.emptyList())))
-          .collect(Collectors.toList())
-      ))
-      .flatMap(Function.identity())
-      .flatMapMany(Flux::fromIterable);
+        .collectList()
+        .map(
+            shippingInstructions ->
+                shippingInstructionRepository
+                    .findCarrierBookingReferences(
+                        shippingInstructions.stream()
+                            .map(AbstractShippingInstruction::getShippingInstructionReference)
+                            .collect(Collectors.toList()))
+                    .map(
+                        map ->
+                            shippingInstructions.stream()
+                                .map(
+                                    si ->
+                                        mapDaoToDto(
+                                            si,
+                                            map.getOrDefault(
+                                                si.getShippingInstructionReference(),
+                                                Collections.emptyList())))
+                                .collect(Collectors.toList())))
+        .flatMap(Function.identity())
+        .flatMapMany(Flux::fromIterable);
   }
 
-  private ShippingInstructionSummaryTO mapDaoToDto(ShippingInstruction instruction, List<String> carrierBookingReferences) {
-    ShippingInstructionSummaryTO dto = shippingInstructionSummaryMapper.shippingInstructionToDTO(instruction);
+  private ShippingInstructionSummaryTO mapDaoToDto(
+      ShippingInstruction instruction, List<String> carrierBookingReferences) {
+    ShippingInstructionSummaryTO dto =
+        shippingInstructionSummaryMapper.shippingInstructionToDTO(instruction);
     dto.setCarrierBookingReferences(carrierBookingReferences);
     return dto;
   }

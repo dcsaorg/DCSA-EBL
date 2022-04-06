@@ -11,25 +11,29 @@ import org.dcsa.core.query.DBEntityAnalysis;
 import org.springframework.data.r2dbc.dialect.R2dbcDialect;
 import org.springframework.data.relational.core.sql.Join;
 
-public class ShippingInstructionSummariesExtendedRequest extends ExtendedRequest<ShippingInstruction> {
+public class ShippingInstructionSummariesExtendedRequest
+    extends ExtendedRequest<ShippingInstruction> {
 
   private static final String CARRIER_BOOKING_REFERENCE_PARAMETER = "carrierBookingReference";
 
   public ShippingInstructionSummariesExtendedRequest(
-      ExtendedParameters extendedParameters,
-      R2dbcDialect r2dbcDialect) {
+      ExtendedParameters extendedParameters, R2dbcDialect r2dbcDialect) {
     super(extendedParameters, r2dbcDialect, ShippingInstruction.class);
   }
 
   @Override
-  protected DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> prepareDBEntityAnalysis() {
-    DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> builder = super.prepareDBEntityAnalysis();
+  protected DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction>
+      prepareDBEntityAnalysis() {
+    DBEntityAnalysis.DBEntityAnalysisBuilder<ShippingInstruction> builder =
+        super.prepareDBEntityAnalysis();
     return builder
-      .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), ConsignmentItem.class)
-      .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionID")
+        .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), ConsignmentItem.class)
+        .onFieldEqualsThen("id", "shippingInstructionID")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
-        .registerQueryFieldFromField(CARRIER_BOOKING_REFERENCE_PARAMETER, QueryFieldConditionGenerator.inCommaSeparatedList());
+        .registerQueryFieldFromField(
+            CARRIER_BOOKING_REFERENCE_PARAMETER,
+            QueryFieldConditionGenerator.inCommaSeparatedList());
   }
 
   @Override

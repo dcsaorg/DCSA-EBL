@@ -22,22 +22,34 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.util.UUID;
+
 @Slf4j
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "shipping-instructions-summaries", produces = {MediaType.APPLICATION_JSON_VALUE})
-public class ShippingInstructionSummariesController extends AsymmetricQueryController<ShippingInstructionSummariesServiceImpl, ShippingInstruction, ShippingInstructionSummaryTO, String> {
+@RequestMapping(
+    value = "shipping-instructions-summaries",
+    produces = {MediaType.APPLICATION_JSON_VALUE})
+public class ShippingInstructionSummariesController
+    extends AsymmetricQueryController<
+        ShippingInstructionSummariesServiceImpl,
+        ShippingInstruction,
+        ShippingInstructionSummaryTO,
+        UUID> {
   private final ExtendedParameters extendedParameters;
   private final R2dbcDialect r2dbcDialect;
   private final ShippingInstructionSummariesServiceImpl service;
 
   @GetMapping
   public Flux<ShippingInstructionSummaryTO> findShippingInstructionSummaries(
-    @RequestParam(value = "carrierBookingReference", required = false) String carrierBookingReference,
-    @RequestParam(value = "documentStatus", required = false) @EnumSubset(anyOf = ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES) ShipmentEventTypeCode documentStatus,
-    ServerHttpResponse response, ServerHttpRequest request
-  ) {
+      @RequestParam(value = "carrierBookingReference", required = false)
+          String carrierBookingReference,
+      @RequestParam(value = "documentStatus", required = false)
+          @EnumSubset(anyOf = ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES)
+          ShipmentEventTypeCode documentStatus,
+      ServerHttpResponse response,
+      ServerHttpRequest request) {
     return super.findAll(response, request);
   }
 

@@ -143,11 +143,14 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
 
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO = shippingInstructionMapper.dtoToShippingInstructionResponseTO(shippingInstructionTO)
-      .toBuilder()
-      .documentStatus(ShipmentEventTypeCode.RECE)
-      .shippingInstructionCreatedDateTime(now)
-      .shippingInstructionUpdatedDateTime(now).build();
+    shippingInstructionResponseTO =
+        shippingInstructionMapper
+            .dtoToShippingInstructionResponseTO(shippingInstructionTO)
+            .toBuilder()
+            .documentStatus(ShipmentEventTypeCode.RECE)
+            .shippingInstructionCreatedDateTime(now)
+            .shippingInstructionUpdatedDateTime(now)
+            .build();
   }
 
   @Test
@@ -277,7 +280,7 @@ class ShippingInstructionControllerTest {
   @DisplayName("GET booking should return 404 for invalid shipping instruction reference.")
   void getShippingInstructionsShouldReturn404ForInvalidShippingInstructionReference() {
 
-    when(shippingInstructionService.findById(any())).thenReturn(Mono.empty());
+    when(shippingInstructionService.findByReference(any())).thenReturn(Mono.empty());
 
     WebTestClient.ResponseSpec exchange =
         webTestClient.get().uri(SHIPPING_INSTRUCTION_ENDPOINT + "/" + UUID.randomUUID()).exchange();
