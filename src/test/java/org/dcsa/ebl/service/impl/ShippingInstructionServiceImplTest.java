@@ -1,8 +1,8 @@
 package org.dcsa.ebl.service.impl;
 
 import org.dcsa.core.events.edocumentation.model.mapper.ShipmentMapper;
-import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
@@ -85,7 +85,6 @@ class ShippingInstructionServiceImplTest {
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
-  ConsignmentItemTO consignmentItemTO;
   ShippingInstructionResponseTO shippingInstructionResponseTO;
   UtilizedTransportEquipmentTO utilizedTransportEquipmentTO;
   ActiveReeferSettingsTO activeReeferSettingsTO;
@@ -93,6 +92,7 @@ class ShippingInstructionServiceImplTest {
   SealTO sealsTO;
   CargoLineItemTO cargoLineItemTO;
   CargoItemTO cargoItemTO;
+  ConsignmentItemTO consignmentItemTO;
   DocumentPartyTO documentPartyTO1;
   DocumentPartyTO documentPartyTO2;
   ReferenceTO referenceTO;
@@ -196,6 +196,7 @@ class ShippingInstructionServiceImplTest {
     cargoItem.setShippingInstructionReference(
         shippingInstruction.getShippingInstructionReference());
 
+
     shipmentEvent = new ShipmentEvent();
     shipmentEvent.setEventID(UUID.randomUUID());
     shipmentEvent.setShipmentEventTypeCode(
@@ -239,6 +240,20 @@ class ShippingInstructionServiceImplTest {
     activeReeferSettingsTO.setVentilationMax(15f);
     activeReeferSettingsTO.setVentilationMin(5f);
 
+    referenceTO = new ReferenceTO();
+    referenceTO.setReferenceType(reference.getReferenceType());
+    referenceTO.setReferenceValue(reference.getReferenceValue());
+
+    consignmentItemTO =
+      ConsignmentItemTO.builder()
+        .descriptionOfGoods("Some description of the goods!")
+        .hsCode("x".repeat(10))
+        .volume(2.22)
+        .weight(2.22)
+        .cargoItems(List.of(cargoItemTO))
+        .references(List.of(referenceTO))
+            .build();
+
     utilizedTransportEquipmentTO = new UtilizedTransportEquipmentTO();
     utilizedTransportEquipmentTO.setEquipment(equipmentTO);
     utilizedTransportEquipmentTO.setSeals(List.of(sealsTO));
@@ -256,16 +271,6 @@ class ShippingInstructionServiceImplTest {
     documentPartyTO2.setParty(partyMapper.partyToDTO(party));
     documentPartyTO2.setPartyFunction(PartyFunction.EBL);
     documentPartyTO2.setDisplayedAddress(List.of("displayedAddress"));
-
-    referenceTO = new ReferenceTO();
-    referenceTO.setReferenceType(reference.getReferenceType());
-    referenceTO.setReferenceValue(reference.getReferenceValue());
-
-    ConsignmentItemTO.ConsignmentItemTOBuilder consignmentItemTOBuilder =
-        ConsignmentItemTO.builder();
-    consignmentItemTOBuilder.cargoItems(List.of(cargoItemTO));
-    consignmentItemTOBuilder.references(List.of(referenceTO));
-    consignmentItemTO = consignmentItemTOBuilder.build();
 
     shipmentTO = shipmentMapper.shipmentToDTO(shipment);
     shipmentTO.setTermsAndConditions("Fail Fast, Fail Early, Fail Often");
@@ -381,9 +386,11 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
           .thenReturn(Mono.just(List.of(consignmentItemTO)));
+
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
@@ -1476,6 +1483,8 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(Collections.singletonList(referenceTO)));
       when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(shipmentTO)));
+      when(consignmentItemService.fetchConsignmentItemsTOByShippingInstructionReference(any()))
+          .thenReturn(Mono.just(Collections.singletonList(consignmentItemTO)));
 
       StepVerifier.create(shippingInstructionServiceImpl.findById(UUID.randomUUID().toString()))
           .assertNext(

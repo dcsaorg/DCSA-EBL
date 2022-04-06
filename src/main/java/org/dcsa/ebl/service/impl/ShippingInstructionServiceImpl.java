@@ -99,7 +99,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .doOnNext(siTO::setReferences),
                       shipmentService
                           .findByShippingInstructionReference(si.getShippingInstructionReference())
-                          .doOnNext(siTO::setShipments))
+                          .doOnNext(siTO::setShipments),
+                      consignmentItemService
+                          .fetchConsignmentItemsTOByShippingInstructionReference(
+                              siTO.getShippingInstructionReference())
+                          .doOnNext(siTO::setConsignmentItems))
                   .thenReturn(siTO);
             });
   }
