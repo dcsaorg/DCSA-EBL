@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ebl.config.TestConfig;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.Application;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +18,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
-public class ShippingInstructionPutIT {
+class ShippingInstructionPutIT {
   // ObjectMapper with the same config as the main app
   private final ObjectMapper objectMapper = new Application().objectMapper();
 
@@ -34,18 +32,20 @@ public class ShippingInstructionPutIT {
     ShippingInstructionTO shippingInstruction = createShippingInstruction(false);
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_OK)
-      .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
-      .body("documentStatus", equalTo("APPR"))
-      .body(jsonSchemaValidator("shippingInstructionResponse"))
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK)
+        .body(
+            "shippingInstructionReference",
+            equalTo(shippingInstruction.getShippingInstructionReference()))
+        .body("documentStatus", equalTo("APPR"))
+        .body(jsonSchemaValidator("shippingInstructionResponse"))
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -59,7 +59,9 @@ public class ShippingInstructionPutIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .body("shippingInstructionReference", equalTo(shippingInstruction.getShippingInstructionReference()))
+        .body(
+            "shippingInstructionReference",
+            equalTo(shippingInstruction.getShippingInstructionReference()))
         .body("documentStatus", equalTo("PENU"))
         .body(jsonSchemaValidator("shippingInstructionResponse"))
         .extract()
@@ -92,29 +94,36 @@ public class ShippingInstructionPutIT {
 
   @Test
   void failWrongDocumentStatus() throws IOException {
-    String siReference = "8fbb78cc-e7c6-4e17-9a23-24dc3ad0378d";
-    ShippingInstructionTO shippingInstruction = objectMapper.readValue(loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
+    String siReference = "SI_REF_3";
+    ShippingInstructionTO shippingInstruction =
+        objectMapper.readValue(
+            loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
     shippingInstruction.setShippingInstructionReference(siReference);
 
     assert shippingInstruction.getShippingInstructionReference() != null;
 
     given()
-      .contentType("application/json")
-      .body(objectMapper.writeValueAsString(shippingInstruction))
-      .put(SHIPPING_INSTRUCTIONS + "/" + siReference)
-      .then()
-      .assertThat()
-      .statusCode(HttpStatus.SC_BAD_REQUEST)
-      .body("httpMethod", equalTo("PUT"))
-      .body("requestUri", containsString(SHIPPING_INSTRUCTIONS + "/" + shippingInstruction.getShippingInstructionReference()))
-      .body("errors[0].reason", equalTo("invalidParameter"))
-      .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU or DRFT"))
-      .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
-      .body("statusCodeText", equalTo("Bad Request"))
-      // .body(jsonSchemaValidator("error")) // invalid JSON Schema
-      .extract()
-      .body()
-      .asString();
+        .contentType("application/json")
+        .body(objectMapper.writeValueAsString(shippingInstruction))
+        .put(SHIPPING_INSTRUCTIONS + "/" + siReference)
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .body("httpMethod", equalTo("PUT"))
+        .body(
+            "requestUri",
+            containsString(
+                SHIPPING_INSTRUCTIONS
+                    + "/"
+                    + shippingInstruction.getShippingInstructionReference()))
+        .body("errors[0].reason", equalTo("invalidParameter"))
+        .body("errors[0].message", containsString("DocumentStatus needs to be set to PENU or DRFT"))
+        .body("statusCode", equalTo(HttpStatus.SC_BAD_REQUEST))
+        .body("statusCodeText", equalTo("Bad Request"))
+        // .body(jsonSchemaValidator("error")) // invalid JSON Schema
+        .extract()
+        .body()
+        .asString();
   }
 
   @Test
@@ -176,11 +185,12 @@ public class ShippingInstructionPutIT {
         .asString();
   }
 
-  /**
-   * Create a ShippingInstruction that can be manipulated.
-   */
-  private ShippingInstructionTO createShippingInstruction(boolean withMinorErrors) throws IOException {
-    ShippingInstructionTO shippingInstruction = objectMapper.readValue(loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
+  /** Create a ShippingInstruction that can be manipulated. */
+  private ShippingInstructionTO createShippingInstruction(boolean withMinorErrors)
+      throws IOException {
+    ShippingInstructionTO shippingInstruction =
+        objectMapper.readValue(
+            loadFileAsString("ValidShippingInstruction.json"), ShippingInstructionTO.class);
 
     if (withMinorErrors) {
       shippingInstruction.setDocumentStatus(null);
@@ -196,7 +206,12 @@ public class ShippingInstructionPutIT {
         given()
             .contentType("application/json")
             .body(objectMapper.writeValueAsString(shippingInstruction))
-            .post(SHIPPING_INSTRUCTIONS);
+            .post(SHIPPING_INSTRUCTIONS)
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.SC_CREATED)
+            .extract()
+            .response();
     String reference = response.body().jsonPath().getString("shippingInstructionReference");
 
     System.out.println("Reference: " + reference);

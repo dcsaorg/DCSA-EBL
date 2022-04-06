@@ -35,13 +35,14 @@ public class ExtendedTransportDocumentSummaryRequest extends ExtendedRequest<Tra
         super.prepareDBEntityAnalysis();
     return builder
         .join(Join.JoinType.JOIN, builder.getPrimaryModelClass(), ShippingInstruction.class)
-        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionReference")
+        .onFieldEqualsThen("shippingInstructionID", "id")
         .registerQueryFieldFromField("documentStatus")
         .onTable(ShippingInstruction.class)
         .chainJoin(ConsignmentItem.class)
         .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionID")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
-        .registerQueryFieldFromField("carrierBookingReference", QueryFieldConditionGenerator.inCommaSeparatedList());
+        .registerQueryFieldFromField(
+            "carrierBookingReference", QueryFieldConditionGenerator.inCommaSeparatedList());
   }
 }

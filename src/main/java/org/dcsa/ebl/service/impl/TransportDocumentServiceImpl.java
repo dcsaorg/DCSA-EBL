@@ -35,6 +35,7 @@ import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipmentEventFromShippingInstruction;
 
@@ -42,7 +43,7 @@ import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipme
 @Service
 public class TransportDocumentServiceImpl
     extends AsymmetricQueryServiceImpl<
-        TransportDocumentRepository, TransportDocument, TransportDocumentSummary, String>
+        TransportDocumentRepository, TransportDocument, TransportDocumentSummary, UUID>
     implements TransportDocumentService {
 
   private final TransportDocumentRepository transportDocumentRepository;
@@ -75,18 +76,19 @@ public class TransportDocumentServiceImpl
         transportDocumentMapper.transportDocumentToTransportDocumentSummary(transportDocument);
 
     return shippingInstructionRepository
-        .findById(transportDocumentSummary.getShippingInstructionReference())
+        .findById(transportDocument.getShippingInstructionID())
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.internalServerError(
                     "No shipping instruction was found with reference: "
-                        + transportDocument.getShippingInstructionReference())))
+                        + transportDocument.getShippingInstructionID())))
         .flatMap(
             shippingInstruction -> {
               transportDocumentSummary.setDocumentStatus(shippingInstruction.getDocumentStatus());
+              transportDocumentSummary.setShippingInstructionReference(
+                  shippingInstruction.getShippingInstructionReference());
               return shippingInstructionRepository
-                  .findCarrierBookingReferenceByShippingInstructionReference(
-                      shippingInstruction.getShippingInstructionReference())
+                  .findCarrierBookingReferenceByShippingInstructionID(shippingInstruction.getId())
                   .collectList()
                   .doOnNext(transportDocumentSummary::setCarrierBookingReferences)
                   .thenReturn(transportDocumentSummary);
@@ -125,7 +127,7 @@ public class TransportDocumentServiceImpl
       String transportDocumentReference) {
 
     return Mono.justOrEmpty(transportDocumentReference)
-        .flatMap(transportDocumentRepository::findById)
+        .flatMap(transportDocumentRepository::findByTransportDocumentReference)
         .flatMap(
             transportDocument -> {
               TransportDocumentTO transportDocumentTO =
@@ -141,15 +143,15 @@ public class TransportDocumentServiceImpl
                           .fetchLocationDeepObjByID(transportDocument.getPlaceOfIssue())
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
                       shippingInstructionService
-                          .findById(transportDocument.getShippingInstructionReference())
+                          .findByID(transportDocument.getShippingInstructionID())
                           .switchIfEmpty(
                               Mono.error(
                                   ConcreteRequestErrorMessageException.notFound(
                                       "No shipping instruction found with shipping instruction reference: "
-                                          + transportDocument.getShippingInstructionReference())))
+                                          + transportDocument.getShippingInstructionID())))
                           .doOnNext(transportDocumentTO::setShippingInstruction),
                       chargeService
-                          .fetchChargesByTransportDocumentReference(transportDocumentReference)
+                          .fetchChargesByTransportDocumentID(transportDocument.getId())
                           .collectList()
                           .doOnNext(transportDocumentTO::setCharges),
                       carrierClauseService
@@ -201,7 +203,7 @@ public class TransportDocumentServiceImpl
                           shippingInstructionTO.getShippingInstructionReference()),
                       shipmentService
                           .findByShippingInstructionReference(
-                            TdTO.getShippingInstruction().getShippingInstructionReference())
+                              TdTO.getShippingInstruction().getShippingInstructionReference())
                           .flatMap(
                               shipmentTOs -> {
                                 // check if returned list is empty
@@ -219,7 +221,7 @@ public class TransportDocumentServiceImpl
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
-                                                    ignored -> {
+                                                    booking -> {
                                                       BookingTO bookingTO = shipmentTO.getBooking();
                                                       bookingTO.setDocumentStatus(
                                                           ShipmentEventTypeCode.CMPL);
@@ -233,12 +235,12 @@ public class TransportDocumentServiceImpl
                                                               ShipmentEventTypeCode.CMPL,
                                                               carrierBookingRequestReference,
                                                               now)
+                                                          .flatMap(
+                                                              ignored ->
+                                                                  createShipmentEventFromBookingTO(
+                                                                      booking.getId(), bookingTO))
                                                           .thenReturn(bookingTO);
                                                     })
-                                                .flatMap(
-                                                    bookingTO ->
-                                                        createShipmentEventFromBookingTO(bookingTO)
-                                                            .thenReturn(bookingTO))
                                                 .doOnNext(shipmentTO::setBooking))
                                     .then(Mono.just(shipmentTOs));
                               })
@@ -255,7 +257,8 @@ public class TransportDocumentServiceImpl
         .flatMap(TdTO -> createShipmentEventFromTransportDocumentTO(TdTO).thenReturn(TdTO));
   }
 
-  private Mono<Booking> getBooking(String carrierBookingReference, String shippingInstructionReference) {
+  private Mono<Booking> getBooking(
+      String carrierBookingReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
@@ -270,23 +273,24 @@ public class TransportDocumentServiceImpl
                         + " does not exist!")));
   }
 
-  private Mono<ShipmentEvent> shipmentEventFromBookingTO(BookingTO booking, String reason) {
+  private Mono<ShipmentEvent> shipmentEventFromBookingTO(
+      UUID bookingID, BookingTO booking, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(booking.getDocumentStatus().name()));
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.CBR);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
-    shipmentEvent.setDocumentID(booking.getCarrierBookingRequestReference());
+    shipmentEvent.setDocumentID(bookingID);
     shipmentEvent.setEventDateTime(booking.getBookingRequestUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }
 
-  Mono<ShipmentEvent> createShipmentEventFromBookingTO(BookingTO bookingTO) {
+  Mono<ShipmentEvent> createShipmentEventFromBookingTO(UUID bookingID, BookingTO bookingTO) {
 
-    return shipmentEventFromBookingTO(bookingTO, "Booking is approved")
+    return shipmentEventFromBookingTO(bookingID, bookingTO, "Booking is approved")
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -295,11 +299,17 @@ public class TransportDocumentServiceImpl
                         + bookingTO.getCarrierBookingRequestReference())));
   }
 
-  Mono<ShipmentEvent> createShipmentEventFromTransportDocumentTO(
+  Mono<? extends ShipmentEvent> createShipmentEventFromTransportDocumentTO(
       TransportDocumentTO transportDocumentTO) {
 
-    return shipmentEventFromTransportDocumentTO(
-            transportDocumentTO, "Transport document is approved")
+    return transportDocumentRepository
+        .findByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
+        .flatMap(
+            transportDocument ->
+                shipmentEventFromTransportDocumentTO(
+                    transportDocument.getId(),
+                    transportDocumentTO,
+                    "Transport document is approved"))
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -309,7 +319,7 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
-      TransportDocumentTO transportDocumentTO, String reason) {
+      UUID shippingInstructionID, TransportDocumentTO transportDocumentTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(
@@ -317,8 +327,7 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setEventType(null);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
-    shipmentEvent.setDocumentID(
-        transportDocumentTO.getShippingInstruction().getShippingInstructionReference());
+    shipmentEvent.setDocumentID(shippingInstructionID);
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     return Mono.just(shipmentEvent);
@@ -356,8 +365,14 @@ public class TransportDocumentServiceImpl
 
   private Mono<ShipmentEvent> createShipmentEventFromShippingInstruction(
       ShippingInstructionTO shippingInstruction) {
-    return shipmentEventFromShippingInstruction(
-            shippingInstruction, "All bookings in shipping instruction are approved")
+    return shippingInstructionRepository
+        .findByShippingInstructionReference(shippingInstruction.getShippingInstructionReference())
+        .flatMap(
+            si ->
+                shipmentEventFromShippingInstruction(
+                    si.getId(),
+                    shippingInstruction,
+                    "All bookings in shipping instruction are approved"))
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -367,11 +382,11 @@ public class TransportDocumentServiceImpl
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-      ShippingInstructionTO shippingInstructionTO, String reason) {
+      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO, String reason) {
     return getShipmentEventFromShippingInstruction(
         reason,
         shippingInstructionTO.getDocumentStatus(),
-        shippingInstructionTO.getShippingInstructionReference(),
+        shippingInstructionID,
         shippingInstructionTO.getShippingInstructionUpdatedDateTime());
   }
 }
