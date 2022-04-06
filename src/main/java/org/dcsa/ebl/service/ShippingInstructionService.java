@@ -4,10 +4,16 @@ import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
+
 public interface ShippingInstructionService {
-  Mono<ShippingInstructionTO> findById(String shippingInstructionReference);
+  Mono<ShippingInstructionTO> findByReference(String shippingInstructionReference);
 
-  Mono<ShippingInstructionResponseTO> createShippingInstruction(ShippingInstructionTO shippingInstructionTO);
+  Mono<ShippingInstructionTO> findByID(UUID shippingInstructionID);
 
-  Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionReference(String shippingInstructionReference, ShippingInstructionTO update);
+  Mono<ShippingInstructionResponseTO> createShippingInstruction(
+      ShippingInstructionTO shippingInstructionTO);
+
+  Mono<ShippingInstructionResponseTO> updateShippingInstructionByShippingInstructionReference(
+      String shippingInstructionReference, ShippingInstructionTO update);
 }
