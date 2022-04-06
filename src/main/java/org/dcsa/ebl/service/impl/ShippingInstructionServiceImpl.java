@@ -442,13 +442,14 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       }
     }
 
-    List<ConsignmentItemTO> consignmentItemTOS =
+    List<UtilizedTransportEquipmentTO> utilizedTransportEquipmentTOS =
         Objects.requireNonNullElse(
-            shippingInstructionTO.getConsignmentItems(), Collections.emptyList());
+            shippingInstructionTO.getUtilizedTransportEquipments(), Collections.emptyList());
+
     // Check if carrierBooking reference is only set on one place,
     // either shipping instruction or cargo item
-    consignmentItemTOS.stream()
-        .map(ConsignmentItemTO::getCarrierBookingReference)
+    utilizedTransportEquipmentTOS.stream()
+        .map(UtilizedTransportEquipmentTO::getCarrierBookingReference)
         .forEach(
             carrierBookingReferenceOnCargoItem -> {
               if (Objects.nonNull(carrierBookingReferenceOnCargoItem)
@@ -462,9 +463,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               }
             });
 
-    List<UtilizedTransportEquipmentTO> utilizedTransportEquipmentTOS =
-        Objects.requireNonNullElse(
-            shippingInstructionTO.getUtilizedTransportEquipments(), Collections.emptyList());
     // Check if equipment tare weight is set on shipper owned equipment
     utilizedTransportEquipmentTOS.stream()
         .forEach(
@@ -493,7 +491,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShippingInstructionTO> transitionDocumentStatusAndRaiseShipmentEvent(
-      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
+    UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
     List<String> validationResult = validateShippingInstruction(shippingInstructionTO);
     Mono<ShipmentEvent> shipmentEvent;
     if (!validationResult.isEmpty()) {
@@ -506,12 +504,12 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENU);
       }
       shipmentEvent =
-          getShipmentEventFromShippingInstruction(
-              String.join("\n", validationResult),
-              shippingInstructionTO.getDocumentStatus(),
-              shippingInstructionID,
-              shippingInstructionTO.getShippingInstructionReference(),
-              shippingInstructionTO.getShippingInstructionUpdatedDateTime());
+        getShipmentEventFromShippingInstruction(
+          String.join("\n", validationResult),
+          shippingInstructionTO.getDocumentStatus(),
+          shippingInstructionID,
+          shippingInstructionTO.getShippingInstructionReference(),
+          shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     } else {
       if (shippingInstructionTO.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
         // UC5 / UC7 that was accepted goes directly to APPR.
@@ -520,32 +518,32 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.DRFT);
       }
       shipmentEvent =
-          getShipmentEventFromShippingInstruction(
-              String.join("\n", validationResult),
-              shippingInstructionTO.getDocumentStatus(),
-              shippingInstructionID,
-              shippingInstructionTO.getShippingInstructionReference(),
-              shippingInstructionTO.getShippingInstructionUpdatedDateTime());
+        getShipmentEventFromShippingInstruction(
+          String.join("\n", validationResult),
+          shippingInstructionTO.getDocumentStatus(),
+          shippingInstructionID,
+          shippingInstructionTO.getShippingInstructionReference(),
+          shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     }
     return shipmentEvent.map(shipmentEventService::create).thenReturn(shippingInstructionTO);
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-      ShippingInstruction shippingInstruction, String reason) {
+    ShippingInstruction shippingInstruction, String reason) {
     return getShipmentEventFromShippingInstruction(
-        reason,
-        shippingInstruction.getDocumentStatus(),
-        shippingInstruction.getId(),
-        shippingInstruction.getShippingInstructionReference(),
-        shippingInstruction.getShippingInstructionUpdatedDateTime());
+      reason,
+      shippingInstruction.getDocumentStatus(),
+      shippingInstruction.getId(),
+      shippingInstruction.getShippingInstructionReference(),
+      shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
 
   static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(
-      String reason,
-      ShipmentEventTypeCode documentStatus,
-      UUID documentID,
-      String documentReference,
-      OffsetDateTime shippingInstructionUpdatedDateTime) {
+    String reason,
+    ShipmentEventTypeCode documentStatus,
+    UUID documentID,
+    String documentReference,
+    OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(documentStatus);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);

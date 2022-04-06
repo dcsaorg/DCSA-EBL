@@ -557,11 +557,7 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
-          .thenReturn(
-              Mono.just(
-                  List.of(
-                      consignmentItemTO.withCarrierBookingReference(
-                          shippingInstructionTO.getCarrierBookingReference()))));
+          .thenReturn(Mono.just(List.of(consignmentItemTO)));
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(shipmentEventService.create(any()))
