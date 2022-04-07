@@ -1,8 +1,8 @@
 package org.dcsa.ebl.service.impl;
 
 import org.dcsa.core.events.edocumentation.model.mapper.ShipmentMapper;
-import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
@@ -196,7 +196,6 @@ class ShippingInstructionServiceImplTest {
     cargoItem.setShippingInstructionReference(
         shippingInstruction.getShippingInstructionReference());
 
-
     shipmentEvent = new ShipmentEvent();
     shipmentEvent.setEventID(UUID.randomUUID());
     shipmentEvent.setShipmentEventTypeCode(
@@ -245,13 +244,13 @@ class ShippingInstructionServiceImplTest {
     referenceTO.setReferenceValue(reference.getReferenceValue());
 
     consignmentItemTO =
-      ConsignmentItemTO.builder()
-        .descriptionOfGoods("Some description of the goods!")
-        .hsCode("x".repeat(10))
-        .volume(2.22)
-        .weight(2.22)
-        .cargoItems(List.of(cargoItemTO))
-        .references(List.of(referenceTO))
+        ConsignmentItemTO.builder()
+            .descriptionOfGoods("Some description of the goods!")
+            .hsCode("x".repeat(10))
+            .volume(2.22)
+            .weight(2.22)
+            .cargoItems(List.of(cargoItemTO))
+            .references(List.of(referenceTO))
             .build();
 
     utilizedTransportEquipmentTO = new UtilizedTransportEquipmentTO();
@@ -278,6 +277,7 @@ class ShippingInstructionServiceImplTest {
     shippingInstructionTO = shippingInstructionMapper.shippingInstructionToDTO(shippingInstruction);
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
     shippingInstructionTO.setPlaceOfIssue(locationTO);
+    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setDocumentParties(List.of(documentPartyTO1, documentPartyTO2));
     shippingInstructionTO.setReferences(List.of(referenceTO));
@@ -285,8 +285,11 @@ class ShippingInstructionServiceImplTest {
 
     // Date & Time
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO = ShippingInstructionResponseTO.builder().shippingInstructionUpdatedDateTime(now)
-        .shippingInstructionCreatedDateTime(now).build();
+    shippingInstructionResponseTO =
+        ShippingInstructionResponseTO.builder()
+            .shippingInstructionUpdatedDateTime(now)
+            .shippingInstructionCreatedDateTime(now)
+            .build();
   }
 
   @Nested
@@ -311,7 +314,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -373,6 +380,8 @@ class ShippingInstructionServiceImplTest {
         "Method should save shipping instruction and return shipping response when carrierBookingReference is set on cargoItem")
     void testCreateShippingInstructionWithCarrierBookingReferenceOnCargoItem() {
       shippingInstructionTO.setCarrierBookingReference(null);
+      shippingInstructionTO.setConsignmentItems(
+          List.of(consignmentItemTO.withCarrierBookingReference("carrierBookingRequestReference")));
       utilizedTransportEquipmentTO.setCarrierBookingReference("carrierBookingRequestReference");
 
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -389,7 +398,11 @@ class ShippingInstructionServiceImplTest {
 
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          "carrierBookingRequestReference"))));
 
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
@@ -542,7 +555,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(documentPartyService.createDocumentPartiesByShippingInstructionReference(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(shipmentEventService.create(any()))
@@ -697,7 +714,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -986,7 +1007,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -1085,7 +1110,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -1375,6 +1404,8 @@ class ShippingInstructionServiceImplTest {
     void testWithDuplicateCarrierBookingReference() {
       shippingInstructionTO.setCarrierBookingReference("CarrierBookingReference");
       utilizedTransportEquipmentTO.setCarrierBookingReference("CarrierBookingReference");
+      shippingInstructionTO.setConsignmentItems(
+          List.of(consignmentItemTO.withCarrierBookingReference("CarrierBookingReference")));
       List<String> validationResult =
           shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
       assertEquals(1, validationResult.size());
