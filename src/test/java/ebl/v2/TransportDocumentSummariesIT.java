@@ -6,14 +6,14 @@ import org.apache.http.HttpStatus;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.ebl.model.TransportDocumentSummary;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static ebl.config.TestConfig.SHIPPING_INSTRUCTIONS;
 import static ebl.config.TestConfig.TRANSPORT_DOCUMENT_SUMMARIES;
@@ -144,31 +144,37 @@ class TransportDocumentSummariesIT {
     createShippingInstruction(map);
 
     String[] carrierBookingReferences = {
-      "832deb4bd4ea4b728430b857c59bd057", "994f0c2b590347ab86ad34cd1ffba505"
+      "5dc92988f48a420495b786c224efce7d", "43f615138efc4d3286b36402405f851b"
     };
 
-    given()
-        .contentType("application/json")
-        .get(
-            TRANSPORT_DOCUMENT_SUMMARIES
-                + "?carrierBookingReference="
-                + String.join(",", carrierBookingReferences))
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK)
-        .body("size()", greaterThan(0))
-        .body("[0].carrierBookingReferences.size()", is(2))
-        .body("[0].carrierBookingReferences", hasItem("832deb4bd4ea4b728430b857c59bd057"))
-        .body("[0].carrierBookingReferences", hasItem("994f0c2b590347ab86ad34cd1ffba505"))
-        .body("[0].transportDocumentReference", notNullValue())
-        .body("[0].shippingInstructionReference", notNullValue())
-        .body("[0].documentStatus", equalTo(String.valueOf(ShipmentEventTypeCode.RECE)))
-        .body("[0].transportDocumentRequestCreatedDateTime", notNullValue())
-        .body("[0].transportDocumentRequestUpdatedDateTime", notNullValue())
-        //        .body(jsonSchemaValidator("shippingInstructionRequest"))
-        .extract()
-        .body()
-        .asString();
+    TransportDocumentSummary[] response =
+        given()
+            .contentType("application/json")
+            .get(
+                TRANSPORT_DOCUMENT_SUMMARIES
+                    + "?carrierBookingReference="
+                    + String.join(",", carrierBookingReferences))
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.SC_OK)
+            .body("size()", greaterThan(0))
+            .body("[0].transportDocumentReference", notNullValue())
+            .body("[0].shippingInstructionReference", notNullValue())
+            .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
+            .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
+            .extract()
+            .body()
+            .as(TransportDocumentSummary[].class);
+
+    List<String> carrierBookingReferenceResults =
+        Arrays.stream(response)
+            .map(TransportDocumentSummary::getCarrierBookingReferences)
+            .flatMap(List::stream)
+            .distinct()
+            .collect(Collectors.toList());
+
+    assert carrierBookingReferenceResults.contains(carrierBookingReferences[0]);
+    assert carrierBookingReferenceResults.contains(carrierBookingReferences[1]);
   }
 
   @Test

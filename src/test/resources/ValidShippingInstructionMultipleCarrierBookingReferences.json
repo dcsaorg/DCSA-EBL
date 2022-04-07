@@ -17,9 +17,74 @@
     "longitude": "4.4777° E",
     "UNLocationCode": "NLRTM"
   },
-  "utilizedTransportEquipments": [
+  "consignmentItems": [
     {
       "carrierBookingReference": "43f615138efc4d3286b36402405f851b",
+      "weight": 13000.3,
+      "volume": 12,
+      "weightUnit": "KGM",
+      "volumeUnit": "CBM",
+      "descriptionOfGoods": "shoes",
+      "HSCode": "411510",
+      "cargoItems": [
+        {
+          "equipmentReference": "BMOU2149612",
+          "cargoLineItems": [
+            {
+              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
+              "shippingMarks": "squashed"
+            }
+          ],
+          "weight": 13000.3,
+          "volume": 12,
+          "weightUnit": "KGM",
+          "volumeUnit": "CBM",
+          "numberOfPackages": 18,
+          "packageCode": "5H4"
+        }
+      ],
+      "references": [
+        {
+          "referenceType": "FF",
+          "referenceValue": "7b46"
+        }
+      ]
+    },
+    {
+      "carrierBookingReference": "5dc92988f48a420495b786c224efce7d",
+      "weight": 13000.3,
+      "volume": 12,
+      "weightUnit": "KGM",
+      "volumeUnit": "CBM",
+      "descriptionOfGoods": "iron",
+      "HSCode": "720711",
+      "cargoItems": [
+        {
+          "equipmentReference": "APZU4812090",
+          "cargoLineItems": [
+            {
+              "cargoLineItemID": "9653b630-7847-467c-bcf7-15374dcc6ae2",
+              "shippingMarks": "squashed"
+            }
+          ],
+          "weight": 13000.3,
+          "volume": 12,
+          "weightUnit": "KGM",
+          "volumeUnit": "CBM",
+          "numberOfPackages": 18,
+          "packageCode": "5H4"
+        }
+      ],
+      "references": [
+        {
+          "referenceType": "FF",
+          "referenceValue": "7b46"
+        }
+      ]
+    }
+  ],
+  "utilizedTransportEquipments": [
+    {
       "equipment": {
         "equipmentReference": "BMOU2149612",
         "ISOEquipmentCode": "22G1",
@@ -29,30 +94,6 @@
       "cargoGrossWeightUnit": "KGM",
       "cargoGrossWeight": 12000,
       "isShipperOwned": true,
-      "cargoItems": [
-        {
-          "cargoLineItems": [
-            {
-              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
-              "shippingMarks": "squashed"
-            }
-          ],
-          "descriptionOfGoods": "Shoes",
-          "HSCode": "411510",
-          "weight": 13000.3,
-          "volume": 12,
-          "weightUnit": "KGM",
-          "volumeUnit": "CBM",
-          "numberOfPackages": 18,
-          "packageCode": "5H4",
-          "references": [
-            {
-              "referenceType": "FF",
-              "referenceValue": "7b46"
-            }
-          ]
-        }
-      ],
       "activeReeferSettings": {
         "temperatureMin": -18.1,
         "temperatureMax": 64.3,
@@ -73,7 +114,7 @@
     {
       "carrierBookingReference": "5dc92988f48a420495b786c224efce7d",
       "equipment": {
-        "equipmentReference": "BMOU2149612",
+        "equipmentReference": "APZU4812090",
         "ISOEquipmentCode": "22G1",
         "tareWeight": 12000,
         "weightUnit": "KGM"
@@ -81,30 +122,6 @@
       "cargoGrossWeightUnit": "KGM",
       "cargoGrossWeight": 12000,
       "isShipperOwned": true,
-      "cargoItems": [
-        {
-          "cargoLineItems": [
-            {
-              "cargoLineItemID": "1171f09ed5684a1eb1b2a823161a8a81",
-              "shippingMarks": "squashed"
-            }
-          ],
-          "descriptionOfGoods": "Shoes",
-          "HSCode": "411510",
-          "weight": 13000.3,
-          "volume": 12,
-          "weightUnit": "KGM",
-          "volumeUnit": "CBM",
-          "numberOfPackages": 18,
-          "packageCode": "5H4",
-          "references": [
-            {
-              "referenceType": "FF",
-              "referenceValue": "7b46"
-            }
-          ]
-        }
-      ],
       "activeReeferSettings": {
         "temperatureMin": -18.1,
         "temperatureMax": 64.3,
