@@ -19,7 +19,7 @@ public class TestConfig {
   // API endpoints
   public static final String SHIPPING_INSTRUCTIONS = "/v2/shipping-instructions";
   public static final String TRANSPORT_DOCUMENTS = "/v2/transport-documents";
-  public static final String TRANSPORT_DOCUMENT_SUMMARIES =   "/v2/transport-document-summaries";
+  public static final String TRANSPORT_DOCUMENT_SUMMARIES = "/v2/transport-document-summaries";
 
   private TestConfig() {}
 
