@@ -1,6 +1,7 @@
 package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
@@ -99,7 +100,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                           .doOnNext(siTO::setReferences),
                       shipmentService
                           .findByShippingInstructionReference(si.getShippingInstructionReference())
-                          .doOnNext(siTO::setShipments))
+                          .doOnNext(siTO::setShipments),
+                      consignmentItemService
+                          .fetchConsignmentItemsTOByShippingInstructionReference(
+                              siTO.getShippingInstructionReference())
+                          .doOnNext(siTO::setConsignmentItems))
                   .thenReturn(siTO);
             });
   }
@@ -332,8 +337,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
           Collections.singletonList(shippingInstructionTO.getCarrierBookingReference());
     } else {
       carrierBookingReferences =
-          shippingInstructionTO.getUtilizedTransportEquipments().stream()
-              .map(UtilizedTransportEquipmentTO::getCarrierBookingReference)
+          shippingInstructionTO.getConsignmentItems().stream()
+              .map(ConsignmentItemTO::getCarrierBookingReference)
               .distinct()
               .collect(Collectors.toList());
     }
@@ -424,6 +429,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       }
     }
 
+    Supplier<Stream<ConsignmentItemTO>> consignmentItemTOStream =
+        () ->
+            Stream.ofNullable(shippingInstructionTO.getConsignmentItems())
+                .flatMap(Collection::stream);
+
     Supplier<Stream<UtilizedTransportEquipmentTO>> utilizedTransportEquipmentTOStream =
         () ->
             Stream.ofNullable(shippingInstructionTO.getUtilizedTransportEquipments())
@@ -431,9 +441,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
     // Check if carrierBooking reference is only set on one place,
     // either shipping instruction or cargo item
-    utilizedTransportEquipmentTOStream
+    consignmentItemTOStream
         .get()
-        .map(UtilizedTransportEquipmentTO::getCarrierBookingReference)
+        .map(ConsignmentItemTO::getCarrierBookingReference)
         .forEach(
             carrierBookingReferenceOnCargoItem -> {
               if (Objects.nonNull(carrierBookingReferenceOnCargoItem)

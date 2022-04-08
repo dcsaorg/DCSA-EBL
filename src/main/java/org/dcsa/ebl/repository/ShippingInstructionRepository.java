@@ -20,9 +20,8 @@ public interface ShippingInstructionRepository
 
   // TODO DDT-994
   @Query(
-      "SELECT DISTINCT ute.shipment_id FROM shipping_instruction si "
-          + "JOIN cargo_item ci ON ci.shipping_instruction_id = si.id "
-          + "JOIN utilized_transport_equipment ute ON ute.id = ci.utilized_transport_equipment_id "
+      "SELECT DISTINCT ci.shipment_id FROM shipping_instruction si "
+          + "JOIN consignment_item ci ON ci.shipping_instruction_id = si.id "
           + "WHERE si.id = :shippingInstructionReference")
   Flux<UUID> findShipmentIDsByShippingInstructionReference(String shippingInstructionReference);
 

@@ -85,7 +85,6 @@ class ShippingInstructionServiceImplTest {
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
-  ConsignmentItemTO consignmentItemTO;
   ShippingInstructionResponseTO shippingInstructionResponseTO;
   UtilizedTransportEquipmentTO utilizedTransportEquipmentTO;
   ActiveReeferSettingsTO activeReeferSettingsTO;
@@ -93,6 +92,7 @@ class ShippingInstructionServiceImplTest {
   SealTO sealsTO;
   CargoLineItemTO cargoLineItemTO;
   CargoItemTO cargoItemTO;
+  ConsignmentItemTO consignmentItemTO;
   DocumentPartyTO documentPartyTO1;
   DocumentPartyTO documentPartyTO2;
   ReferenceTO referenceTO;
@@ -239,6 +239,20 @@ class ShippingInstructionServiceImplTest {
     activeReeferSettingsTO.setVentilationMax(15f);
     activeReeferSettingsTO.setVentilationMin(5f);
 
+    referenceTO = new ReferenceTO();
+    referenceTO.setReferenceType(reference.getReferenceType());
+    referenceTO.setReferenceValue(reference.getReferenceValue());
+
+    consignmentItemTO =
+        ConsignmentItemTO.builder()
+            .descriptionOfGoods("Some description of the goods!")
+            .hsCode("x".repeat(10))
+            .volume(2.22)
+            .weight(2.22)
+            .cargoItems(List.of(cargoItemTO))
+            .references(List.of(referenceTO))
+            .build();
+
     utilizedTransportEquipmentTO = new UtilizedTransportEquipmentTO();
     utilizedTransportEquipmentTO.setEquipment(equipmentTO);
     utilizedTransportEquipmentTO.setSeals(List.of(sealsTO));
@@ -257,22 +271,13 @@ class ShippingInstructionServiceImplTest {
     documentPartyTO2.setPartyFunction(PartyFunction.EBL);
     documentPartyTO2.setDisplayedAddress(List.of("displayedAddress"));
 
-    referenceTO = new ReferenceTO();
-    referenceTO.setReferenceType(reference.getReferenceType());
-    referenceTO.setReferenceValue(reference.getReferenceValue());
-
-    ConsignmentItemTO.ConsignmentItemTOBuilder consignmentItemTOBuilder =
-        ConsignmentItemTO.builder();
-    consignmentItemTOBuilder.cargoItems(List.of(cargoItemTO));
-    consignmentItemTOBuilder.references(List.of(referenceTO));
-    consignmentItemTO = consignmentItemTOBuilder.build();
-
     shipmentTO = shipmentMapper.shipmentToDTO(shipment);
     shipmentTO.setTermsAndConditions("Fail Fast, Fail Early, Fail Often");
 
     shippingInstructionTO = shippingInstructionMapper.shippingInstructionToDTO(shippingInstruction);
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
     shippingInstructionTO.setPlaceOfIssue(locationTO);
+    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setDocumentParties(List.of(documentPartyTO1, documentPartyTO2));
     shippingInstructionTO.setReferences(List.of(referenceTO));
@@ -280,8 +285,11 @@ class ShippingInstructionServiceImplTest {
 
     // Date & Time
     OffsetDateTime now = OffsetDateTime.now();
-    shippingInstructionResponseTO = ShippingInstructionResponseTO.builder().shippingInstructionUpdatedDateTime(now)
-        .shippingInstructionCreatedDateTime(now).build();
+    shippingInstructionResponseTO =
+        ShippingInstructionResponseTO.builder()
+            .shippingInstructionUpdatedDateTime(now)
+            .shippingInstructionCreatedDateTime(now)
+            .build();
   }
 
   @Nested
@@ -306,7 +314,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -368,6 +380,8 @@ class ShippingInstructionServiceImplTest {
         "Method should save shipping instruction and return shipping response when carrierBookingReference is set on cargoItem")
     void testCreateShippingInstructionWithCarrierBookingReferenceOnCargoItem() {
       shippingInstructionTO.setCarrierBookingReference(null);
+      shippingInstructionTO.setConsignmentItems(
+          List.of(consignmentItemTO.withCarrierBookingReference("carrierBookingRequestReference")));
       utilizedTransportEquipmentTO.setCarrierBookingReference("carrierBookingRequestReference");
 
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -381,9 +395,15 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          "carrierBookingRequestReference"))));
+
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
@@ -535,7 +555,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(documentPartyService.createDocumentPartiesByShippingInstructionReference(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(shipmentEventService.create(any()))
@@ -690,7 +714,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
@@ -979,7 +1007,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -1078,7 +1110,11 @@ class ShippingInstructionServiceImplTest {
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionReferenceAndTOs(
               any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
+          .thenReturn(
+              Mono.just(
+                  List.of(
+                      consignmentItemTO.withCarrierBookingReference(
+                          shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
@@ -1368,6 +1404,8 @@ class ShippingInstructionServiceImplTest {
     void testWithDuplicateCarrierBookingReference() {
       shippingInstructionTO.setCarrierBookingReference("CarrierBookingReference");
       utilizedTransportEquipmentTO.setCarrierBookingReference("CarrierBookingReference");
+      shippingInstructionTO.setConsignmentItems(
+          List.of(consignmentItemTO.withCarrierBookingReference("CarrierBookingReference")));
       List<String> validationResult =
           shippingInstructionServiceImpl.validateShippingInstruction(shippingInstructionTO);
       assertEquals(1, validationResult.size());
@@ -1476,6 +1514,8 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(Collections.singletonList(referenceTO)));
       when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(shipmentTO)));
+      when(consignmentItemService.fetchConsignmentItemsTOByShippingInstructionReference(any()))
+          .thenReturn(Mono.just(Collections.singletonList(consignmentItemTO)));
 
       StepVerifier.create(shippingInstructionServiceImpl.findById(UUID.randomUUID().toString()))
           .assertNext(

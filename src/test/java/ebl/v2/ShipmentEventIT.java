@@ -1,6 +1,7 @@
 package ebl.v2;
 
 import ebl.config.TestConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.BaseMatcher;
@@ -207,17 +208,20 @@ class ShipmentEventIT {
   }
 
   /**
-   * Convert the input (assumed to be String) into a ZonedDateTime before chaining off to the next match
+   * Convert the input (assumed to be String) into a ZonedDateTime before chaining off to the next
+   * match
    *
-   * The conversion will use {@link ZonedDateTime#parse(CharSequence)}. If the parsing fails, the value
-   * is assumed not to match.
+   * <p>The conversion will use {@link ZonedDateTime#parse(CharSequence)}. If the parsing fails, the
+   * value is assumed not to match.
    *
    * @param dateTimeMatcher The matcher that should operator on a ZonedDateTime
    * @return The combined matcher
    */
-  // Use ChronoZonedDateTime as bound to avoid fighting generics with lessThan that "reduces" ZonedDateTime
+  // Use ChronoZonedDateTime as bound to avoid fighting generics with lessThan that "reduces"
+  // ZonedDateTime
   // to the ChronoZonedDateTime (via Comparable)
-  private static <T extends ChronoZonedDateTime<?>> Matcher<T> asDateTime(Matcher<T> dateTimeMatcher) {
+  private static <T extends ChronoZonedDateTime<?>> Matcher<T> asDateTime(
+      Matcher<T> dateTimeMatcher) {
     return new DateTimeMatcher<>(dateTimeMatcher);
   }
 
@@ -233,8 +237,8 @@ class ShipmentEventIT {
         return false;
       }
       try {
-        dateTime = ZonedDateTime.parse((String)actual);
-      } catch (DateTimeParseException e)  {
+        dateTime = ZonedDateTime.parse((String) actual);
+      } catch (DateTimeParseException e) {
         return false;
       }
       return matcher.matches(dateTime);
