@@ -1,5 +1,6 @@
 package ebl.config;
 
+import com.github.fge.jsonschema.SchemaVersion;
 import com.github.fge.jsonschema.cfg.ValidationConfiguration;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import io.restassured.RestAssured;
@@ -17,6 +18,7 @@ public class TestConfig {
 
   // API endpoints
   public static final String SHIPPING_INSTRUCTIONS = "/v2/shipping-instructions";
+  public static final String TRANSPORT_DOCUMENTS = "/v2/transport-documents";
   public static final String TRANSPORT_DOCUMENT_SUMMARIES = "/v2/transport-document-summaries";
 
   private TestConfig() {}
@@ -39,5 +41,14 @@ public class TestConfig {
                 .setValidationConfiguration(
                     ValidationConfiguration.newBuilder().setDefaultVersion(DRAFTV3).freeze())
                 .freeze());
+  }
+
+  public static Matcher<?> jsonSchemaValidator(String fileName, SchemaVersion schemaVersion) {
+    return matchesJsonSchemaInClasspath("schema/" + fileName + ".json")
+      .using(
+        JsonSchemaFactory.newBuilder()
+          .setValidationConfiguration(
+            ValidationConfiguration.newBuilder().setDefaultVersion(schemaVersion).freeze())
+          .freeze());
   }
 }
