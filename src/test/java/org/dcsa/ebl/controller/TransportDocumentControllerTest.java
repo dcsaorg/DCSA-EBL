@@ -2,6 +2,7 @@ package org.dcsa.ebl.controller;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.model.Address;
+import org.dcsa.core.events.model.Reference;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -47,11 +48,18 @@ class TransportDocumentControllerTest {
   TransportDocumentTO approvedTransportDocument;
   ApproveTransportDocumentRequestTO validTransportDocumentRequestTO;
   ApproveTransportDocumentRequestTO invalidTransportDocumentRequestTO;
+  Address address;
+  Reference reference;
 
   @BeforeEach
-  private void init() {
+  void init() {
+    initEntities();
+    initTO();
+  }
 
-    Address address = new Address();
+  void initEntities() {
+
+    address = new Address();
     address.setCity("Amsterdam");
     address.setCountry("Netherlands");
     address.setStreet("Strawinskylaan");
@@ -59,6 +67,22 @@ class TransportDocumentControllerTest {
     address.setStreetNumber("4117");
     address.setFloor("6");
     address.setStateRegion("Noord-Holland");
+
+    reference = new Reference();
+    reference.setReferenceValue("test");
+    reference.setReferenceType(ReferenceTypeCode.FF);
+
+  }
+
+  private void initTO() {
+
+    ReferenceTO referenceTO = new ReferenceTO();
+    referenceTO.setReferenceType(reference.getReferenceType());
+    referenceTO.setReferenceValue(reference.getReferenceValue());
+
+    CargoLineItemTO cargoLineItemTO = new CargoLineItemTO();
+    cargoLineItemTO.setCargoLineItemID("Some CargoLineItem ID");
+    cargoLineItemTO.setShippingMarks("All sorts of remarks!");
 
     LocationTO locationTO = new LocationTO();
     locationTO.setLocationName("DCSA Headquarters");
@@ -78,10 +102,21 @@ class TransportDocumentControllerTest {
     carrierClauseTO.setClauseContent("CarrierClause");
 
     CargoItemTO cargoItemTO = new CargoItemTO();
+    cargoItemTO.setCargoLineItems(List.of(cargoLineItemTO));
     cargoItemTO.setWeight(10F);
     cargoItemTO.setWeightUnit(WeightUnit.KGM);
     cargoItemTO.setNumberOfPackages(1);
     cargoItemTO.setPackageCode("123");
+
+    ConsignmentItemTO consignmentItemTO =
+      ConsignmentItemTO.builder()
+        .descriptionOfGoods("Some description of the goods!")
+        .hsCode("x".repeat(10))
+        .volume(2.22)
+        .weight(2.22)
+        .cargoItems(List.of(cargoItemTO))
+        .references(List.of(referenceTO))
+        .build();
 
     EquipmentTO equipmentTO = new EquipmentTO();
     equipmentTO.setEquipmentReference("ref");
@@ -136,6 +171,8 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setShipments(List.of(shipmentTO));
+    shippingInstructionTO.setReferences(List.of(referenceTO));
+    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
 
     ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
     approveShippingInstructionTO.setIsShippedOnboardType(true);
@@ -147,6 +184,8 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     approveShippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     approveShippingInstructionTO.setShipments(List.of(approveShipmentTO));
+    shippingInstructionTO.setReferences(List.of(referenceTO));
+    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
 
 
     transportDocumentTO = new TransportDocumentTO();
