@@ -510,6 +510,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               String.join("\n", validationResult),
               shippingInstructionTO.getDocumentStatus(),
               shippingInstructionID,
+              shippingInstructionTO.getShippingInstructionReference(),
               shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     } else {
       if (shippingInstructionTO.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
@@ -523,6 +524,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               String.join("\n", validationResult),
               shippingInstructionTO.getDocumentStatus(),
               shippingInstructionID,
+              shippingInstructionTO.getShippingInstructionReference(),
               shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     }
     return shipmentEvent.map(shipmentEventService::create).thenReturn(shippingInstructionTO);
@@ -534,6 +536,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         reason,
         shippingInstruction.getDocumentStatus(),
         shippingInstruction.getId(),
+        shippingInstruction.getShippingInstructionReference(),
         shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
 
@@ -541,6 +544,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       String reason,
       ShipmentEventTypeCode documentStatus,
       UUID documentID,
+      String documentReference,
       OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(documentStatus);
@@ -548,6 +552,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
     shipmentEvent.setEventType(null);
     shipmentEvent.setDocumentID(documentID);
+    shipmentEvent.setDocumentReference(documentReference);
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     shipmentEvent.setEventDateTime(shippingInstructionUpdatedDateTime);
     shipmentEvent.setReason(reason);

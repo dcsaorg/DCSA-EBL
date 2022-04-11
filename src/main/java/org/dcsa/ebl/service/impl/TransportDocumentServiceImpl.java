@@ -387,6 +387,7 @@ public class TransportDocumentServiceImpl
         reason,
         shippingInstructionTO.getDocumentStatus(),
         shippingInstructionID,
+        shippingInstructionTO.getShippingInstructionReference(),
         shippingInstructionTO.getShippingInstructionUpdatedDateTime());
   }
 }
