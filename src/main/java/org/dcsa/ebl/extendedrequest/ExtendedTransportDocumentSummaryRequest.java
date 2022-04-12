@@ -39,7 +39,7 @@ public class ExtendedTransportDocumentSummaryRequest extends ExtendedRequest<Tra
         .registerQueryFieldFromField("documentStatus")
         .onTable(ShippingInstruction.class)
         .chainJoin(ConsignmentItem.class)
-        .onFieldEqualsThen("shippingInstructionReference", "shippingInstructionID")
+        .onFieldEqualsThen("id", "shippingInstructionID")
         .chainJoin(Shipment.class)
         .onFieldEqualsThen("shipmentID", "shipmentID")
         .registerQueryFieldFromField(
