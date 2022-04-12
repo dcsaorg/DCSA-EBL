@@ -1,4 +1,5 @@
 {
+  "amendToTransportDocument": "string",
   "transportDocumentTypeCode": "SWB",
   "isShippedOnboardType": true,
   "numberOfCopies": 2,
@@ -161,7 +162,8 @@
           {
             "name": "Henrik",
             "phone": "+45 33364660",
-            "email": "info@dcsa.org"
+            "email": "info@dcsa.org",
+            "url": "https://www.dcsa.org"
           }
         ],
         "identifyingCodes": [
