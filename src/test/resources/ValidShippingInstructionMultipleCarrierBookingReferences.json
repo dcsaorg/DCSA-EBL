@@ -13,8 +13,8 @@
   "displayedNameForPlaceOfDelivery": "Masio",
   "placeOfIssue": {
     "locationName": "Rotterdam",
-    "latitude": "51.9244° N",
-    "longitude": "4.4777° E",
+    "latitude": "51.9244",
+    "longitude": "4.4777",
     "UNLocationCode": "NLRTM"
   },
   "consignmentItems": [
