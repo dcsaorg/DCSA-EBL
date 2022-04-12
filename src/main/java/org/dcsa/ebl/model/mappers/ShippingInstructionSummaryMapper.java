@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ShippingInstructionSummaryMapper {
-  @Mapping(source = "shippingInstructionCreatedDateTime", target = "createdDateTime")
-  @Mapping(source = "shippingInstructionUpdatedDateTime", target = "updatedDateTime")
+  @Mapping(source = "shippingInstructionCreatedDateTime", target = "shippingInstructionCreatedDateTime")
+  @Mapping(source = "shippingInstructionUpdatedDateTime", target = "shippingInstructionUpdatedDateTime")
   ShippingInstructionSummaryTO shippingInstructionToDTO(ShippingInstruction shippingInstruction);
 }
