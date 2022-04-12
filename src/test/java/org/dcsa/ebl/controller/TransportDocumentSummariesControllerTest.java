@@ -75,8 +75,8 @@ class TransportDocumentSummariesControllerTest {
     transportDocumentSummary = new TransportDocumentSummary();
     transportDocumentSummary.setShippingInstructionReference(UUID.randomUUID().toString());
     transportDocumentSummary.setDocumentStatus(ShipmentEventTypeCode.RECE);
-    transportDocumentSummary.setTransportDocumentRequestCreatedDateTime(now);
-    transportDocumentSummary.setTransportDocumentRequestUpdatedDateTime(now);
+    transportDocumentSummary.setTransportDocumentCreatedDateTime(now);
+    transportDocumentSummary.setTransportDocumentUpdatedDateTime(now);
     transportDocumentSummary.setIssuerCode("x".repeat(3));
     transportDocumentSummary.setIssuerCodeListProvider(CarrierCodeListProvider.SMDG);
     transportDocumentSummary.setIssueDate(LocalDate.now());
@@ -86,11 +86,12 @@ class TransportDocumentSummariesControllerTest {
     transportDocumentSummary.setDeclaredValue(100F);
     transportDocumentSummary.setNumberOfRiderPages(10);
     transportDocumentSummary.setCarrierBookingReferences(List.of("CarrierBookingReference"));
+    transportDocumentSummary.setTransportDocumentReference("TDref");
   }
 
   @Test
   @DisplayName(
-      "GET shipping-instructions should return 200 and valid transport document summary json schema.")
+      "GET transport document summaries should return 200 and valid transport document summary json schema.")
   void getTransportDocumentSummaries() {
 
     // mock service method call
@@ -104,11 +105,11 @@ class TransportDocumentSummariesControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .exchange();
 
-    checkStatus200.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+    checkStatus200.andThen(checkTransportDocumentSummariesResponseTOJsonSchema).apply(exchange);
   }
 
   @Test
-  @DisplayName("GET shipping-instructions by document status should return 200 and valid transport document summary json schema.")
+  @DisplayName("GET transport document summaries by document status should return 200 and valid transport document summary json schema.")
   void getTransportDocumentSummariesByDocumentStatus() {
 
     when(transportDocumentService.findAllExtended(any()))
@@ -126,11 +127,12 @@ class TransportDocumentSummariesControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .exchange();
 
-    checkStatus200.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+    checkStatus200.andThen(checkDocumentStatusFilter).apply(exchange);
+    checkTransportDocumentSummariesResponseTOJsonSchema.apply(exchange);
   }
 
   @Test
-  @DisplayName("GET shipping-instructions by carrier booking references should return 200 and valid transport document summary json schema.")
+  @DisplayName("GET transport document summaries by carrier booking references should return 200 and valid transport document summary json schema.")
   void getTransportDocumentSummariesByCarrierBooingReference() {
 
     when(transportDocumentService.findAllExtended(any()))
@@ -143,28 +145,26 @@ class TransportDocumentSummariesControllerTest {
                 uriBuilder ->
                     uriBuilder
                         .path(TRANSPORT_DOCUMENT_SUMMARIES_ENDPOINT)
-                        .queryParam("carrierBookingReference", "ABC123123;DEF987987")
+                        .queryParam("carrierBookingReference", "CarrierBookingReferenc")
                         .build())
             .accept(MediaType.APPLICATION_JSON)
             .exchange();
 
-    checkStatus200.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+    checkStatus200.andThen(checkTransportDocumentSummariesResponseTOJsonSchema).apply(exchange);
   }
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus200 =
       (exchange) -> exchange.expectStatus().isOk();
 
-  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus201 =
-      (exchange) -> exchange.expectStatus().isCreated();
-
-  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus204 =
-      (exchange) -> exchange.expectStatus().isNoContent();
-
-  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus400 =
-      (exchange) -> exchange.expectStatus().isBadRequest();
+  private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec> checkDocumentStatusFilter =
+      (exchange) -> exchange
+        .expectBody()
+        .consumeWith(System.out::println)
+        .jsonPath("$.[0].documentStatus")
+        .isEqualTo(ShipmentEventTypeCode.RECE.name());
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.BodyContentSpec>
-      checkShippingInstructionResponseTOJsonSchema =
+    checkTransportDocumentSummariesResponseTOJsonSchema =
           (exchange) ->
               exchange
                   .expectBody()
@@ -173,9 +173,9 @@ class TransportDocumentSummariesControllerTest {
                   .hasJsonPath()
                   .jsonPath("$.[0].documentStatus")
                   .hasJsonPath()
-                  .jsonPath("$.[0].transportDocumentRequestCreatedDateTime")
+                  .jsonPath("$.[0].transportDocumentCreatedDateTime")
                   .hasJsonPath()
-                  .jsonPath("$.[0].transportDocumentRequestUpdatedDateTime")
+                  .jsonPath("$.[0].transportDocumentUpdatedDateTime")
                   .hasJsonPath()
                   .jsonPath("$.[0].issueDate")
                   .hasJsonPath()
