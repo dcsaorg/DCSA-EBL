@@ -1,15 +1,12 @@
 package ebl.v2;
 
 import ebl.config.TestConfig;
-import io.restassured.filter.log.LogDetail;
 import io.restassured.http.ContentType;
 import lombok.RequiredArgsConstructor;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -17,8 +14,8 @@ import java.time.ZonedDateTime;
 import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
+import static ebl.config.TestConfig.jsonSchemaValidator;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
@@ -41,7 +38,7 @@ class ShipmentEventIT {
       .body("size()", greaterThanOrEqualTo(0))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
-      ;
+      .body(jsonSchemaValidator("shipmentEvent"));
   }
 
   @Test
