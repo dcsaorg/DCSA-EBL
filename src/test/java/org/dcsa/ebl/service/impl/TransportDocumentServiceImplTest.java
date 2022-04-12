@@ -245,8 +245,8 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getTransportDocumentReference());
                 assertNotNull(result.getIssuerCode());
                 assertNotNull(result.getIssueDate());
-                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
-                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+                assertNotNull(result.getTransportDocumentCreatedDateTime());
+                assertNotNull(result.getTransportDocumentUpdatedDateTime());
                 assertNotNull(result.getShippingInstructionReference());
                 assertNotNull(result.getReceivedForShipmentDate());
                 assertNotNull(result.getDeclaredValue());
@@ -274,8 +274,8 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getTransportDocumentReference());
                 assertNotNull(result.getIssuerCode());
                 assertNotNull(result.getIssueDate());
-                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
-                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+                assertNotNull(result.getTransportDocumentCreatedDateTime());
+                assertNotNull(result.getTransportDocumentUpdatedDateTime());
                 assertNotNull(result.getShippingInstructionReference());
                 assertNotNull(result.getReceivedForShipmentDate());
                 assertNotNull(result.getDeclaredValue());
@@ -304,8 +304,8 @@ class TransportDocumentServiceImplTest {
               result -> {
                 verify(carrierRepository, never()).findById(any(UUID.class));
 
-                assertNotNull(result.getTransportDocumentRequestCreatedDateTime());
-                assertNotNull(result.getTransportDocumentRequestUpdatedDateTime());
+                assertNotNull(result.getTransportDocumentCreatedDateTime());
+                assertNotNull(result.getTransportDocumentUpdatedDateTime());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
               })
           .verifyComplete();

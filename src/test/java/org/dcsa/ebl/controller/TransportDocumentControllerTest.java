@@ -107,6 +107,7 @@ class TransportDocumentControllerTest {
     cargoItemTO.setWeightUnit(WeightUnit.KGM);
     cargoItemTO.setNumberOfPackages(1);
     cargoItemTO.setPackageCode("123");
+    cargoItemTO.setEquipmentReference("EquipmentRef");
 
     ConsignmentItemTO consignmentItemTO =
       ConsignmentItemTO.builder()
@@ -116,6 +117,7 @@ class TransportDocumentControllerTest {
         .weight(2.22)
         .cargoItems(List.of(cargoItemTO))
         .references(List.of(referenceTO))
+        .weightUnit(WeightUnit.KGM)
         .build();
 
     EquipmentTO equipmentTO = new EquipmentTO();
@@ -167,12 +169,12 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.RECE);
-    shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
-    shippingInstructionTO.setShipments(List.of(shipmentTO));
     shippingInstructionTO.setReferences(List.of(referenceTO));
     shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
+    shippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+    shippingInstructionTO.setShippingInstructionCreatedDateTime(OffsetDateTime.now());
 
     ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
     approveShippingInstructionTO.setIsShippedOnboardType(true);
@@ -180,12 +182,12 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setIsToOrder(true);
     approveShippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
     approveShippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
-    approveShippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     approveShippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     approveShippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
-    approveShippingInstructionTO.setShipments(List.of(approveShipmentTO));
-    shippingInstructionTO.setReferences(List.of(referenceTO));
-    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
+    approveShippingInstructionTO.setReferences(List.of(referenceTO));
+    approveShippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
+    approveShippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+    approveShippingInstructionTO.setShippingInstructionCreatedDateTime(OffsetDateTime.now());
 
 
     transportDocumentTO = new TransportDocumentTO();
@@ -197,7 +199,7 @@ class TransportDocumentControllerTest {
     transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
 
     approvedTransportDocument = new TransportDocumentTO();
-    approvedTransportDocument.setTransportDocumentReference("approvedTRDocReference");
+    approvedTransportDocument.setTransportDocumentReference("approvedTRDocRefer");
     approvedTransportDocument.setCharges(List.of(chargeTO));
     approvedTransportDocument.setPlaceOfIssue(locationTO);
     approvedTransportDocument.setCarrierClauses(List.of(carrierClauseTO));
@@ -316,10 +318,11 @@ class TransportDocumentControllerTest {
       .expectStatus()
       .isOk()
       .expectBody()
-      .consumeWith(System.out::println)
       .jsonPath("$.transportDocumentReference").hasJsonPath()
       .jsonPath("$.shippingInstruction.documentStatus").hasJsonPath()
-      .jsonPath("$.shippingInstruction.shipments[0].booking.documentStatus").hasJsonPath();
+      .consumeWith(
+        response ->
+          JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
 
   }
 
@@ -337,7 +340,10 @@ class TransportDocumentControllerTest {
         .body(BodyInserters.fromValue(invalidTransportDocumentRequestTO))
         .exchange()
         .expectStatus()
-        .isBadRequest();
+        .isBadRequest()
+        .expectBody()
+        .consumeWith(
+          response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
   @Test
@@ -359,7 +365,10 @@ class TransportDocumentControllerTest {
         .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
         .exchange()
         .expectStatus()
-        .isNotFound();
+        .isNotFound()
+      .expectBody()
+      .consumeWith(
+        response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 
 
@@ -382,6 +391,9 @@ class TransportDocumentControllerTest {
       .body(BodyInserters.fromValue(validTransportDocumentRequestTO))
       .exchange()
       .expectStatus()
-      .isNotFound();
+      .isNotFound()
+      .expectBody()
+      .consumeWith(
+        response -> JsonSchemaValidator.validateAgainstJsonSchema(response, "error.json"));
   }
 }
