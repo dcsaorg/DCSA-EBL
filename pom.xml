@@ -2,154 +2,82 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.4</version>
+		<groupId>org.dcsa</groupId>
+		<artifactId>dcsa-bom</artifactId>
+		<version>1.0-RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>org.dcsa</groupId>
 	<artifactId>dcsa_ebl</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>DCSA-ebl</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Electric Bill of Laden</description>
 
 	<properties>
 		<java.version>11</java.version>
-		<rest-assured.version>4.3.1</rest-assured.version>
-		<groovy.version>3.0.2</groovy.version>
-		<dcsa.events.version>0.0.59</dcsa.events.version>
-		<dcsa.core.tag/>
+
+		<!-- Define DCSA-Event-Core version -->
+		<dcsa.events.version>0.0.60</dcsa.events.version>
 		<dcsa.event.tag/>
 		<dcsa.artifacttype>-SNAPSHOT</dcsa.artifacttype>
-		<org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
-		<org.lombok.version>1.18.22</org.lombok.version>
-    <restassured.version>4.5.1</restassured.version>
-    <skipTests>false</skipTests>
-    <skipUnitTests>${skipTests}</skipUnitTests>
-    <skipIntegrationTests>${skipTests}</skipIntegrationTests>
+		<event-core.version>${dcsa.events.version}${dcsa.event.tag}${dcsa.artifacttype}</event-core.version>
+		<!-- End: Define DCSA-Event-Core version -->
+
+		<!-- Re-Define DCSA-Core version -->
+		<dcsa.core.tag/>
+		<!-- End: Re-Define DCSA-Core version -->
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.dcsa</groupId>
 			<artifactId>dcsa_event_core</artifactId>
-			<version>${dcsa.events.version}${dcsa.event.tag}${dcsa.artifacttype}</version>
 		</dependency>
 		<!-- delete me later -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
-			<version>${org.mapstruct.version}</version>
 		</dependency>
     <!-- test dependencies -->
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <version>${restassured.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>json-path</artifactId>
-      <version>${restassured.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured-all</artifactId>
-      <version>${restassured.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.github.bjansen</groupId>
-      <artifactId>swagger-schema-validator</artifactId>
-      <version>1.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>json-schema-validator</artifactId>
       <scope>test</scope>
-      <version>${restassured.version}</version>
     </dependency>
 	</dependencies>
 
 	<build>
 		<plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skipTests>${skipUnitTests}</skipTests>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <configuration>
-          <includes>
-            <include>**/*IT.java</include>
-          </includes>
-          <skipTests>${skipIntegrationTests}</skipTests>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+			<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+				</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-					<annotationProcessorPaths>
-						<path>
-							<groupId>org.mapstruct</groupId>
-							<artifactId>mapstruct-processor</artifactId>
-							<version>${org.mapstruct.version}</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok-mapstruct-binding</artifactId>
-							<version>0.2.0</version>
-						</path>
-						<path>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-							<version>${org.lombok.version}</version>
-						</path>
-						<!-- other annotation processors -->
-					</annotationProcessorPaths>
-					<compilerArgs>
-						<compilerArg>
-							-Amapstruct.defaultComponentModel=spring
-						</compilerArg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>github</id>
-			<name>GitHub dcsaorg Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/dcsaorg/DCSA-Core</url>
-		</pluginRepository>
-	</pluginRepositories>
 	<distributionManagement>
 		<repository>
 			<id>github</id>
