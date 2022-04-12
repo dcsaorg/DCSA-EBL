@@ -34,11 +34,11 @@ public class TransportDocumentSummary {
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  protected OffsetDateTime transportDocumentRequestCreatedDateTime;
+  protected OffsetDateTime transportDocumentCreatedDateTime;
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   @JsonFormat(shape = JsonFormat.Shape.STRING)
-  protected OffsetDateTime transportDocumentRequestUpdatedDateTime;
+  protected OffsetDateTime transportDocumentUpdatedDateTime;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   private LocalDate issueDate;

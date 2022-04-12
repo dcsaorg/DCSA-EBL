@@ -18,9 +18,9 @@ public class ShippingInstructionSummaryTO {
 
     private ShipmentEventTypeCode documentStatus;
 
-    private OffsetDateTime createdDateTime;
+    private OffsetDateTime shippingInstructionCreatedDateTime;
 
-    private OffsetDateTime updatedDateTime;
+    private OffsetDateTime shippingInstructionUpdatedDateTime;
 
     private String transportDocumentTypeCode;
 
