@@ -183,7 +183,6 @@ class ShippingInstructionServiceImplTest {
 
     utilizedTransportEquipment = new UtilizedTransportEquipment();
     utilizedTransportEquipment.setId(UUID.randomUUID());
-    utilizedTransportEquipment.setShipmentID(shipment.getShipmentID());
     utilizedTransportEquipment.setIsShipperOwned(false);
     utilizedTransportEquipment.setCargoGrossWeightUnit(WeightUnit.KGM);
     utilizedTransportEquipment.setCargoGrossWeight(21f);

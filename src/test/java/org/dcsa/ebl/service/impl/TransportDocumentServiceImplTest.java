@@ -110,11 +110,9 @@ class TransportDocumentServiceImplTest {
 
     utilizedTransportEquipment = new UtilizedTransportEquipment();
     utilizedTransportEquipment.setId(UUID.randomUUID());
-    utilizedTransportEquipment.setShipmentID(shipment.getShipmentID());
     utilizedTransportEquipment.setIsShipperOwned(false);
     utilizedTransportEquipment.setCargoGrossWeightUnit(WeightUnit.KGM);
     utilizedTransportEquipment.setCargoGrossWeight(21f);
-    utilizedTransportEquipment.setShipmentID(shipment.getShipmentID());
 
     cargoItem = new CargoItem();
     cargoItem.setId(UUID.randomUUID());
