@@ -1,6 +1,7 @@
 package org.dcsa.ebl.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
@@ -13,7 +14,6 @@ import reactor.core.publisher.Mono;
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
 
-import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -37,12 +37,10 @@ public class TransportDocumentController {
                         + transportDocumentReference)));
   }
 
-
   @PutMapping(path = "{transportDocumentReference}")
   public Mono<TransportDocumentTO> updateTransportDocumentReference(
-          @PathVariable String transportDocumentReference,
-          @RequestBody @Valid ApproveTransportDocumentRequestTO approveTransportDocumentRequestTO) {
+      @PathVariable String transportDocumentReference,
+      @RequestBody @Valid ApproveTransportDocumentRequestTO approveTransportDocumentRequestTO) {
     return transportDocumentService.ApproveTransportDocument(transportDocumentReference);
   }
-
 }

@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ebl.config.TestConfig.SHIPPING_INSTRUCTIONS;
-import static ebl.config.TestConfig.TRANSPORT_DOCUMENT_SUMMARIES;
+import static ebl.config.TestConfig.*;
 import static ebl.config.TestUtil.jsonToMap;
 import static ebl.config.TestUtil.loadFileAsString;
 import static io.restassured.RestAssured.given;
@@ -49,8 +48,8 @@ class TransportDocumentSummariesIT {
         .body("shippingInstructionReference", everyItem(notNullValue()))
         .body("transportDocumentReference", everyItem(notNullValue()))
         .body("documentStatus", everyItem(notNullValue()))
-        .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
-        .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
+        .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
+        .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
         .extract()
         .asString();
   }
@@ -77,8 +76,8 @@ class TransportDocumentSummariesIT {
         .body("transportDocumentReference", everyItem(notNullValue()))
         .body("shippingInstructionReference", everyItem(notNullValue()))
         .body("documentStatus", everyItem(notNullValue()))
-        .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
-        .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
+        .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
+        .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
         //        .body(jsonSchemaValidator("shippingInstructionRequest"))
         .extract()
         .body()
@@ -110,8 +109,8 @@ class TransportDocumentSummariesIT {
         .body("[0].transportDocumentReference", notNullValue())
         .body("[0].shippingInstructionReference", notNullValue())
         .body("[0].documentStatus", equalTo(String.valueOf(ShipmentEventTypeCode.DRFT)))
-        .body("[0].transportDocumentRequestCreatedDateTime", notNullValue())
-        .body("[0].transportDocumentRequestUpdatedDateTime", notNullValue())
+        .body("[0].transportDocumentCreatedDateTime", notNullValue())
+        .body("[0].transportDocumentUpdatedDateTime", notNullValue())
         //        .body(jsonSchemaValidator("shippingInstructionRequest"))
         .extract()
         .body()
@@ -160,8 +159,8 @@ class TransportDocumentSummariesIT {
             .body("size()", greaterThan(0))
             .body("[0].transportDocumentReference", notNullValue())
             .body("[0].shippingInstructionReference", notNullValue())
-            .body("transportDocumentRequestCreatedDateTime", everyItem(notNullValue()))
-            .body("transportDocumentRequestUpdatedDateTime", everyItem(notNullValue()))
+            .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
+            .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
             .extract()
             .body()
             .as(TransportDocumentSummary[].class);
