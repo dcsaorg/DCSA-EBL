@@ -11,3 +11,7 @@ insert_final_newline = true
 
 [*.{bat,cmd}]
 end_of_line = crlf
+
+[pom.xml]
+indent_style = tab
+indent_size = 2

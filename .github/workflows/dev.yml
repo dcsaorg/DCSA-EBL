@@ -13,9 +13,10 @@ jobs:
       STATUS: ${{ steps.healthcheck.outputs.STATUS }}
     steps:
       - name: Set up Java JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: 17
 
       - name: maven-settings-xml-action
         uses: whelk-io/maven-settings-xml-action@v12
