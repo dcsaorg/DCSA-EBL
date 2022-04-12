@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class TestUtil {
@@ -21,7 +22,7 @@ public class TestUtil {
     return parseResourceWithStream(
         resource,
         inputStream -> {
-          Reader dataInputStream = new BufferedReader(new InputStreamReader(inputStream));
+          Reader dataInputStream = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
           StringBuilder stringBuilder = new StringBuilder();
           char[] buffer = new char[4096];
           int read;

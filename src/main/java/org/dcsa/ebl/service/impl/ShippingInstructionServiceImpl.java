@@ -281,11 +281,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   si.getShippingInstructionCreatedDateTime());
               shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
                   OffsetDateTime.now());
-              return consignmentItemService
-                  .removeConsignmentItemsByShippingInstructionID(si.getId())
-                  //                  .thenReturn(si)
-                  .then(
-                      Mono.when(
+              return Mono.when(
                               locationService
                                   .resolveLocationByTO(
                                       si.getPlaceOfIssueID(),
@@ -308,7 +304,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                                   .resolveReferencesForShippingInstructionReference(
                                       shippingInstructionRequest.getReferences(), si.getId())
                                   .doOnNext(shippingInstructionRequest::setReferences))
-                          .thenReturn(shippingInstructionRequest))
+                          .thenReturn(shippingInstructionRequest)
                   .then(
                       consignmentItemService
                           .createConsignmentItemsByShippingInstructionIDAndTOs(

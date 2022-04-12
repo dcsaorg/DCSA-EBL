@@ -1033,8 +1033,6 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.empty());
       when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
-      when(consignmentItemService.removeConsignmentItemsByShippingInstructionID(any()))
-          .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -1134,8 +1132,6 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.empty());
       when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
           .thenReturn(Mono.empty());
-      when(consignmentItemService.removeConsignmentItemsByShippingInstructionID(any()))
-          .thenReturn(Mono.empty());
       when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
           .thenReturn(Mono.empty());
 
@@ -1226,8 +1222,6 @@ class ShippingInstructionServiceImplTest {
       when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
           .thenReturn(Mono.empty());
       when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
-      when(consignmentItemService.removeConsignmentItemsByShippingInstructionID(any()))
           .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
