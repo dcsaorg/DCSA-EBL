@@ -144,7 +144,6 @@ class ShippingInstructionIT {
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
         .body("documentParties", hasSize(greaterThan(0)))
-        .body("shipments", hasSize(greaterThan(0)))
         .body("references", hasSize(greaterThan(0)))
         .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
         .body("placeOfIssue", notNullValue())
@@ -178,7 +177,6 @@ class ShippingInstructionIT {
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
         .body("documentParties", nullValue())
-        .body("shipments", hasSize(greaterThan(0)))
         .body("references", hasSize(greaterThan(0)))
         .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
         //        .body("placeOfIssue", equalTo("<{}>")) // doesn't accept hasSize(0) or nullValue
