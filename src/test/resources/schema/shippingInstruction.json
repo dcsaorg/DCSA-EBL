@@ -112,6 +112,7 @@
     "placeOfIssue": {
       "type": "object",
       "description": "General purpose object to capture location-related data, the location can be specified in **any** of the following ways: `geoLocation` (lat+long), `UN Location Code`, a `Facility` or an `Address`.\n\nIf multiple ways are used - then they all have to point to the same location!\n",
+      "additionalProperties": false,
       "properties": {
         "locationName": {
           "maxLength": 100,
@@ -149,6 +150,7 @@
         "address": {
           "description": "Address related information",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "name": {
               "maxLength": 100,
@@ -207,6 +209,7 @@
         ],
         "type": "object",
         "description": "Defines a list of `CargoItems` belonging together and the associated `Booking`. A `ConsignmentItem` can be split across multiple containers (`UtilizedTransportEquipment`) by referencing multiple `CargoItems`\n",
+        "additionalProperties": false,
         "properties": {
           "carrierBookingReference": {
             "maxLength": 35,
@@ -259,6 +262,7 @@
               ],
               "type": "object",
               "description": "A `cargoItem` is the smallest unit used by stuffing. A `cargoItem` cannot be split across containers.",
+              "additionalProperties": false,
               "properties": {
                 "cargoLineItems": {
                   "type": "array",
@@ -331,6 +335,7 @@
               ],
               "type": "object",
               "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+              "additionalProperties": false,
               "properties": {
                 "referenceType": {
                   "type": "string",
@@ -377,6 +382,7 @@
             ],
             "type": "object",
             "description": "used for storing cargo in/on during transport. The equipment size/type is defined by the ISO 6346 code. The most common equipment size/type is 20'/40'/45' Dry Freight Container, but several different versions exist.\n",
+            "additionalProperties": false,
             "properties": {
               "equipmentReference": {
                 "maxLength": 15,
@@ -421,6 +427,7 @@
           "activeReeferSettings": {
             "type": "object",
             "description": "specifies the settings for an active reefer container used to a shipment.",
+              "additionalProperties": false,
             "properties": {
               "temperatureMin": {
                 "type": "number",
@@ -465,6 +472,7 @@
               ],
               "type": "object",
               "description": "addresses the seal-related information associated with the shipment equipment. A seal is put on a shipment equipment once it is loaded. This seal is meant to stay on until the shipment equipment reaches its final destination.",
+              "additionalProperties": false,
               "properties": {
                 "sealNumber": {
                   "maxLength": 15,
@@ -507,6 +515,7 @@
         ],
         "type": "object",
         "description": "stores the parties involved in the transport document.",
+        "additionalProperties": false,
         "properties": {
           "party": {
             "required": [
@@ -514,6 +523,7 @@
             ],
             "type": "object",
             "description": "refers to a company or a legal entity.",
+            "additionalProperties": false,
             "properties": {
               "partyName": {
                 "maxLength": 100,
@@ -538,6 +548,7 @@
               "address": {
                 "type": "object",
                 "description": "An object for storing address related information\n",
+                "additionalProperties": false,
                 "properties": {
                   "name": {
                     "maxLength": 100,
@@ -591,6 +602,7 @@
                   ],
                   "type": "object",
                   "description": "Contact information for a Party\n",
+                  "additionalProperties": false,
                   "properties": {
                     "name": {
                       "maxLength": 100,
@@ -703,6 +715,7 @@
         ],
         "type": "object",
         "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+        "additionalProperties": false,
         "properties": {
           "referenceType": {
             "type": "string",
