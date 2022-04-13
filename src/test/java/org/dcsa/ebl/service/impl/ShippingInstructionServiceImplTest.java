@@ -4,7 +4,6 @@ import org.dcsa.core.events.edocumentation.model.mapper.ShipmentMapper;
 import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.mapper.PartyMapper;
@@ -54,7 +53,6 @@ class ShippingInstructionServiceImplTest {
   @Mock UtilizedTransportEquipmentService utilizedTransportEquipmentService;
   @Mock ShipmentEventService shipmentEventService;
   @Mock DocumentPartyService documentPartyService;
-  @Mock ShipmentService shipmentService;
   @Mock ConsignmentItemService consignmentItemService;
 
   @InjectMocks ShippingInstructionServiceImpl shippingInstructionServiceImpl;
@@ -271,9 +269,6 @@ class ShippingInstructionServiceImplTest {
     documentPartyTO2.setPartyFunction(PartyFunction.EBL);
     documentPartyTO2.setDisplayedAddress(List.of("displayedAddress"));
 
-    shipmentTO = shipmentMapper.shipmentToDTO(shipment);
-    shipmentTO.setTermsAndConditions("Fail Fast, Fail Early, Fail Often");
-
     shippingInstructionTO = shippingInstructionMapper.shippingInstructionToDTO(shippingInstruction);
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
     shippingInstructionTO.setPlaceOfIssue(locationTO);
@@ -281,7 +276,6 @@ class ShippingInstructionServiceImplTest {
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setDocumentParties(List.of(documentPartyTO1, documentPartyTO2));
     shippingInstructionTO.setReferences(List.of(referenceTO));
-    shippingInstructionTO.setShipments(List.of(shipmentTO));
 
     // Date & Time
     OffsetDateTime now = OffsetDateTime.now();
@@ -1512,8 +1506,6 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(Collections.singletonList(documentPartyTO1)));
       when(referenceService.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(referenceTO)));
-      when(shipmentService.findByShippingInstructionReference(any()))
-          .thenReturn(Mono.just(Collections.singletonList(shipmentTO)));
       when(consignmentItemService.fetchConsignmentItemsTOByShippingInstructionReference(any()))
           .thenReturn(Mono.just(Collections.singletonList(consignmentItemTO)));
 
@@ -1533,9 +1525,6 @@ class ShippingInstructionServiceImplTest {
                 assertEquals("DCSA", result.getDocumentParties().get(0).getParty().getPartyName());
                 assertEquals(
                     ReferenceTypeCode.FF, result.getReferences().get(0).getReferenceType());
-                assertEquals(
-                    "Fail Fast, Fail Early, Fail Often",
-                    result.getShipments().get(0).getTermsAndConditions());
               })
           .verifyComplete();
     }

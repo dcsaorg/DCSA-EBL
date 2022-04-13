@@ -166,7 +166,8 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .body(jsonSchemaValidator("shippingInstruction"));
+        .body(jsonSchemaValidator("shippingInstruction"))
+        .body("references", hasSize(greaterThan(0)));
   }
 
   ShippingInstructionResponseTO createShippingInstruction(Map<String, Object> map) {
