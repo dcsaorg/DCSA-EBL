@@ -18,8 +18,6 @@
 	<description>Electric Bill of Laden</description>
 
 	<properties>
-		<java.version>11</java.version>
-
 		<!-- Define DCSA-Event-Core version -->
 		<dcsa.events.version>0.0.60</dcsa.events.version>
 		<dcsa.event.tag/>
