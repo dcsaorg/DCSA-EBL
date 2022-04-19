@@ -5,6 +5,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.model.JoinedWithModel;
+import org.dcsa.skernel.model.Address;
+import org.dcsa.skernel.model.Location;
 import org.springframework.data.relational.core.sql.Join;
 
 @Data

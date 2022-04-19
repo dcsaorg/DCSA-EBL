@@ -1,7 +1,6 @@
 package org.dcsa.ebl.controller;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
-import org.dcsa.core.events.model.Address;
 import org.dcsa.core.events.model.Reference;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
@@ -11,6 +10,8 @@ import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
+import org.dcsa.skernel.model.Address;
+import org.dcsa.skernel.model.transferobjects.LocationTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

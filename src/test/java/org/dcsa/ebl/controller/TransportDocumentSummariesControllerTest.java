@@ -1,6 +1,6 @@
 package org.dcsa.ebl.controller;
 
-import org.dcsa.core.events.model.enums.CarrierCodeListProvider;
+import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.extendedrequest.ExtendedParameters;
