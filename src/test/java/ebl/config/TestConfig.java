@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import static com.github.fge.jsonschema.SchemaVersion.DRAFTV3;
+import static com.github.fge.jsonschema.SchemaVersion.DRAFTV4;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 public class TestConfig {
@@ -39,16 +39,7 @@ public class TestConfig {
         .using(
             JsonSchemaFactory.newBuilder()
                 .setValidationConfiguration(
-                    ValidationConfiguration.newBuilder().setDefaultVersion(DRAFTV3).freeze())
+                    ValidationConfiguration.newBuilder().setDefaultVersion(DRAFTV4).freeze())
                 .freeze());
-  }
-
-  public static Matcher<?> jsonSchemaValidator(String fileName, SchemaVersion schemaVersion) {
-    return matchesJsonSchemaInClasspath("schema/" + fileName + ".json")
-      .using(
-        JsonSchemaFactory.newBuilder()
-          .setValidationConfiguration(
-            ValidationConfiguration.newBuilder().setDefaultVersion(schemaVersion).freeze())
-          .freeze());
   }
 }

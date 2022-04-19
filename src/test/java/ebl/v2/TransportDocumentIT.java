@@ -43,7 +43,7 @@ public class TransportDocumentIT {
         .statusCode(HttpStatus.SC_OK)
         .body("transportDocumentReference", notNullValue())
         .body("shippingInstruction", notNullValue())
-        .body(jsonSchemaValidator("transportDocument", DRAFTV4));
+        .body(jsonSchemaValidator("transportDocument"));
   }
 
   @Test

@@ -50,8 +50,7 @@ class TransportDocumentSummariesIT {
         .body("documentStatus", everyItem(notNullValue()))
         .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
         .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
-        .extract()
-        .asString();
+        .body(jsonSchemaValidator("transportDocumentSummary"));
   }
 
   @Test
@@ -73,15 +72,7 @@ class TransportDocumentSummariesIT {
         .statusCode(HttpStatus.SC_OK)
         .body("size()", greaterThan(0))
         .body("carrierBookingReferences", everyItem(hasItem("e8e9d64172934a40aec82e4308cdf97a")))
-        .body("transportDocumentReference", everyItem(notNullValue()))
-        .body("shippingInstructionReference", everyItem(notNullValue()))
-        .body("documentStatus", everyItem(notNullValue()))
-        .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
-        .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
-        //        .body(jsonSchemaValidator("shippingInstructionRequest"))
-        .extract()
-        .body()
-        .asString();
+        .body(jsonSchemaValidator("transportDocumentSummary"));
   }
 
   @Test
@@ -110,11 +101,7 @@ class TransportDocumentSummariesIT {
         .body("[0].shippingInstructionReference", notNullValue())
         .body("[0].documentStatus", equalTo(String.valueOf(ShipmentEventTypeCode.DRFT)))
         .body("[0].transportDocumentCreatedDateTime", notNullValue())
-        .body("[0].transportDocumentUpdatedDateTime", notNullValue())
-        //        .body(jsonSchemaValidator("shippingInstructionRequest"))
-        .extract()
-        .body()
-        .asString();
+        .body("[0].transportDocumentUpdatedDateTime", notNullValue());
 
     // Ensure that documentStatus query is respected, should return zero elements
     given()
@@ -128,10 +115,7 @@ class TransportDocumentSummariesIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .body("size()", is(0))
-        .extract()
-        .body()
-        .asString();
+        .body("size()", is(0));
   }
 
   @Test
@@ -157,10 +141,7 @@ class TransportDocumentSummariesIT {
             .assertThat()
             .statusCode(HttpStatus.SC_OK)
             .body("size()", greaterThan(0))
-            .body("[0].transportDocumentReference", notNullValue())
-            .body("[0].shippingInstructionReference", notNullValue())
-            .body("transportDocumentCreatedDateTime", everyItem(notNullValue()))
-            .body("transportDocumentUpdatedDateTime", everyItem(notNullValue()))
+            .body(jsonSchemaValidator("transportDocumentSummary"))
             .extract()
             .body()
             .as(TransportDocumentSummary[].class);
@@ -193,10 +174,8 @@ class TransportDocumentSummariesIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .extract()
-        .body()
-        .asString();
-  }
+        .body(jsonSchemaValidator("transportDocumentSummary"));
+    }
 
   ShippingInstructionResponseTO createShippingInstruction(Map<String, Object> map) {
 

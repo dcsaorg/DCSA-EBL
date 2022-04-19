@@ -45,10 +45,10 @@ class ShippingInstructionIT {
         .body("documentStatus", equalTo("DRFT"))
         .body("shippingInstructionCreatedDateTime", notNullValue())
         .body("shippingInstructionUpdatedDateTime", notNullValue())
-        .body(jsonSchemaValidator("shippingInstructionRequest"))
+        .body(jsonSchemaValidator("shippingInstructionResponse"))
         .extract()
         .body()
-        .asString();
+      .asString();
   }
 
   @Test
@@ -143,16 +143,7 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .body("documentParties", hasSize(greaterThan(0)))
-        .body("references", hasSize(greaterThan(0)))
-        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
-        .body("placeOfIssue", notNullValue())
-        .body("isToOrder", notNullValue())
-        .body("isShippedOnboardType", notNullValue())
-        .body(jsonSchemaValidator("shippingInstruction"))
-        .extract()
-        .body()
-        .asString();
+        .body(jsonSchemaValidator("shippingInstruction"));
   }
 
   @Test
@@ -164,7 +155,6 @@ class ShippingInstructionIT {
     map.put("documentParties", null);
     map.put("numberOfCopies", null);
     map.put("numberOfOriginals", null);
-    map.put("isElectronic", null);
     map.put("areChargesDisplayedOnOriginals", null);
     map.put("areChargesDisplayedOnCopies", null);
 
@@ -176,21 +166,8 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .body("documentParties", nullValue())
-        .body("references", hasSize(greaterThan(0)))
-        .body("utilizedTransportEquipments", hasSize(greaterThan(0)))
-        //        .body("placeOfIssue", equalTo("<{}>")) // doesn't accept hasSize(0) or nullValue
-        .body("isToOrder", notNullValue())
-        .body("isShippedOnboardType", notNullValue())
-        .body("numberOfCopies", nullValue())
-        .body("numberOfOriginals", nullValue())
-        .body("isElectronic", nullValue())
-        .body("areChargesDisplayedOnOriginals", nullValue())
-        .body("areChargesDisplayedOnCopies", nullValue())
         .body(jsonSchemaValidator("shippingInstruction"))
-        .extract()
-        .body()
-        .asString();
+        .body("references", hasSize(greaterThan(0)));
   }
 
   ShippingInstructionResponseTO createShippingInstruction(Map<String, Object> map) {
@@ -203,6 +180,7 @@ class ShippingInstructionIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_CREATED)
+        .body(jsonSchemaValidator("shippingInstructionResponse"))
         .extract()
         .response()
         .as(ShippingInstructionResponseTO.class);

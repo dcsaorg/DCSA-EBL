@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+import static ebl.config.TestConfig.jsonSchemaValidator;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -30,9 +31,7 @@ public class ShippingInstructionSummariesIT {
       .assertThat()
       .statusCode(HttpStatus.SC_OK)
       .body("size()", greaterThanOrEqualTo(5)) // We know that the test data set contains at least 5 shipping instructions
-      .extract()
-      .body()
-      .asString();
+      .body(jsonSchemaValidator("shippingInstructionSummary"));
   }
 
   @Test
@@ -44,10 +43,7 @@ public class ShippingInstructionSummariesIT {
       .then()
       .assertThat()
       .statusCode(HttpStatus.SC_OK)
-      .body("size()", is(0))
-      .extract()
-      .body()
-      .asString();
+      .body("size()", is(0));
   }
 
   @Test
@@ -67,9 +63,7 @@ public class ShippingInstructionSummariesIT {
       .statusCode(HttpStatus.SC_OK)
       .body("size()", greaterThanOrEqualTo(3)) // We know that the test data set contains at least 3 shipping instructions with RECE
       .body("size()", lessThan(allCount))
-      .extract()
-      .body()
-      .asString();
+      .body(jsonSchemaValidator("shippingInstructionSummary"));
   }
 
   @Test
@@ -82,8 +76,6 @@ public class ShippingInstructionSummariesIT {
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK)
-        .extract()
-        .body()
-        .asString();
+        .body(jsonSchemaValidator("shippingInstructionSummary"));
   }
 }
