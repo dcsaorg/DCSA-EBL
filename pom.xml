@@ -6,11 +6,10 @@
 	<parent>
 		<groupId>org.dcsa</groupId>
 		<artifactId>dcsa-bom</artifactId>
-		<version>1.0-RELEASE</version>
+		<version>1.1-SNAPSHOT</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>org.dcsa</groupId>
 	<artifactId>dcsa_ebl</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -28,6 +27,13 @@
 		<!-- Re-Define DCSA-Core version -->
 		<dcsa.core.tag/>
 		<!-- End: Re-Define DCSA-Core version -->
+
+		<!-- Define Shared Kernel version -->
+		<dcsa.shared-kernel.version>0.0.3</dcsa.shared-kernel.version>
+		<dcsa.shared-kernel.tag/>
+		<dcsa.shared-kernel.artifacttype>-SNAPSHOT</dcsa.shared-kernel.artifacttype>
+		<shared-kernel.version>${dcsa.shared-kernel.version}${dcsa.shared-kernel.tag}${dcsa.shared-kernel.artifacttype}</shared-kernel.version>
+		<!-- End: Define Shared kernel version -->
 	</properties>
 
 	<dependencies>

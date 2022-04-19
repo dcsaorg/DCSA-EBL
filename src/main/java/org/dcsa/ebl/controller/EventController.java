@@ -2,9 +2,7 @@ package org.dcsa.ebl.controller;
 
 import org.dcsa.core.events.controller.AbstractEventController;
 import org.dcsa.core.events.model.Event;
-import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventType;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.util.ExtendedGenericEventRequest;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
 import org.dcsa.core.validator.EnumSubset;
@@ -14,12 +12,18 @@ import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.dcsa.core.events.model.enums.DocumentTypeCode.EBL_DOCUMENT_TYPE_CODES;
 import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.EBL_DOCUMENT_STATUSES;
