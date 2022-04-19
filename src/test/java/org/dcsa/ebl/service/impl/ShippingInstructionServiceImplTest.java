@@ -8,7 +8,7 @@ import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.mapper.PartyMapper;
-import org.dcsa.core.events.model.mappers.LocationMapper;
+import org.dcsa.core.events.model.mapper.LocationMapper;
 import org.dcsa.core.events.model.transferobjects.*;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.ShipmentRepository;
