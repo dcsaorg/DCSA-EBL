@@ -8,6 +8,9 @@ services:
             - 9090:9090
         environment:
             - "SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-default}"
+            - "ROOT_LOG_LEVEL=${ROOT_LOG_LEVEL:-INFO}"
+            - "R2DBC_LOG_LEVEL=${R2DBC_LOG_LEVEL:-INFO}"
+            - "DCSA_LOG_LEVEL=${DCSA_LOG_LEVEL:-INFO}"
         logging:
             options:
                 max-file: '10'
