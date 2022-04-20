@@ -51,7 +51,8 @@ server:
 
 logging:
   level:
-    root: ${LOG_LEVEL:DEBUG}
+    root: ${ROOT_LOG_LEVEL:INFO}
     org:
       springframework:
-        r2dbc: ${LOG_LEVEL:DEBUG}
+        r2dbc: ${R2DBC_LOG_LEVEL:INFO}
+      dcsa: ${DCSA_LOG_LEVEL:INFO}
