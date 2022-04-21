@@ -54,7 +54,6 @@ class ShippingInstructionServiceImplTest {
   @Mock UtilizedTransportEquipmentService utilizedTransportEquipmentService;
   @Mock ShipmentEventService shipmentEventService;
   @Mock DocumentPartyService documentPartyService;
-  @Mock ShipmentService shipmentService;
   @Mock ConsignmentItemService consignmentItemService;
 
   @InjectMocks ShippingInstructionServiceImpl shippingInstructionServiceImpl;
@@ -1514,8 +1513,6 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(Collections.singletonList(documentPartyTO1)));
       when(referenceService.findByShippingInstructionID(any()))
           .thenReturn(Mono.just(Collections.singletonList(referenceTO)));
-      when(shipmentService.findByShippingInstructionReference(any()))
-          .thenReturn(Mono.just(Collections.singletonList(shipmentTO)));
       when(consignmentItemService.fetchConsignmentItemsTOByShippingInstructionID(any()))
           .thenReturn(Mono.just(Collections.singletonList(consignmentItemTO)));
 

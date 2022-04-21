@@ -245,12 +245,9 @@ public class TransportDocumentServiceImpl
                                     .then(Mono.just(shipmentTOs));
                               })
                           .flatMap(
-                              shipmentTOs -> {
-                                shippingInstructionTO.setShipments(shipmentTOs);
-                                return createShipmentEventFromShippingInstruction(
-                                        shippingInstructionTO)
-                                    .thenReturn(shippingInstructionTO);
-                              })
+                              shipmentTOs -> createShipmentEventFromShippingInstruction( //ToDo need shipments when reintroducing the transportplan
+                                      shippingInstructionTO)
+                                  .thenReturn(shippingInstructionTO))
                           .doOnNext(TdTO::setShippingInstruction))
                   .thenReturn(TdTO);
             })

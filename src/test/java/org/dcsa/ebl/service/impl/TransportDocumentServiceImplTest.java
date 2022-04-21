@@ -213,7 +213,6 @@ class TransportDocumentServiceImplTest {
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
-    shippingInstructionTO.setShipments(List.of(shipmentTO));
     shippingInstructionTO.setReferences(List.of(referenceTO));
     shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
 
@@ -379,8 +378,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -414,8 +411,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -449,8 +444,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -484,8 +477,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(0, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -519,8 +510,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(0, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -582,8 +571,6 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
               })
           .verifyComplete();
     }
@@ -681,16 +668,6 @@ class TransportDocumentServiceImplTest {
                     transportDocumentTOResponse.getShippingInstruction().getDocumentStatus());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
-                assertEquals(
-                    1, transportDocumentTOResponse.getShippingInstruction().getShipments().size());
-                assertEquals(
-                    ShipmentEventTypeCode.CMPL,
-                    transportDocumentTOResponse
-                        .getShippingInstruction()
-                        .getShipments()
-                        .get(0)
-                        .getBooking()
-                        .getDocumentStatus());
               })
           .verifyComplete();
     }

@@ -109,10 +109,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             referenceService
                 .findByShippingInstructionID(shippingInstruction.getId())
                 .doOnNext(siTO::setReferences),
-            shipmentService
-                .findByShippingInstructionReference(
-                    shippingInstruction.getShippingInstructionReference())
-                .doOnNext(siTO::setShipments),
             consignmentItemService
                 .fetchConsignmentItemsTOByShippingInstructionID(shippingInstruction.getId())
                 .doOnNext(siTO::setConsignmentItems))
