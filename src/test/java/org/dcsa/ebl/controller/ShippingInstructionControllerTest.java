@@ -117,16 +117,21 @@ class ShippingInstructionControllerTest {
     referenceTO.setReferenceType(ReferenceTypeCode.EQ);
     referenceTO.setReferenceValue("Some reference value");
 
-    ConsignmentItemTO.ConsignmentItemTOBuilder consignmentItemTOBuilder =
-        ConsignmentItemTO.builder();
-    consignmentItemTOBuilder.cargoItems(List.of(cargoItemTO));
-    consignmentItemTOBuilder.references(List.of(referenceTO));
-    consignmentItemTO = consignmentItemTOBuilder.build();
+    consignmentItemTO = ConsignmentItemTO.builder()
+      .cargoItems(List.of(cargoItemTO))
+      .references(List.of(referenceTO))
+      .descriptionOfGoods("Foo")
+      .weight(127.12)
+      .weightUnit(WeightUnit.KGM)
+      .build();
 
-    consignmentItemTOBuilder = ConsignmentItemTO.builder();
-    consignmentItemTOBuilder.references(List.of(referenceTO));
-    consignmentItemTOBuilder.cargoItems(Collections.emptyList());
-    noCargoItemsConsignmentItemTO = consignmentItemTOBuilder.build();
+    noCargoItemsConsignmentItemTO =  ConsignmentItemTO.builder()
+      .cargoItems(Collections.emptyList())
+      .references(List.of(referenceTO))
+      .descriptionOfGoods("Foo")
+      .weight(127.12)
+      .weightUnit(WeightUnit.KGM)
+      .build();
 
     shippingInstructionTO = new ShippingInstructionTO();
     shippingInstructionTO.setCarrierBookingReference("XYZ12345");
@@ -141,6 +146,7 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setAreChargesDisplayedOnOriginals(true);
+    shippingInstructionTO.setConsignmentItems(List.of(consignmentItemTO));
 
     OffsetDateTime now = OffsetDateTime.now();
     shippingInstructionResponseTO =
@@ -173,11 +179,12 @@ class ShippingInstructionControllerTest {
             .body(BodyInserters.fromValue(shippingInstructionTO))
             .exchange();
 
+    checkStatus201.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
+
     // these values are only allowed in response and not to be set via request body
     verify(shippingInstructionService).createShippingInstruction(argument.capture());
     assertNull(argument.getValue().getDocumentStatus());
 
-    checkStatus201.andThen(checkShippingInstructionResponseTOJsonSchema).apply(exchange);
   }
 
   @Test
@@ -197,6 +204,7 @@ class ShippingInstructionControllerTest {
     checkStatus400.apply(exchange);
   }
 
+  @Test
   @DisplayName(
       "POST shipping-instructions should return 400 when no UtilizedTransportEquipment are present.")
   void postShippingInstructionsShouldReturn400ForUtilizedTransportEquipments() {
@@ -293,9 +301,6 @@ class ShippingInstructionControllerTest {
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus201 =
       (exchange) -> exchange.expectStatus().isCreated();
-
-  private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus204 =
-      (exchange) -> exchange.expectStatus().isNoContent();
 
   private final Function<WebTestClient.ResponseSpec, WebTestClient.ResponseSpec> checkStatus400 =
       (exchange) -> exchange.expectStatus().isBadRequest();
