@@ -28,8 +28,6 @@ class TransportDocumentSummariesIT {
   private final String VALID_SHIPPING_INSTRUCTION_MULTIPLE_CARRIER_BOOKING_REFERENCES =
       loadFileAsString("ValidShippingInstructionMultipleCarrierBookingReferences.json");
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
-
   @BeforeAll
   static void configs() throws IOException {
     TestConfig.init();
@@ -127,7 +125,7 @@ class TransportDocumentSummariesIT {
     createShippingInstruction(map);
 
     String[] carrierBookingReferences = {
-      "5dc92988f48a420495b786c224efce7d", "43f615138efc4d3286b36402405f851b"
+      "bca68f1d3b804ff88aaa1e43055432f7", "e8e9d64172934a40aec82e4308cdf97a"
     };
 
     TransportDocumentSummary[] response =
