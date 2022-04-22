@@ -327,6 +327,7 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setDocumentID(shippingInstructionID);
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }
 
