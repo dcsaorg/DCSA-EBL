@@ -1026,7 +1026,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
@@ -1127,7 +1127,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
@@ -1216,7 +1216,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       // deletes
@@ -1298,7 +1298,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       StepVerifier.create(
@@ -1321,7 +1321,7 @@ class ShippingInstructionServiceImplTest {
 
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.empty());
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
@@ -1481,7 +1481,7 @@ class ShippingInstructionServiceImplTest {
 
       String invalidShippingInstructionReference = UUID.randomUUID().toString();
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
@@ -1501,7 +1501,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Test GET shipping instruction for an assumed valid ID.")
     void testGetShippingInstructionForValidID() {
       String stubbedCRef = UUID.randomUUID().toString();
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
           .thenReturn(Flux.just(stubbedCRef));

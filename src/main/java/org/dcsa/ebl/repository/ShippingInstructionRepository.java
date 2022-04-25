@@ -13,8 +13,7 @@ import java.util.UUID;
 
 public interface ShippingInstructionRepository
     extends ExtendedRepository<ShippingInstruction, UUID>, ShippingInstructionCustomRepository {
-
-  Mono<ShippingInstruction> findByShippingInstructionReference(String shippingInstructionReference);
+  Mono<ShippingInstruction> findByShippingInstructionReferenceAndValidUntilIsNull(String shippingInstructionReference);
 
   @Modifying
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")

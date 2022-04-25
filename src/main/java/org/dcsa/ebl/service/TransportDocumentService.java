@@ -10,8 +10,6 @@ import java.util.UUID;
 
 public interface TransportDocumentService
     extends AsymmetricQueryService<TransportDocument, TransportDocumentSummary, UUID> {
-  Mono<TransportDocumentTO> findById(String transportDocumentReference);
-
   Mono<TransportDocumentTO> findByTransportDocumentReference(String transportDocumentReference);
 
   Mono<TransportDocumentTO> ApproveTransportDocument(String transportDocumentReference);

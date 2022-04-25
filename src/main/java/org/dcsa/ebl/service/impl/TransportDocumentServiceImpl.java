@@ -28,7 +28,6 @@ import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.dcsa.skernel.service.LocationService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -62,12 +61,6 @@ public class TransportDocumentServiceImpl
 
   public TransportDocumentRepository getRepository() {
     return transportDocumentRepository;
-  }
-
-  @Transactional
-  @Override
-  public Mono<TransportDocumentTO> findById(String transportDocumentReference) {
-    return Mono.empty();
   }
 
   @Override
@@ -126,8 +119,7 @@ public class TransportDocumentServiceImpl
   public Mono<TransportDocumentTO> findByTransportDocumentReference(
       String transportDocumentReference) {
 
-    return Mono.justOrEmpty(transportDocumentReference)
-        .flatMap(transportDocumentRepository::findByTransportDocumentReference)
+    return transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull(transportDocumentReference)
         .flatMap(
             transportDocument -> {
               TransportDocumentTO transportDocumentTO =
@@ -300,7 +292,7 @@ public class TransportDocumentServiceImpl
       TransportDocumentTO transportDocumentTO) {
 
     return transportDocumentRepository
-        .findByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
+        .findByTransportDocumentReferenceAndValidUntilIsNull(transportDocumentTO.getTransportDocumentReference())
         .flatMap(
             transportDocument ->
                 shipmentEventFromTransportDocumentTO(
@@ -364,7 +356,7 @@ public class TransportDocumentServiceImpl
   private Mono<ShipmentEvent> createShipmentEventFromShippingInstruction(
       ShippingInstructionTO shippingInstruction) {
     return shippingInstructionRepository
-        .findByShippingInstructionReference(shippingInstruction.getShippingInstructionReference())
+        .findByShippingInstructionReferenceAndValidUntilIsNull(shippingInstruction.getShippingInstructionReference())
         .flatMap(
             si ->
                 shipmentEventFromShippingInstruction(

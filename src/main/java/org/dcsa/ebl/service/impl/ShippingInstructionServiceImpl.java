@@ -56,7 +56,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   @Override
   public Mono<ShippingInstructionTO> findByReference(String shippingInstructionReference) {
     return Mono.justOrEmpty(shippingInstructionReference)
-        .flatMap(shippingInstructionRepository::findByShippingInstructionReference)
+        .flatMap(shippingInstructionRepository::findByShippingInstructionReferenceAndValidUntilIsNull)
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.notFound(
@@ -246,7 +246,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return validateDocumentStatusOnBooking(shippingInstructionRequest)
         .flatMap(
             ignored ->
-                shippingInstructionRepository.findByShippingInstructionReference(
+                shippingInstructionRepository.findByShippingInstructionReferenceAndValidUntilIsNull(
                     shippingInstructionReference))
         .switchIfEmpty(
             Mono.error(
