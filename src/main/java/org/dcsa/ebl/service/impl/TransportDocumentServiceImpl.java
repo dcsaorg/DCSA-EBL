@@ -127,7 +127,7 @@ public class TransportDocumentServiceImpl
       String transportDocumentReference) {
 
     return Mono.justOrEmpty(transportDocumentReference)
-        .flatMap(transportDocumentRepository::findByTransportDocumentReference)
+        .flatMap(transportDocumentRepository::findByTransportDocumentReferenceAndValidUntilIsNull)
         .flatMap(
             transportDocument -> {
               TransportDocumentTO transportDocumentTO =
@@ -300,7 +300,7 @@ public class TransportDocumentServiceImpl
       TransportDocumentTO transportDocumentTO) {
 
     return transportDocumentRepository
-        .findByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
+        .findByTransportDocumentReferenceAndValidUntilIsNull(transportDocumentTO.getTransportDocumentReference())
         .flatMap(
             transportDocument ->
                 shipmentEventFromTransportDocumentTO(
