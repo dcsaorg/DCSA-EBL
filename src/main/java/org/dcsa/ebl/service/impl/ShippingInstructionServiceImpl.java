@@ -132,7 +132,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstructionTO.getUtilizedTransportEquipments().stream()
             .map(UtilizedTransportEquipmentTO::getEquipment)
             .map(EquipmentTO::getEquipmentReference)
-            .collect(Collectors.toList());
+            .toList();
     if (equipmentReferences.size() != equipmentReferences.stream().distinct().count()) {
       return Mono.error(
           ConcreteRequestErrorMessageException.invalidParameter(
@@ -181,32 +181,11 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionTO.setShippingInstructionReference(
-                  si.getShippingInstructionReference());
+              shippingInstructionTO.setShippingInstructionReference(si.getShippingInstructionReference());
               shippingInstructionTO.setDocumentStatus(si.getDocumentStatus());
-              shippingInstructionTO.setShippingInstructionCreatedDateTime(
-                  si.getShippingInstructionCreatedDateTime());
-              shippingInstructionTO.setShippingInstructionUpdatedDateTime(
-                  si.getShippingInstructionUpdatedDateTime());
-              return Mono.when(
-                      insertLocationTO(shippingInstructionTO.getPlaceOfIssue(), si.getId())
-                          .doOnNext(shippingInstructionTO::setPlaceOfIssue),
-                      insertDocumentPartyTOs(shippingInstructionTO.getDocumentParties(), si.getId())
-                          .doOnNext(shippingInstructionTO::setDocumentParties),
-                      utilizedTransportEquipmentService
-                          .addUtilizedTransportEquipmentToShippingInstruction(
-                              shippingInstructionTO.getUtilizedTransportEquipments(),
-                              shippingInstructionTO)
-                          .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
-                      referenceService.createReferencesByShippingInstructionIdAndTOs(
-                          si.getId(), shippingInstructionTO.getReferences()),
-                      consignmentItemService
-                          .createConsignmentItemsByShippingInstructionIDAndTOs(
-                              si.getId(),
-                              shippingInstructionTO.getConsignmentItems(),
-                              shippingInstructionTO.getUtilizedTransportEquipments())
-                          .doOnNext(shippingInstructionTO::setConsignmentItems))
-                  .thenReturn(shippingInstructionTO);
+              shippingInstructionTO.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
+              shippingInstructionTO.setShippingInstructionUpdatedDateTime(si.getShippingInstructionUpdatedDateTime());
+              return createDeepObjectsForShippingInstruction(si, shippingInstructionTO);
             })
         .flatMap(
             siTO ->
@@ -269,62 +248,34 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               }
               return Mono.just(si);
             })
+        .flatMap(
+            si -> {
+              si.setValidUntil(OffsetDateTime.now());
+              return shippingInstructionRepository.save(si);
+            })
+        .flatMap(
+            si -> {
+              si.setId(null);
+              si.setValidUntil(null);
+              return shippingInstructionRepository.save(si);
+            })
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionRequest.setShippingInstructionReference(
-                  si.getShippingInstructionReference());
+              shippingInstructionRequest.setShippingInstructionReference(si.getShippingInstructionReference());
               shippingInstructionRequest.setDocumentStatus(si.getDocumentStatus());
-              shippingInstructionRequest.setShippingInstructionCreatedDateTime(
-                  si.getShippingInstructionCreatedDateTime());
-              shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
-                  OffsetDateTime.now());
-              return Mono.when(
-                              locationService
-                                  .resolveLocationByTO(
-                                      si.getPlaceOfIssueID(),
-                                      shippingInstructionRequest.getPlaceOfIssue(),
-                                      placeOfIssue ->
-                                          shippingInstructionRepository.setPlaceOfIssueFor(
-                                              placeOfIssue, si.getId()))
-                                  .doOnNext(shippingInstructionRequest::setPlaceOfIssue),
-                              utilizedTransportEquipmentService
-                                  .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
-                                      shippingInstructionRequest.getUtilizedTransportEquipments(),
-                                      shippingInstructionRequest)
-                                  .doOnNext(
-                                      shippingInstructionRequest::setUtilizedTransportEquipments),
-                              documentPartyService
-                                  .resolveDocumentPartiesForShippingInstructionID(
-                                      si.getId(), shippingInstructionRequest.getDocumentParties())
-                                  .doOnNext(shippingInstructionRequest::setDocumentParties),
-                              referenceService
-                                  .resolveReferencesForShippingInstructionReference(
-                                      shippingInstructionRequest.getReferences(), si.getId())
-                                  .doOnNext(shippingInstructionRequest::setReferences))
-                          .thenReturn(shippingInstructionRequest)
-                  .then(
-                      consignmentItemService
-                          .createConsignmentItemsByShippingInstructionIDAndTOs(
-                              si.getId(),
-                              shippingInstructionRequest.getConsignmentItems(),
-                              shippingInstructionRequest.getUtilizedTransportEquipments())
-                          .doOnNext(shippingInstructionRequest::setConsignmentItems))
-                  .thenReturn(shippingInstructionRequest)
+              shippingInstructionRequest.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
+              shippingInstructionRequest.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+              return createDeepObjectsForShippingInstruction(si, shippingInstructionRequest)
                   .flatMap(siTO -> transitionDocumentStatusAndRaiseShipmentEvent(si.getId(), siTO))
                   .flatMap(
                       siTO -> {
-                        ShippingInstruction shippingInstruction =
-                            shippingInstructionMapper.dtoToShippingInstruction(
-                                shippingInstructionRequest);
+                        ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
                         shippingInstruction.setId(si.getId());
-                        shippingInstruction.setShippingInstructionReference(
-                            siTO.getShippingInstructionReference());
+                        shippingInstruction.setShippingInstructionReference(siTO.getShippingInstructionReference());
                         shippingInstruction.setDocumentStatus(siTO.getDocumentStatus());
-                        shippingInstruction.setShippingInstructionCreatedDateTime(
-                            siTO.getShippingInstructionCreatedDateTime());
-                        shippingInstruction.setShippingInstructionUpdatedDateTime(
-                            siTO.getShippingInstructionUpdatedDateTime());
+                        shippingInstruction.setShippingInstructionCreatedDateTime(siTO.getShippingInstructionCreatedDateTime());
+                        shippingInstruction.setShippingInstructionUpdatedDateTime(siTO.getShippingInstructionUpdatedDateTime());
                         return shippingInstructionRepository
                             .save(shippingInstruction)
                             .flatMap(
@@ -335,6 +286,28 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                       });
             })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
+  }
+
+  private Mono<ShippingInstructionTO> createDeepObjectsForShippingInstruction(
+      ShippingInstruction si, ShippingInstructionTO shippingInstructionTO) {
+    return Mono.when(
+            insertLocationTO(shippingInstructionTO.getPlaceOfIssue(), si.getId())
+                .doOnNext(shippingInstructionTO::setPlaceOfIssue),
+            insertDocumentPartyTOs(shippingInstructionTO.getDocumentParties(), si.getId())
+                .doOnNext(shippingInstructionTO::setDocumentParties),
+            utilizedTransportEquipmentService
+                .addUtilizedTransportEquipmentToShippingInstruction(
+                    shippingInstructionTO.getUtilizedTransportEquipments(), shippingInstructionTO)
+                .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
+            referenceService.createReferencesByShippingInstructionIdAndTOs(
+                si.getId(), shippingInstructionTO.getReferences()),
+            consignmentItemService
+                .createConsignmentItemsByShippingInstructionIDAndTOs(
+                    si.getId(),
+                    shippingInstructionTO.getConsignmentItems(),
+                    shippingInstructionTO.getUtilizedTransportEquipments())
+                .doOnNext(shippingInstructionTO::setConsignmentItems))
+        .thenReturn(shippingInstructionTO);
   }
 
   Mono<List<Booking>> validateDocumentStatusOnBooking(ShippingInstructionTO shippingInstructionTO) {
@@ -485,7 +458,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShippingInstructionTO> transitionDocumentStatusAndRaiseShipmentEvent(
-    UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
+      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
     List<String> validationResult = validateShippingInstruction(shippingInstructionTO);
     Mono<ShipmentEvent> shipmentEvent;
     if (!validationResult.isEmpty()) {
@@ -497,13 +470,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       } else {
         shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENU);
       }
-      shipmentEvent =
-        getShipmentEventFromShippingInstruction(
-          String.join("\n", validationResult),
-          shippingInstructionTO.getDocumentStatus(),
-          shippingInstructionID,
-          shippingInstructionTO.getShippingInstructionReference(),
-          shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     } else {
       if (shippingInstructionTO.getDocumentStatus() == ShipmentEventTypeCode.DRFT) {
         // UC5 / UC7 that was accepted goes directly to APPR.
@@ -511,33 +477,33 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       } else {
         shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.DRFT);
       }
-      shipmentEvent =
-        getShipmentEventFromShippingInstruction(
-          String.join("\n", validationResult),
-          shippingInstructionTO.getDocumentStatus(),
-          shippingInstructionID,
-          shippingInstructionTO.getShippingInstructionReference(),
-          shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     }
+    shipmentEvent =
+        getShipmentEventFromShippingInstruction(
+            String.join("\n", validationResult),
+            shippingInstructionTO.getDocumentStatus(),
+            shippingInstructionID,
+            shippingInstructionTO.getShippingInstructionReference(),
+            shippingInstructionTO.getShippingInstructionUpdatedDateTime());
     return shipmentEvent.map(shipmentEventService::create).thenReturn(shippingInstructionTO);
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-    ShippingInstruction shippingInstruction, String reason) {
+      ShippingInstruction shippingInstruction, String reason) {
     return getShipmentEventFromShippingInstruction(
-      reason,
-      shippingInstruction.getDocumentStatus(),
-      shippingInstruction.getId(),
-      shippingInstruction.getShippingInstructionReference(),
-      shippingInstruction.getShippingInstructionUpdatedDateTime());
+        reason,
+        shippingInstruction.getDocumentStatus(),
+        shippingInstruction.getId(),
+        shippingInstruction.getShippingInstructionReference(),
+        shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
 
   static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(
-    String reason,
-    ShipmentEventTypeCode documentStatus,
-    UUID documentID,
-    String documentReference,
-    OffsetDateTime shippingInstructionUpdatedDateTime) {
+      String reason,
+      ShipmentEventTypeCode documentStatus,
+      UUID documentID,
+      String documentReference,
+      OffsetDateTime shippingInstructionUpdatedDateTime) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(documentStatus);
     shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
