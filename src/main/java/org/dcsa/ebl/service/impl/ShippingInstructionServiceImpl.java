@@ -3,7 +3,6 @@ package org.dcsa.ebl.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.ShippingInstruction;
@@ -11,10 +10,16 @@ import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
+import org.dcsa.core.events.model.transferobjects.EquipmentTO;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
-import org.dcsa.core.events.service.*;
+import org.dcsa.core.events.service.DocumentPartyService;
+import org.dcsa.core.events.service.ReferenceService;
+import org.dcsa.core.events.service.ShipmentEventService;
+import org.dcsa.core.events.service.UtilizedTransportEquipmentService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.mappers.ShippingInstructionMapper;
 import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
@@ -43,7 +48,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private final ShipmentEventService shipmentEventService;
   private final DocumentPartyService documentPartyService;
   private final ReferenceService referenceService;
-  private final ShipmentService shipmentService;
   private final ConsignmentItemService consignmentItemService;
 
   private final BookingRepository bookingRepository;
@@ -181,10 +185,13 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionTO.setShippingInstructionReference(si.getShippingInstructionReference());
+              shippingInstructionTO.setShippingInstructionReference(
+                  si.getShippingInstructionReference());
               shippingInstructionTO.setDocumentStatus(si.getDocumentStatus());
-              shippingInstructionTO.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
-              shippingInstructionTO.setShippingInstructionUpdatedDateTime(si.getShippingInstructionUpdatedDateTime());
+              shippingInstructionTO.setShippingInstructionCreatedDateTime(
+                  si.getShippingInstructionCreatedDateTime());
+              shippingInstructionTO.setShippingInstructionUpdatedDateTime(
+                  si.getShippingInstructionUpdatedDateTime());
               return createDeepObjectsForShippingInstruction(si, shippingInstructionTO);
             })
         .flatMap(
@@ -262,20 +269,28 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
-              shippingInstructionRequest.setShippingInstructionReference(si.getShippingInstructionReference());
+              shippingInstructionRequest.setShippingInstructionReference(
+                  si.getShippingInstructionReference());
               shippingInstructionRequest.setDocumentStatus(si.getDocumentStatus());
-              shippingInstructionRequest.setShippingInstructionCreatedDateTime(si.getShippingInstructionCreatedDateTime());
-              shippingInstructionRequest.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
+              shippingInstructionRequest.setShippingInstructionCreatedDateTime(
+                  si.getShippingInstructionCreatedDateTime());
+              shippingInstructionRequest.setShippingInstructionUpdatedDateTime(
+                  OffsetDateTime.now());
               return createDeepObjectsForShippingInstruction(si, shippingInstructionRequest)
                   .flatMap(siTO -> transitionDocumentStatusAndRaiseShipmentEvent(si.getId(), siTO))
                   .flatMap(
                       siTO -> {
-                        ShippingInstruction shippingInstruction = shippingInstructionMapper.dtoToShippingInstruction(shippingInstructionRequest);
+                        ShippingInstruction shippingInstruction =
+                            shippingInstructionMapper.dtoToShippingInstruction(
+                                shippingInstructionRequest);
                         shippingInstruction.setId(si.getId());
-                        shippingInstruction.setShippingInstructionReference(siTO.getShippingInstructionReference());
+                        shippingInstruction.setShippingInstructionReference(
+                            siTO.getShippingInstructionReference());
                         shippingInstruction.setDocumentStatus(siTO.getDocumentStatus());
-                        shippingInstruction.setShippingInstructionCreatedDateTime(siTO.getShippingInstructionCreatedDateTime());
-                        shippingInstruction.setShippingInstructionUpdatedDateTime(siTO.getShippingInstructionUpdatedDateTime());
+                        shippingInstruction.setShippingInstructionCreatedDateTime(
+                            siTO.getShippingInstructionCreatedDateTime());
+                        shippingInstruction.setShippingInstructionUpdatedDateTime(
+                            siTO.getShippingInstructionUpdatedDateTime());
                         return shippingInstructionRepository
                             .save(shippingInstruction)
                             .flatMap(
