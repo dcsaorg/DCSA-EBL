@@ -305,9 +305,7 @@ class ShippingInstructionServiceImplTest {
       when(shippingInstructionRepository.findById((UUID) any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.just(locationTO));
-      when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
-              any(), any()))
-          .thenReturn(Mono.just(List.of(utilizedTransportEquipmentTO)));
+      when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(any(), any())).thenReturn(Mono.just(List.of(utilizedTransportEquipmentTO)));
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
@@ -469,21 +467,19 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
-          .thenReturn(Flux.just(booking));
-      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
-          .thenReturn(Mono.empty());
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findById((UUID) any()))
-          .thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findById((UUID) any())).thenReturn(Mono.just(shippingInstruction));
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
           .thenReturn(Mono.just(List.of(consignmentItemTO)));
-      when(shipmentEventService.create(any()))
-          .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -531,9 +527,6 @@ class ShippingInstructionServiceImplTest {
                     ShipmentEventTypeCode.PENU, argumentCaptor.getValue().getDocumentStatus());
 
                 verify(transportDocumentRepository, never()).save(any());
-                verify(locationService, never()).createLocationByTO(any(), any());
-                verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
               })
           .verifyComplete();
     }
@@ -550,8 +543,8 @@ class ShippingInstructionServiceImplTest {
 
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
-          .thenReturn(Mono.empty());
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
@@ -611,8 +604,6 @@ class ShippingInstructionServiceImplTest {
                     argumentCaptor.getValue().getPlaceOfIssueID());
                 assertEquals(
                     ShipmentEventTypeCode.DRFT, argumentCaptor.getValue().getDocumentStatus());
-
-                verify(locationService, never()).createLocationByTO(any(), any());
               })
           .verifyComplete();
     }
@@ -629,8 +620,8 @@ class ShippingInstructionServiceImplTest {
 
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
-          .thenReturn(Mono.empty());
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
@@ -689,8 +680,6 @@ class ShippingInstructionServiceImplTest {
                     argumentCaptor.getValue().getPlaceOfIssueID());
                 assertEquals(
                     ShipmentEventTypeCode.PENU, argumentCaptor.getValue().getDocumentStatus());
-
-                verify(locationService, never()).createLocationByTO(any(), any());
               })
           .verifyComplete();
     }
@@ -707,17 +696,17 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
-          .thenReturn(Flux.just(booking));
-      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
-          .thenReturn(Mono.empty());
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
           .thenReturn(Mono.empty());
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findById((UUID) any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
           .thenReturn(
@@ -765,10 +754,7 @@ class ShippingInstructionServiceImplTest {
                 assertEquals(
                     ShipmentEventTypeCode.DRFT, argumentCaptor.getValue().getDocumentStatus());
 
-                verify(locationService, never()).createLocationByTO(any(), any());
                 verify(transportDocumentRepository).save(any());
-                verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
               })
           .verifyComplete();
     }
@@ -786,6 +772,10 @@ class ShippingInstructionServiceImplTest {
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
+          .thenReturn(Mono.empty());
+      when(locationService.createLocationByTO(any(), any()))
+          .thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
           .thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
@@ -844,10 +834,7 @@ class ShippingInstructionServiceImplTest {
                 assertEquals(
                     ShipmentEventTypeCode.PENU, argumentCaptor.getValue().getDocumentStatus());
 
-                verify(locationService, never()).createLocationByTO(any(), any());
                 verify(shipmentRepository, never()).findByCarrierBookingReference(any());
-                verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
                 assertNull(argumentCaptor.getValue().getPlaceOfIssue());
                 assertNull(argumentCaptor.getValue().getDocumentParties());
                 assertNull(argumentCaptor.getValue().getReferences());
@@ -1010,11 +997,18 @@ class ShippingInstructionServiceImplTest {
 
       // saves
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(locationService.resolveLocationByTO(any(), any(), any()))
+      when(locationService.createLocationByTO(any(), any()))
           .thenReturn(Mono.just(locationTO));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+      when(utilizedTransportEquipmentService
+              .addUtilizedTransportEquipmentToShippingInstruction(any(), any()))
+          .thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
+          .thenReturn(Mono.empty());
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
+          .thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
           .thenReturn(
@@ -1029,15 +1023,6 @@ class ShippingInstructionServiceImplTest {
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
-      // deletes
-      when(utilizedTransportEquipmentService
-              .resolveUtilizedTransportEquipmentsForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
-          .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
-
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
 
@@ -1050,14 +1035,14 @@ class ShippingInstructionServiceImplTest {
                       shippingInstruction.getShippingInstructionReference(), shippingInstructionTO))
           .assertNext(
               b -> {
-                verify(locationService).resolveLocationByTO(any(), any(), any());
+                verify(locationService).createLocationByTO(any(), any());
                 verify(utilizedTransportEquipmentService)
-                    .resolveUtilizedTransportEquipmentsForShippingInstructionReference(
+                    .addUtilizedTransportEquipmentToShippingInstruction(
                         any(), any());
                 verify(documentPartyService)
-                    .resolveDocumentPartiesForShippingInstructionID(any(), any());
+                    .createDocumentPartiesByShippingInstructionID(any(), any());
                 verify(referenceService)
-                    .resolveReferencesForShippingInstructionReference(any(), any());
+                    .createReferencesByShippingInstructionIdAndTOs(any(), any());
 
                 verify(shipmentEventService, times(2))
                     .create(argumentCaptorShipmentEvent.capture());
@@ -1111,11 +1096,12 @@ class ShippingInstructionServiceImplTest {
 
       // saves
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(locationService.resolveLocationByTO(any(), any(), any()))
-          .thenReturn(Mono.just(locationTO));
-      when(shipmentEventService.create(any()))
-          .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
+      when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(any(), any())).thenReturn(Mono.empty());
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
           .thenReturn(
@@ -1129,15 +1115,6 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
-
-      // deletes
-      when(utilizedTransportEquipmentService
-              .resolveUtilizedTransportEquipmentsForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
-          .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -1178,14 +1155,9 @@ class ShippingInstructionServiceImplTest {
                 assertEquals(
                     ShipmentEventTypeCode.DRFT, argumentCaptor.getValue().getDocumentStatus());
 
-                verify(locationService, never()).createLocationByTO(any(), any());
                 verify(shipmentRepository, never()).findByCarrierBookingReference(any());
                 verify(utilizedTransportEquipmentService, never())
                     .createUtilizedTransportEquipment(any(), any(), any());
-                verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
-                verify(referenceService, never())
-                    .createReferencesByShippingInstructionIdAndTOs(any(), any());
               })
           .verifyComplete();
     }
@@ -1206,27 +1178,16 @@ class ShippingInstructionServiceImplTest {
 
       // saves
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(locationService.resolveLocationByTO(any(), any(), any())).thenReturn(Mono.empty());
-      when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
-              any(), any(), any()))
-          .thenReturn(Mono.just(List.of(consignmentItemTO)));
-      when(shipmentEventService.create(any()))
-          .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
+      when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
+      when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
+      when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(any(), any(), any())).thenReturn(Mono.just(List.of(consignmentItemTO)));
+      when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
+      when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(any(), any())).thenReturn(Mono.empty());
+      when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
-          .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
-          .thenReturn(Mono.just(shippingInstruction));
-
-      // deletes
-      when(utilizedTransportEquipmentService
-              .resolveUtilizedTransportEquipmentsForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
-      when(documentPartyService.resolveDocumentPartiesForShippingInstructionID(any(), any()))
-          .thenReturn(Mono.empty());
-      when(referenceService.resolveReferencesForShippingInstructionReference(any(), any()))
-          .thenReturn(Mono.empty());
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -1268,14 +1229,7 @@ class ShippingInstructionServiceImplTest {
                     ShipmentEventTypeCode.PENU, argumentCaptor.getValue().getDocumentStatus());
 
                 verify(transportDocumentRepository, never()).save(any());
-                verify(locationService, never()).createLocationByTO(any(), any());
                 verify(shipmentRepository, never()).findByCarrierBookingReference(any());
-                verify(utilizedTransportEquipmentService, never())
-                    .createUtilizedTransportEquipment(any(), any(), any());
-                verify(documentPartyService, never())
-                    .createDocumentPartiesByShippingInstructionID(any(), any());
-                verify(referenceService, never())
-                    .createReferencesByShippingInstructionIdAndTOs(any(), any());
                 assertNull(argumentCaptor.getValue().getPlaceOfIssue());
                 assertNull(argumentCaptor.getValue().getDocumentParties());
                 assertNull(argumentCaptor.getValue().getReferences());
@@ -1295,11 +1249,9 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
+      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
-          .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
-          .thenReturn(Mono.just(shippingInstruction));
 
       StepVerifier.create(
               shippingInstructionServiceImpl

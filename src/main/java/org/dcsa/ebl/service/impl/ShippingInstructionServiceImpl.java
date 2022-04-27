@@ -255,6 +255,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               }
               return Mono.just(si);
             })
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               si.setValidUntil(OffsetDateTime.now());
@@ -266,7 +267,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               si.setValidUntil(null);
               return shippingInstructionRepository.save(si);
             })
-        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               shippingInstructionRequest.setShippingInstructionReference(
@@ -306,9 +306,14 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   private Mono<ShippingInstructionTO> createDeepObjectsForShippingInstruction(
       ShippingInstruction si, ShippingInstructionTO shippingInstructionTO) {
     return Mono.when(
-            insertLocationTO(shippingInstructionTO.getPlaceOfIssue(), si.getId())
+            locationService
+                .createLocationByTO(
+                    shippingInstructionTO.getPlaceOfIssue(),
+                    poi -> shippingInstructionRepository.setPlaceOfIssueFor(poi, si.getId()))
                 .doOnNext(shippingInstructionTO::setPlaceOfIssue),
-            insertDocumentPartyTOs(shippingInstructionTO.getDocumentParties(), si.getId())
+            documentPartyService
+                .createDocumentPartiesByShippingInstructionID(
+                    si.getId(), shippingInstructionTO.getDocumentParties())
                 .doOnNext(shippingInstructionTO::setDocumentParties),
             utilizedTransportEquipmentService
                 .addUtilizedTransportEquipmentToShippingInstruction(
@@ -367,20 +372,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                                 "No booking found for carrier booking reference: "
                                     + carrierBookingReference))))
         .collectList();
-  }
-
-  private Mono<LocationTO> insertLocationTO(LocationTO placeOfIssue, UUID shippingInstructionID) {
-    if (placeOfIssue == null) return Mono.empty();
-    return locationService.createLocationByTO(
-        placeOfIssue,
-        poi -> shippingInstructionRepository.setPlaceOfIssueFor(poi, shippingInstructionID));
-  }
-
-  private Mono<List<DocumentPartyTO>> insertDocumentPartyTOs(
-      List<DocumentPartyTO> documentPartyTOs, UUID shippingInstructionID) {
-    if (documentPartyTOs == null) return Mono.empty();
-    return documentPartyService.createDocumentPartiesByShippingInstructionID(
-        shippingInstructionID, documentPartyTOs);
   }
 
   List<String> validateShippingInstruction(ShippingInstructionTO shippingInstructionTO) {
