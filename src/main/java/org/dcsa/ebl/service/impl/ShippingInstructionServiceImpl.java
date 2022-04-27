@@ -255,7 +255,6 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               }
               return Mono.just(si);
             })
-        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               si.setValidUntil(OffsetDateTime.now());
@@ -267,6 +266,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
               si.setValidUntil(null);
               return shippingInstructionRepository.save(si);
             })
+        .flatMap(si -> createShipmentEvent(si).thenReturn(si))
         .flatMap(
             si -> {
               shippingInstructionRequest.setShippingInstructionReference(

@@ -1249,6 +1249,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
+      when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
