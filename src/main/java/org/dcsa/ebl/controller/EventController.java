@@ -5,6 +5,8 @@ import org.dcsa.core.events.model.Event;
 import org.dcsa.core.events.model.enums.EventType;
 import org.dcsa.core.events.util.ExtendedGenericEventRequest;
 import org.dcsa.core.extendedrequest.ExtendedRequest;
+import org.dcsa.core.extendedrequest.QueryFieldRestriction;
+import org.dcsa.core.query.DBEntityAnalysis;
 import org.dcsa.core.validator.EnumSubset;
 import org.dcsa.ebl.service.EBLShipmentEventService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -50,6 +52,7 @@ public class EventController extends AbstractEventController<EBLShipmentEventSer
   @Override
   protected ExtendedRequest<Event> newExtendedRequest() {
     return new ExtendedGenericEventRequest(extendedParameters, r2dbcDialect) {
+      /*
       @Override
       public void parseParameter(Map<String, List<String>> params) {
         Map<String, List<String>> p = new HashMap<>(params);
@@ -61,6 +64,16 @@ public class EventController extends AbstractEventController<EBLShipmentEventSer
         // to *only* allowed EBL ShipmentEventTypeCode subset.
         p.putIfAbsent("documentTypeCode", Collections.singletonList(EBL_DOCUMENT_TYPE_CODES));
         super.parseParameter(p);
+      }
+      */
+      @Override
+      protected DBEntityAnalysis.DBEntityAnalysisBuilder<Event> prepareDBEntityAnalysis() {
+        return super.prepareDBEntityAnalysis()
+          // Restrict several enum fields to the subset supported by eBL
+          .registerRestrictionOnQueryField("eventType", QueryFieldRestriction.enumSubset(EventType.SHIPMENT.name()))
+          .registerRestrictionOnQueryField("shipmentEventTypeCode", QueryFieldRestriction.enumSubset(EBL_DOCUMENT_STATUSES))
+          .registerRestrictionOnQueryField("documentTypeCode", QueryFieldRestriction.enumSubset(EBL_DOCUMENT_TYPE_CODES))
+          ;
       }
     };
   }
