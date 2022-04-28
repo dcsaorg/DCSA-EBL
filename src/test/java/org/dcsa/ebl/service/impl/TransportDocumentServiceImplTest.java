@@ -1,14 +1,30 @@
 package org.dcsa.ebl.service.impl;
 
-import org.dcsa.core.events.edocumentation.model.transferobject.*;
+import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
-import org.dcsa.core.events.model.*;
-import org.dcsa.core.events.model.enums.*;
-import org.dcsa.core.events.model.transferobjects.*;
+import org.dcsa.core.events.model.Booking;
+import org.dcsa.core.events.model.CargoItem;
+import org.dcsa.core.events.model.Reference;
+import org.dcsa.core.events.model.Shipment;
+import org.dcsa.core.events.model.ShipmentEvent;
+import org.dcsa.core.events.model.ShippingInstruction;
+import org.dcsa.core.events.model.TransportDocument;
+import org.dcsa.core.events.model.UtilizedTransportEquipment;
+import org.dcsa.core.events.model.enums.PaymentTerm;
+import org.dcsa.core.events.model.enums.ReferenceTypeCode;
+import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
+import org.dcsa.core.events.model.enums.WeightUnit;
+import org.dcsa.core.events.model.transferobjects.CargoItemTO;
+import org.dcsa.core.events.model.transferobjects.CargoLineItemTO;
+import org.dcsa.core.events.model.transferobjects.ReferenceTO;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -20,8 +36,13 @@ import org.dcsa.skernel.model.Address;
 import org.dcsa.skernel.model.Carrier;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
@@ -39,9 +60,15 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.BOOKING_DOCUMENT_STATUSES;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Tests for TransportDocument Implementation.")
@@ -645,13 +672,13 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
           .thenReturn(Flux.just(carrierClauseTO));
-      when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
+      when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
       when(shippingInstructionRepository.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
-      when(bookingRepository.findByCarrierBookingRequestReference(any()))
+      when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(new Booking()));
       when(bookingRepository
               .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
@@ -755,7 +782,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
           .thenReturn(Flux.just(carrierClauseTO));
-      when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
+      when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(Collections.emptyList())));
@@ -795,11 +822,11 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
           .thenReturn(Flux.just(carrierClauseTO));
-      when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
+      when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
       when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(List.of(shipmentTO))));
-      when(bookingRepository.findByCarrierBookingRequestReference(any())).thenReturn(Mono.empty());
+      when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any())).thenReturn(Mono.empty());
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
 
@@ -837,13 +864,13 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
               transportDocumentTO.getTransportDocumentReference()))
           .thenReturn(Flux.just(carrierClauseTO));
-      when(shippingInstructionRepository.setDocumentStatusByID(any(), any(), any()))
+      when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
       when(shippingInstructionRepository.findByShippingInstructionReference(any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
-      when(bookingRepository.findByCarrierBookingRequestReference(any()))
+      when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(new Booking()));
       when(bookingRepository
               .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(

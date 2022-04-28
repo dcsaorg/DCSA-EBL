@@ -6,16 +6,13 @@ import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.Booking;
-import org.dcsa.skernel.model.Carrier;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
-import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
-import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -26,6 +23,9 @@ import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.ebl.service.TransportDocumentService;
+import org.dcsa.skernel.model.Carrier;
+import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
+import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -197,7 +197,7 @@ public class TransportDocumentServiceImpl
               shippingInstructionTO.setShippingInstructionUpdatedDateTime(now);
 
               return Mono.when(
-                      shippingInstructionRepository.setDocumentStatusByID(
+                      shippingInstructionRepository.setDocumentStatusByReference(
                           shippingInstructionTO.getDocumentStatus(),
                           shippingInstructionTO.getShippingInstructionUpdatedDateTime(),
                           shippingInstructionTO.getShippingInstructionReference()),
@@ -259,7 +259,7 @@ public class TransportDocumentServiceImpl
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
-        .findByCarrierBookingRequestReference(carrierBookingReference)
+        .findByCarrierBookingRequestReferenceAndValidUntilIsNull(carrierBookingReference)
         .switchIfEmpty(
             Mono.error(
                 new IllegalStateException(
