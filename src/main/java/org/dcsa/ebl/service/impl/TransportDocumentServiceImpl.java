@@ -288,12 +288,7 @@ public class TransportDocumentServiceImpl
   Mono<ShipmentEvent> createShipmentEventFromBookingTO(UUID bookingID, BookingTO bookingTO) {
 
     return shipmentEventFromBookingTO(bookingID, bookingTO, "Booking is approved")
-        .flatMap(shipmentEventService::create)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.internalServerError(
-                    "Failed to create shipment event for transport Document:"
-                        + bookingTO.getCarrierBookingRequestReference())));
+        .flatMap(shipmentEventService::create);
   }
 
   Mono<? extends ShipmentEvent> createShipmentEventFromTransportDocumentTO(
@@ -307,12 +302,7 @@ public class TransportDocumentServiceImpl
                     transportDocument.getId(),
                     transportDocumentTO,
                     "Transport document is approved"))
-        .flatMap(shipmentEventService::create)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.internalServerError(
-                    "Failed to create shipment event for transport Document:"
-                        + transportDocumentTO.getTransportDocumentReference())));
+        .flatMap(shipmentEventService::create);
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
