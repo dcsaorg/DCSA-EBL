@@ -348,7 +348,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(
             carrierBookingReference ->
                 bookingRepository
-                    .findAllByCarrierBookingReference(carrierBookingReference)
+                    .findAllByCarrierBookingReferenceWhereValidUntilIsNull(carrierBookingReference)
                     .flatMap(
                         booking -> {
                           if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
