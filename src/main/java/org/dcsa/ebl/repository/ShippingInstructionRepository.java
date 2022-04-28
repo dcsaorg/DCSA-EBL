@@ -36,9 +36,10 @@ public interface ShippingInstructionRepository
 
   @Modifying
   @Query(
-      "UPDATE shipping_instruction SET document_status = :documentStatus, updated_date_time = :updatedDateTime where id = :id")
-  Mono<Boolean> setDocumentStatusByID(
-      ShipmentEventTypeCode documentStatus, OffsetDateTime updatedDateTime, String id);
+    "UPDATE shipping_instruction SET document_status = :documentStatus, updated_date_time = :updatedDateTime"
+      + " where shipping_instruction_reference = :reference AND valid_until IS NULL")
+  Mono<Boolean> setDocumentStatusByReference(
+    ShipmentEventTypeCode documentStatus, OffsetDateTime updatedDateTime, String reference);
 
   @Query(
       "SELECT si.* FROM shipping_instrution si "
