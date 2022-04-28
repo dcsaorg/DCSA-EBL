@@ -52,20 +52,6 @@ public class EventController extends AbstractEventController<EBLShipmentEventSer
   @Override
   protected ExtendedRequest<Event> newExtendedRequest() {
     return new ExtendedGenericEventRequest(extendedParameters, r2dbcDialect) {
-      /*
-      @Override
-      public void parseParameter(Map<String, List<String>> params) {
-        Map<String, List<String>> p = new HashMap<>(params);
-        // Add the eventType parameter (if it is missing) in order to limit the resultset
-        // to *only* SHIPMENT events
-        p.putIfAbsent("eventType", List.of(EventType.SHIPMENT.name()));
-        // to *only* allow EBL  ShipmentEventTypeCode subset.
-        p.putIfAbsent("shipmentEventTypeCode", Collections.singletonList(EBL_DOCUMENT_STATUSES));
-        // to *only* allowed EBL ShipmentEventTypeCode subset.
-        p.putIfAbsent("documentTypeCode", Collections.singletonList(EBL_DOCUMENT_TYPE_CODES));
-        super.parseParameter(p);
-      }
-      */
       @Override
       protected DBEntityAnalysis.DBEntityAnalysisBuilder<Event> prepareDBEntityAnalysis() {
         return super.prepareDBEntityAnalysis()
