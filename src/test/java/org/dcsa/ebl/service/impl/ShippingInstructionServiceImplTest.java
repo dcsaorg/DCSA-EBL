@@ -696,7 +696,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
