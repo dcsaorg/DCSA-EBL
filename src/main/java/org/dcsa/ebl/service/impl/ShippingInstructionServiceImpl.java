@@ -504,7 +504,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         shippingInstruction.getShippingInstructionUpdatedDateTime());
   }
 
-  static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(
+  private static Mono<ShipmentEvent> getShipmentEventFromShippingInstruction(
       String reason,
       ShipmentEventTypeCode documentStatus,
       UUID documentID,

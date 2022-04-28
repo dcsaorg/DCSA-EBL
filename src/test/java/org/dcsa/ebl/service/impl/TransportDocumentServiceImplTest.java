@@ -674,8 +674,6 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shippingInstructionRepository.findByShippingInstructionReference(any()))
-          .thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
       when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any()))
