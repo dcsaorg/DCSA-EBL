@@ -299,7 +299,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Method should save shipping instruction and return shipping response")
     void testCreateShippingInstructionWithEverything() {
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findById((UUID) any()))
@@ -383,7 +383,7 @@ class ShippingInstructionServiceImplTest {
           List.of(consignmentItemTO.withCarrierBookingReference("carrierBookingRequestReference")));
       utilizedTransportEquipmentTO.setCarrierBookingReference("carrierBookingRequestReference");
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findById((UUID) any()))
@@ -467,7 +467,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.just(booking));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
@@ -541,7 +541,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
@@ -618,7 +618,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setPlaceOfIssue(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
@@ -769,7 +769,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setIsElectronic(false);
       shippingInstructionTO.setNumberOfCopies(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
           .thenReturn(Mono.empty());
@@ -850,7 +850,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setDocumentParties(null);
       shippingInstructionTO.setReferences(null);
 
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.save(any()))
           .thenAnswer(arguments -> Mono.just(shippingInstruction));
@@ -922,7 +922,7 @@ class ShippingInstructionServiceImplTest {
         if (s.equals(ShipmentEventTypeCode.CONF)) continue;
 
         booking.setDocumentStatus(s);
-        when(bookingRepository.findAllByCarrierBookingReference(any()))
+        when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
             .thenReturn(Flux.just(booking));
 
         StepVerifier.create(
@@ -948,7 +948,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Fail if carrierBookingReference is not linked to a Booking")
     void testCreateShippingInstructionShouldFailWithNoBookingFound() {
 
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
@@ -1018,7 +1018,7 @@ class ShippingInstructionServiceImplTest {
                           shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
@@ -1111,7 +1111,7 @@ class ShippingInstructionServiceImplTest {
                           shippingInstructionTO.getCarrierBookingReference()))));
 
       // finds
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
@@ -1186,7 +1186,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
 
       // finds
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.just(booking));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -1251,7 +1251,7 @@ class ShippingInstructionServiceImplTest {
 
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.just(booking));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
 
       StepVerifier.create(
@@ -1276,7 +1276,7 @@ class ShippingInstructionServiceImplTest {
 
       when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.empty());
-      when(bookingRepository.findAllByCarrierBookingReference(any()))
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
           .thenReturn(Flux.just(booking));
 
       StepVerifier.create(
@@ -1505,7 +1505,7 @@ class ShippingInstructionServiceImplTest {
         if (s.equals(ShipmentEventTypeCode.CONF)) continue;
 
         booking.setDocumentStatus(s);
-        when(bookingRepository.findAllByCarrierBookingReference(any()))
+        when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any()))
             .thenReturn(Flux.just(booking));
 
         StepVerifier.create(
@@ -1531,7 +1531,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Fail if carrierBookingReference is not linked to a Booking")
     void testCreateShippingInstructionShouldFailWithNoBookingFound() {
 
-      when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(bookingRepository.findAllByCarrierBookingReferenceWhereValidUntilIsNull(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               shippingInstructionServiceImpl.createShippingInstruction(shippingInstructionTO))
