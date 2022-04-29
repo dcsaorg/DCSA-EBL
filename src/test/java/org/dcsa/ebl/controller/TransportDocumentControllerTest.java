@@ -305,7 +305,7 @@ class TransportDocumentControllerTest {
     "document statuses set to APPR & CMPL respectively")
   void testApproveTransportDocumentByReference() {
 
-    when(transportDocumentService.ApproveTransportDocument("approvedTRDocReference"))
+    when(transportDocumentService.approveTransportDocument("approvedTRDocReference"))
       .thenReturn(Mono.just(approvedTransportDocument));
 
     webTestClient
@@ -351,7 +351,7 @@ class TransportDocumentControllerTest {
   @DisplayName("Approving a transport document that has a SI with invalid status document status should return bad request")
   void testApproveTransportDocumentThatHasShippingInstructionInvalidDocumentStatus() {
 
-    when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
+    when(transportDocumentService.approveTransportDocument("TRDocReference1"))
       .thenReturn(
         Mono.error(
           ConcreteRequestErrorMessageException.notFound(
@@ -377,7 +377,7 @@ class TransportDocumentControllerTest {
   @DisplayName("Approving a transport document that has a SI with no shipments should return bad request")
   void testApproveTransportDocumentThatHasShippingInstructionWithNoShipments() {
 
-    when(transportDocumentService.ApproveTransportDocument("TRDocReference1"))
+    when(transportDocumentService.approveTransportDocument("TRDocReference1"))
       .thenReturn(
         Mono.error(
           ConcreteRequestErrorMessageException.notFound(

@@ -1276,7 +1276,7 @@ class ShippingInstructionServiceImplTest {
 
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.empty());
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(booking));
@@ -1289,7 +1289,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No Shipping Instruction found with reference: "
+                    "No shipping instruction found with shipping instruction reference: "
                         + shippingInstruction.getShippingInstructionReference(),
                     throwable.getMessage());
               })
@@ -1436,7 +1436,7 @@ class ShippingInstructionServiceImplTest {
 
       String invalidShippingInstructionReference = UUID.randomUUID().toString();
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
@@ -1445,7 +1445,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No Shipping Instruction found with reference: "
+                    "No shipping instruction found with shipping instruction reference: "
                         + invalidShippingInstructionReference,
                     throwable.getMessage());
               })
@@ -1456,7 +1456,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Test GET shipping instruction for an assumed valid ID.")
     void testGetShippingInstructionForValidID() {
       String stubbedCRef = UUID.randomUUID().toString();
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
           .thenReturn(Flux.just(stubbedCRef));
