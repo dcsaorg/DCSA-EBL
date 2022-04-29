@@ -10,7 +10,6 @@ import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.DocumentTypeCode;
 import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.transferobjects.DocumentPartyTO;
 import org.dcsa.core.events.model.transferobjects.EquipmentTO;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.model.transferobjects.UtilizedTransportEquipmentTO;
@@ -26,7 +25,6 @@ import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.skernel.model.enums.PartyFunction;
-import org.dcsa.skernel.model.transferobjects.LocationTO;
 import org.dcsa.skernel.service.LocationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,14 +57,23 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   @Transactional(readOnly = true)
   @Override
   public Mono<ShippingInstructionTO> findByReference(String shippingInstructionReference) {
-    return Mono.justOrEmpty(shippingInstructionReference)
-        .flatMap(shippingInstructionRepository::findByShippingInstructionReference)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.notFound(
-                    "No Shipping Instruction found with reference: "
-                        + shippingInstructionReference)))
+    return findEditableShippingInstructionByShippingInstructionReference(shippingInstructionReference)
         .flatMap(this::getDeepObjectsForShippingInstruction);
+  }
+
+  private Mono<ShippingInstruction> findEditableShippingInstructionByShippingInstructionReference(String shippingInstructionReference) {
+    return shippingInstructionRepository
+      .findLatestShippingInstructionByShippingInstructionReference(shippingInstructionReference)
+      .switchIfEmpty(
+        Mono.error(
+          ConcreteRequestErrorMessageException.notFound(
+            "No shipping instruction found with shipping instruction reference: "
+              + shippingInstructionReference)))
+      .filter(td -> Objects.isNull(td.getValidUntil()))
+      .switchIfEmpty(
+        Mono.error(
+          ConcreteRequestErrorMessageException.internalServerError(
+            "All shipping instructions are inactive, at least one active shipping instruction should be present.")));
   }
 
   @Transactional(readOnly = true)
@@ -232,7 +239,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
     return validateDocumentStatusOnBooking(shippingInstructionRequest)
         .flatMap(
             ignored ->
-                shippingInstructionRepository.findByShippingInstructionReference(
+                this.findEditableShippingInstructionByShippingInstructionReference(
                     shippingInstructionReference))
         .switchIfEmpty(
             Mono.error(
@@ -450,12 +457,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShipmentEvent> createShipmentEvent(ShippingInstruction shippingInstruction) {
-    return createShipmentEvent(shippingInstruction, null);
-  }
-
-  private Mono<ShipmentEvent> createShipmentEvent(
-      ShippingInstruction shippingInstruction, String reason) {
-    return shipmentEventFromShippingInstruction(shippingInstruction, reason)
+    return shipmentEventFromShippingInstruction(shippingInstruction)
         .flatMap(shipmentEventService::create)
         .switchIfEmpty(
             Mono.error(
@@ -495,9 +497,9 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-      ShippingInstruction shippingInstruction, String reason) {
+      ShippingInstruction shippingInstruction) {
     return getShipmentEventFromShippingInstruction(
-        reason,
+        null,
         shippingInstruction.getDocumentStatus(),
         shippingInstruction.getId(),
         shippingInstruction.getShippingInstructionReference(),

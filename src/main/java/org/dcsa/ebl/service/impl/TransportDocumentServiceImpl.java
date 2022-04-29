@@ -125,7 +125,7 @@ public class TransportDocumentServiceImpl
       String transportDocumentReference) {
 
     return Mono.justOrEmpty(transportDocumentReference)
-        .flatMap(transportDocumentRepository::findByTransportDocumentReferenceAndValidUntilIsNull)
+        .flatMap(this::findEditableTransportDocumentByTransportDocumentReference)
         .flatMap(
             transportDocument -> {
               TransportDocumentTO transportDocumentTO =
@@ -205,6 +205,7 @@ public class TransportDocumentServiceImpl
                           .flatMap(
                               shipmentTOs -> {
                                 // check if returned list is empty
+                                // TODO: This check does not seem like it belongs here? (and if it does, it is not a 404 but a 500)
                                 if (shipmentTOs.isEmpty()) {
                                   return Mono.error(
                                       ConcreteRequestErrorMessageException.notFound(
@@ -282,16 +283,28 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> createShipmentEventFromBookingTO(UUID bookingID, BookingTO bookingTO) {
-
     return shipmentEventFromBookingTO(bookingID, bookingTO, "Booking is approved")
         .flatMap(shipmentEventService::create);
   }
 
+  private Mono<TransportDocument> findEditableTransportDocumentByTransportDocumentReference(String transportDocumentReference) {
+    return transportDocumentRepository
+      .findLatestTransportDocumentByTransportDocumentReference(transportDocumentReference)
+      .switchIfEmpty(
+        Mono.error(
+          ConcreteRequestErrorMessageException.notFound(
+            "No transport document found with transport document reference: "
+              + transportDocumentReference)))
+      .filter(td -> Objects.isNull(td.getValidUntil()))
+      .switchIfEmpty(
+        Mono.error(
+          ConcreteRequestErrorMessageException.internalServerError(
+            "All transport documents are inactive, at least one active transport document should be present.")));
+  }
+
   Mono<? extends ShipmentEvent> createShipmentEventFromTransportDocumentTO(
       TransportDocumentTO transportDocumentTO) {
-
-    return transportDocumentRepository
-        .findByTransportDocumentReferenceAndValidUntilIsNull(transportDocumentTO.getTransportDocumentReference())
+    return findEditableTransportDocumentByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
         .flatMap(
             transportDocument ->
                 shipmentEventFromTransportDocumentTO(

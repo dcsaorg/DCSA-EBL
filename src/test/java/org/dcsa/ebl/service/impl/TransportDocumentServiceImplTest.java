@@ -387,7 +387,7 @@ class TransportDocumentServiceImplTest {
 
       carrier.setNmftaCode(null);
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -421,7 +421,7 @@ class TransportDocumentServiceImplTest {
       carrier.setNmftaCode(null);
 
       transportDocument.setPlaceOfIssue(null);
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(any())).thenReturn(Mono.empty());
@@ -453,7 +453,7 @@ class TransportDocumentServiceImplTest {
 
       carrier.setNmftaCode(null);
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -486,7 +486,7 @@ class TransportDocumentServiceImplTest {
 
       carrier.setNmftaCode(null);
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -519,7 +519,7 @@ class TransportDocumentServiceImplTest {
 
       carrier.setNmftaCode(null);
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -548,7 +548,7 @@ class TransportDocumentServiceImplTest {
     @Test
     @DisplayName("Get transport document without shipping instruction should return an error")
     void testFindTransportDocumentWithoutShippingInstruction() {
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -579,7 +579,7 @@ class TransportDocumentServiceImplTest {
     @DisplayName(
         "Test transportDocument without issuer carrier should return transport document without issuer")
     void testGetTransportDocumentWithNoIssuerCarrierFound() {
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.empty());
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -610,13 +610,18 @@ class TransportDocumentServiceImplTest {
     @DisplayName(
         "No transport document found for transport document reference should return an empty result.")
     void testNoTransportDocumentFound() {
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
                   "TransportDocumentReference1"))
-          .verifyComplete();
+        .expectErrorMatches(
+          throwable ->
+            throwable instanceof ConcreteRequestErrorMessageException
+              && ((ConcreteRequestErrorMessageException) throwable).getReason().equals("notFound")
+              && throwable.getMessage().equals("No transport document found with transport document reference: TransportDocumentReference1")
+        ).verify();
     }
 
     @Test
@@ -660,7 +665,7 @@ class TransportDocumentServiceImplTest {
         "Approve at transport document with valid reference should return transport document with SI & bookings "
             + "document statuses set to APPR & CMPL respectively")
     void testApproveTransportDocument() {
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -705,7 +710,7 @@ class TransportDocumentServiceImplTest {
     @DisplayName(
         "No transport document found for transport document reference should raise a mono error")
     void testNoTransportDocumentFoundToApprove() {
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
@@ -719,7 +724,7 @@ class TransportDocumentServiceImplTest {
                       && throwable
                           .getMessage()
                           .equals(
-                              "No Transport Document found with ID: TransportDocumentReference1"))
+                              "No transport document found with transport document reference: TransportDocumentReference1"))
           .verify();
     }
 
@@ -735,7 +740,7 @@ class TransportDocumentServiceImplTest {
           transportDocumentTO.getShippingInstruction().getDocumentStatus(),
           ShipmentEventTypeCode.RECE);
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -768,7 +773,7 @@ class TransportDocumentServiceImplTest {
         "Approving a transport document that has a SI with no shipments  should raise a mono error")
     void testApproveTransportDocumentThatHasShippingInstructionWithNoShipments() {
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -808,7 +813,7 @@ class TransportDocumentServiceImplTest {
         "Approving a transport document that has a SI with no booking in any of the shipments should raise a mono error")
     void testApproveTransportDocumentThatHasShippingInstructionWithNoBookingInShipment() {
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -852,7 +857,7 @@ class TransportDocumentServiceImplTest {
 
       String transportDocumentReference = "TransportDocumentReference1";
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
@@ -900,7 +905,7 @@ class TransportDocumentServiceImplTest {
 
       String transportDocumentReference = "TransportDocumentReference1";
 
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
+      when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
       when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
