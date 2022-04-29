@@ -122,7 +122,7 @@ class ShippingInstructionIT {
         .body(
             "errors[0].message",
             containsString(
-                "No Shipping Instruction found with reference: "
+                "No shipping instruction found with shipping instruction reference: "
                     + invalidShippingInstructionReference))
         .body("statusCode", equalTo(404))
         .body("statusCodeText", equalTo("Not Found"))

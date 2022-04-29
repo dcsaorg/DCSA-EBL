@@ -14,7 +14,11 @@ import java.util.UUID;
 public interface ShippingInstructionRepository
     extends ExtendedRepository<ShippingInstruction, UUID>, ShippingInstructionCustomRepository {
 
-  Mono<ShippingInstruction> findByShippingInstructionReference(String shippingInstructionReference);
+  @Query(
+    "SELECT si.* FROM shipping_instruction si"
+      + " WHERE si.shipping_instruction_reference = :transportDocumentReference"
+      + " ORDER BY si.valid_until NULLS FIRST LIMIT 1")
+  Mono<ShippingInstruction> findLatestShippingInstructionByShippingInstructionReference(String shippingInstructionReference);
 
   @Modifying
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")

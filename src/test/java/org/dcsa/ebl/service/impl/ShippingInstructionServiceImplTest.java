@@ -4,7 +4,6 @@ import org.dcsa.core.events.edocumentation.model.mapper.ShipmentMapper;
 import org.dcsa.core.events.edocumentation.model.transferobject.ConsignmentItemTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentTO;
 import org.dcsa.core.events.edocumentation.service.ConsignmentItemService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.*;
@@ -1020,7 +1019,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -1113,7 +1112,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -1187,7 +1186,7 @@ class ShippingInstructionServiceImplTest {
 
       // finds
       when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -1250,7 +1249,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByCarrierBookingReference(any())).thenReturn(Flux.just(booking));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
 
@@ -1274,7 +1273,7 @@ class ShippingInstructionServiceImplTest {
 
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.empty());
       when(bookingRepository.findAllByCarrierBookingReference(any()))
           .thenReturn(Flux.just(booking));
@@ -1287,7 +1286,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No Shipping Instruction found with reference: "
+                    "No shipping instruction found with shipping instruction reference: "
                         + shippingInstruction.getShippingInstructionReference(),
                     throwable.getMessage());
               })
@@ -1434,7 +1433,7 @@ class ShippingInstructionServiceImplTest {
 
       String invalidShippingInstructionReference = UUID.randomUUID().toString();
 
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
@@ -1443,7 +1442,7 @@ class ShippingInstructionServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No Shipping Instruction found with reference: "
+                    "No shipping instruction found with shipping instruction reference: "
                         + invalidShippingInstructionReference,
                     throwable.getMessage());
               })
@@ -1454,7 +1453,7 @@ class ShippingInstructionServiceImplTest {
     @DisplayName("Test GET shipping instruction for an assumed valid ID.")
     void testGetShippingInstructionForValidID() {
       String stubbedCRef = UUID.randomUUID().toString();
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
           .thenReturn(Flux.just(stubbedCRef));
