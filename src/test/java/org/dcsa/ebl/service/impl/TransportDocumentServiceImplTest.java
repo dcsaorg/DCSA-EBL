@@ -687,7 +687,7 @@ class TransportDocumentServiceImplTest {
       when(shipmentEventService.create(any())).thenReturn(Mono.just(new ShipmentEvent()));
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
+              transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
                 assertNotNull(transportDocumentTOResponse.getShippingInstruction());
@@ -709,7 +709,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Mono.empty());
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
+              transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .expectErrorMatches(
               throwable ->
                   throwable instanceof ConcreteRequestErrorMessageException
@@ -749,7 +749,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
+              transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .expectErrorMatches(
               throwable ->
                   throwable instanceof ConcreteRequestErrorMessageException
@@ -788,7 +788,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(booking));
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
+              transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .expectErrorMatches(
               throwable ->
                   throwable instanceof ConcreteRequestErrorMessageException
@@ -829,7 +829,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(booking));
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
+              transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .expectErrorMatches(
               throwable ->
                   throwable instanceof IllegalStateException
@@ -875,7 +875,7 @@ class TransportDocumentServiceImplTest {
             .thenReturn(Flux.just(booking));
 
         StepVerifier.create(
-                transportDocumentServiceImpl.ApproveTransportDocument(
+                transportDocumentServiceImpl.approveTransportDocument(
                     "TransportDocumentReference1"))
             .expectErrorSatisfies(
                 throwable -> {
@@ -915,7 +915,7 @@ class TransportDocumentServiceImplTest {
       when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument(transportDocumentReference))
+              transportDocumentServiceImpl.approveTransportDocument(transportDocumentReference))
           .expectErrorSatisfies(
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);

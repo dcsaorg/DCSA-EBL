@@ -172,7 +172,7 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentTO> ApproveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentTO> approveTransportDocument(String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
