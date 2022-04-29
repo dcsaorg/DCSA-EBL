@@ -1022,7 +1022,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -1115,7 +1115,7 @@ class ShippingInstructionServiceImplTest {
       // finds
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class)))
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class)))
           .thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
@@ -1189,7 +1189,7 @@ class ShippingInstructionServiceImplTest {
 
       // finds
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any())).thenReturn(Mono.just(booking));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
 
       ArgumentCaptor<ShippingInstructionTO> argumentCaptor =
           ArgumentCaptor.forClass(ShippingInstructionTO.class);
@@ -1252,7 +1252,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setUtilizedTransportEquipments(null);
 
       when(shippingInstructionRepository.save(any())).thenReturn(Mono.just(shippingInstruction));
-      when(shippingInstructionRepository.findByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findLatestShippingInstructionByShippingInstructionReference(any(String.class))).thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any())).thenReturn(Mono.just(booking));
       when(shipmentEventService.create(any())).thenAnswer(arguments -> Mono.empty());
 
