@@ -14,5 +14,5 @@ public interface TransportDocumentService
 
   Mono<TransportDocumentTO> findByTransportDocumentReference(String transportDocumentReference);
 
-  Mono<TransportDocumentTO> ApproveTransportDocument(String transportDocumentReference);
+  Mono<TransportDocumentTO> approveTransportDocument(String transportDocumentReference);
 }

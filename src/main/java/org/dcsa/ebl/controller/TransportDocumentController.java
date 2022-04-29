@@ -41,6 +41,6 @@ public class TransportDocumentController {
   public Mono<TransportDocumentTO> updateTransportDocumentReference(
       @PathVariable String transportDocumentReference,
       @RequestBody @Valid ApproveTransportDocumentRequestTO approveTransportDocumentRequestTO) {
-    return transportDocumentService.ApproveTransportDocument(transportDocumentReference);
+    return transportDocumentService.approveTransportDocument(transportDocumentReference);
   }
 }
