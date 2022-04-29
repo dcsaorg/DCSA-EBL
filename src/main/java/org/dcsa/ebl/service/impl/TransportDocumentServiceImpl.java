@@ -37,8 +37,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.dcsa.ebl.service.impl.ShippingInstructionServiceImpl.getShipmentEventFromShippingInstruction;
-
 @RequiredArgsConstructor
 @Service
 public class TransportDocumentServiceImpl
@@ -244,10 +242,8 @@ public class TransportDocumentServiceImpl
                                                 .doOnNext(shipmentTO::setBooking))
                                     .then(Mono.just(shipmentTOs));
                               })
-                          .flatMap(
-                              shipmentTOs -> createShipmentEventFromShippingInstruction( //ToDo need shipments when reintroducing the transportplan
-                                      shippingInstructionTO)
-                                  .thenReturn(shippingInstructionTO))
+                          //ToDo need shipments when reintroducing the transport plan
+                          .thenReturn(shippingInstructionTO)
                           .doOnNext(TdTO::setShippingInstruction))
                   .thenReturn(TdTO);
             })
@@ -288,12 +284,7 @@ public class TransportDocumentServiceImpl
   Mono<ShipmentEvent> createShipmentEventFromBookingTO(UUID bookingID, BookingTO bookingTO) {
 
     return shipmentEventFromBookingTO(bookingID, bookingTO, "Booking is approved")
-        .flatMap(shipmentEventService::create)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.internalServerError(
-                    "Failed to create shipment event for transport Document:"
-                        + bookingTO.getCarrierBookingRequestReference())));
+        .flatMap(shipmentEventService::create);
   }
 
   Mono<? extends ShipmentEvent> createShipmentEventFromTransportDocumentTO(
@@ -307,12 +298,7 @@ public class TransportDocumentServiceImpl
                     transportDocument.getId(),
                     transportDocumentTO,
                     "Transport document is approved"))
-        .flatMap(shipmentEventService::create)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.internalServerError(
-                    "Failed to create shipment event for transport Document:"
-                        + transportDocumentTO.getTransportDocumentReference())));
+        .flatMap(shipmentEventService::create);
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
@@ -361,31 +347,4 @@ public class TransportDocumentServiceImpl
         .collectList();
   }
 
-  private Mono<ShipmentEvent> createShipmentEventFromShippingInstruction(
-      ShippingInstructionTO shippingInstruction) {
-    return shippingInstructionRepository
-        .findByShippingInstructionReference(shippingInstruction.getShippingInstructionReference())
-        .flatMap(
-            si ->
-                shipmentEventFromShippingInstruction(
-                    si.getId(),
-                    shippingInstruction,
-                    "All bookings in shipping instruction are approved"))
-        .flatMap(shipmentEventService::create)
-        .switchIfEmpty(
-            Mono.error(
-                ConcreteRequestErrorMessageException.invalidParameter(
-                    "Failed to create shipment event for ShippingInstruction: "
-                        + shippingInstruction.getShippingInstructionReference())));
-  }
-
-  private Mono<ShipmentEvent> shipmentEventFromShippingInstruction(
-      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO, String reason) {
-    return getShipmentEventFromShippingInstruction(
-        reason,
-        shippingInstructionTO.getDocumentStatus(),
-        shippingInstructionID,
-        shippingInstructionTO.getShippingInstructionReference(),
-        shippingInstructionTO.getShippingInstructionUpdatedDateTime());
-  }
 }

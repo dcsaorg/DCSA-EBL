@@ -674,8 +674,6 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
           .thenReturn(Mono.empty());
-      when(shippingInstructionRepository.findByShippingInstructionReference(any()))
-          .thenReturn(Mono.just(shippingInstruction));
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
       when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any()))
@@ -845,54 +843,6 @@ class TransportDocumentServiceImplTest {
                                       .getShippingInstruction()
                                       .getShippingInstructionReference()
                                   + " does not exist!"))
-          .verify();
-    }
-
-    @Test
-    @DisplayName("Approving a transport document that fails when a shipment event is being created")
-    void testApproveTransportDocumentThatFailsOnShipmentCreation() {
-
-      when(transportDocumentRepository.findByTransportDocumentReferenceAndValidUntilIsNull((String) any()))
-          .thenReturn(Mono.just(transportDocument));
-      when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
-      when(locationService.fetchLocationDeepObjByID(shippingInstructionTO.getPlaceOfIssueID()))
-          .thenReturn(Mono.just(locationTO));
-      when(shippingInstructionService.findByID(transportDocument.getShippingInstructionID()))
-          .thenReturn(Mono.just(shippingInstructionTO));
-      when(chargeService.fetchChargesByTransportDocumentID(transportDocument.getId()))
-          .thenReturn(Flux.just(chargeTO));
-      when(carrierClauseService.fetchCarrierClausesByTransportDocumentReference(
-              transportDocumentTO.getTransportDocumentReference()))
-          .thenReturn(Flux.just(carrierClauseTO));
-      when(shippingInstructionRepository.setDocumentStatusByReference(any(), any(), any()))
-          .thenReturn(Mono.empty());
-      when(shippingInstructionRepository.findByShippingInstructionReference(any()))
-          .thenReturn(Mono.just(shippingInstruction));
-      when(bookingRepository.findAllByShippingInstructionReference(any()))
-          .thenReturn(Flux.just(booking));
-      when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any()))
-          .thenReturn(Mono.just(new Booking()));
-      when(bookingRepository
-              .updateDocumentStatusAndUpdatedDateTimeForCarrierBookingRequestReference(
-                  any(), any(), any()))
-          .thenReturn(Mono.empty());
-      when(shipmentService.findByShippingInstructionReference(any()))
-          .thenReturn((Mono.just(List.of(shipmentTO))));
-      when(shipmentEventService.create(any())).thenReturn(Mono.empty());
-
-      StepVerifier.create(
-              transportDocumentServiceImpl.ApproveTransportDocument("TransportDocumentReference1"))
-          .expectErrorMatches(
-              throwable ->
-                  throwable instanceof ConcreteRequestErrorMessageException
-                      && ((ConcreteRequestErrorMessageException) throwable)
-                          .getReason()
-                          .equals("invalidParameter")
-                      && throwable
-                          .getMessage()
-                          .equals(
-                              "Failed to create shipment event for ShippingInstruction: "
-                                  + shippingInstructionTO.getShippingInstructionReference()))
           .verify();
     }
 
