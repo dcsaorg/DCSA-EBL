@@ -348,7 +348,17 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
         .flatMap(
             carrierBookingReference ->
                 bookingRepository
-                    .findAllByCarrierBookingReferenceWhereValidUntilIsNull(carrierBookingReference)
+                    .findCarrierBookingReferenceAndValidUntilIsNull(carrierBookingReference)
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.notFound(
+                                "No booking found with carrier booking reference: "
+                                    + carrierBookingReference)))
+                    .filter(booking -> Objects.isNull(booking.getValidUntil()))
+                    .switchIfEmpty(
+                        Mono.error(
+                            ConcreteRequestErrorMessageException.internalServerError(
+                                "All bookings are inactive, at least one active booking should be present.")))
                     .flatMap(
                         booking -> {
                           if (!ShipmentEventTypeCode.CONF.equals(booking.getDocumentStatus())) {
