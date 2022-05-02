@@ -1,4 +1,8 @@
 
+dcsa:
+  specification:
+    version: 2.0.0
+
 # Possibility to change the separator between the sortable field and the direction (ASC or DESC). Default value is : (colon) - can be changed to e.g. | by writing
 #sort:
 #  direction:

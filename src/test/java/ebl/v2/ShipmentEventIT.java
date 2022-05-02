@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.matchesRegex;
 
 class ShipmentEventIT {
 
@@ -32,7 +33,7 @@ class ShipmentEventIT {
   }
 
   @Test
-  void testGetAllEvents() {
+  void testGetAllEventsAndHeaders() {
     given()
       .contentType("application/json")
       .get("/v2/events")
@@ -40,6 +41,10 @@ class ShipmentEventIT {
       .assertThat()
       .statusCode(200)
       .contentType(ContentType.JSON)
+      .header("API-Version", equalTo("2.0.0"))
+      .header("Current-Page", matchesRegex("^http://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
+      .header("Next-Page", matchesRegex("^http://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
+      .header("Last-Page", matchesRegex("^http://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
       .body("size()", greaterThanOrEqualTo(0))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
