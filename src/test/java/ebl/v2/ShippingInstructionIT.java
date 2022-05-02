@@ -96,7 +96,7 @@ class ShippingInstructionIT {
         .body(
             "errors[0].message",
             containsString(
-                "No booking found for carrier booking reference: "
+                "No booking found with carrier booking reference: "
                     + map.get("carrierBookingReference")))
         .body("statusCode", equalTo(404))
         .body("statusCodeText", equalTo("Not Found"))
