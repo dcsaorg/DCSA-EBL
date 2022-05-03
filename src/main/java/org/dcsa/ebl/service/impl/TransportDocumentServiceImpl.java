@@ -153,8 +153,7 @@ public class TransportDocumentServiceImpl
                           .collectList()
                           .doOnNext(transportDocumentTO::setCharges),
                       carrierClauseService
-                          .fetchCarrierClausesByTransportDocumentReference(
-                              transportDocumentReference)
+                          .fetchCarrierClausesByTransportDocumentID(transportDocument.getId())
                           .collectList()
                           .doOnNext(transportDocumentTO::setCarrierClauses))
                   .thenReturn(transportDocumentTO);
