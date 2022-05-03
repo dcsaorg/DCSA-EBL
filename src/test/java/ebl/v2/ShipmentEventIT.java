@@ -48,7 +48,8 @@ class ShipmentEventIT {
       .body("size()", greaterThanOrEqualTo(0))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
-      .body(jsonSchemaValidator("shipmentEvent"));
+      .body(jsonSchemaValidator("shipmentEvent"))
+    ;
   }
 
   @Test
@@ -66,6 +67,7 @@ class ShipmentEventIT {
         .body("eventType", everyItem(equalTo("SHIPMENT")))
         .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("shipmentEventTypeCode", everyItem(m))
+        .body(jsonSchemaValidator("shipmentEvent"))
     ;
 
     runner.accept("APPR,ISSU", anyOf(equalTo("APPR"), equalTo("ISSU")));
@@ -88,6 +90,7 @@ class ShipmentEventIT {
         .body("eventType", everyItem(equalTo("SHIPMENT")))
         .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("documentTypeCode", everyItem(m))
+        .body(jsonSchemaValidator("shipmentEvent"))
       ;
     runner.accept("SHI,TRD", anyOf(equalTo("SHI"), equalTo("TRD")));
     runner.accept("SHI", equalTo("SHI"));
@@ -107,6 +110,7 @@ class ShipmentEventIT {
       .statusCode(200)
       .contentType(ContentType.JSON)
       .body("size()", equalTo(0))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -128,6 +132,7 @@ class ShipmentEventIT {
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(3))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -149,6 +154,7 @@ class ShipmentEventIT {
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'CBR' }.size()", greaterThanOrEqualTo(3))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'CBR' }.documentReferenceValue", everyItem(equalTo("CARRIER_BOOKING_REQUEST_REFERENCE_01")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -170,6 +176,7 @@ class ShipmentEventIT {
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'TRD' }.size()", greaterThanOrEqualTo(3))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'TRD' }.documentReferenceValue", everyItem(equalTo("2b02401c-b2fb-5009")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -201,6 +208,7 @@ class ShipmentEventIT {
       ))))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(3))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -234,6 +242,7 @@ class ShipmentEventIT {
       ))))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(1))
       .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
