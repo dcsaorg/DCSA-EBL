@@ -17,7 +17,13 @@ import java.util.function.BiConsumer;
 
 import static ebl.config.TestConfig.jsonSchemaValidator;
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.matchesRegex;
 
 class ShipmentEventIT {
 
@@ -27,7 +33,7 @@ class ShipmentEventIT {
   }
 
   @Test
-  void testGetAllEvents() {
+  void testGetAllEventsAndHeaders() {
     given()
       .contentType("application/json")
       .get("/v2/events")
@@ -35,10 +41,15 @@ class ShipmentEventIT {
       .assertThat()
       .statusCode(200)
       .contentType(ContentType.JSON)
+      .header("API-Version", equalTo("2.0.0"))
+      .header("Current-Page", matchesRegex("^https?://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
+      .header("Next-Page", matchesRegex("^https?://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
+      .header("Last-Page", matchesRegex("^https?://.*/v2/events\\?cursor=[a-zA-Z\\d]*$"))
       .body("size()", greaterThanOrEqualTo(0))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
-      .body(jsonSchemaValidator("shipmentEvent"));
+      .body(jsonSchemaValidator("shipmentEvent"))
+    ;
   }
 
   @Test
@@ -56,6 +67,7 @@ class ShipmentEventIT {
         .body("eventType", everyItem(equalTo("SHIPMENT")))
         .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("shipmentEventTypeCode", everyItem(m))
+        .body(jsonSchemaValidator("shipmentEvent"))
     ;
 
     runner.accept("APPR,ISSU", anyOf(equalTo("APPR"), equalTo("ISSU")));
@@ -78,6 +90,7 @@ class ShipmentEventIT {
         .body("eventType", everyItem(equalTo("SHIPMENT")))
         .body("eventClassifierCode", everyItem(equalTo("ACT")))
         .body("documentTypeCode", everyItem(m))
+        .body(jsonSchemaValidator("shipmentEvent"))
       ;
     runner.accept("SHI,TRD", anyOf(equalTo("SHI"), equalTo("TRD")));
     runner.accept("SHI", equalTo("SHI"));
@@ -97,6 +110,7 @@ class ShipmentEventIT {
       .statusCode(200)
       .contentType(ContentType.JSON)
       .body("size()", equalTo(0))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -116,8 +130,9 @@ class ShipmentEventIT {
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
-    // TODO: Assert that document references contain the carrier booking reference 832deb4bd4ea4b728430b857c59bd057
-    // (Needs a fix for DDT-928 first)
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(3))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -137,8 +152,31 @@ class ShipmentEventIT {
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
-    // TODO: Assert that document references contain the carrier booking request reference CARRIER_BOOKING_REQUEST_REFERENCE_01
-    // (Needs a fix for DDT-928 first)
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'CBR' }.size()", greaterThanOrEqualTo(3))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'CBR' }.documentReferenceValue", everyItem(equalTo("CARRIER_BOOKING_REQUEST_REFERENCE_01")))
+      .body(jsonSchemaValidator("shipmentEvent"))
+    ;
+  }
+
+  @Test
+  void testGetAllEventsByTransportDocumentReference() {
+    given()
+      .contentType("application/json")
+      .queryParam("transportDocumentReference", "2b02401c-b2fb-5009")
+      .get("/v2/events")
+      .then()
+      .assertThat()
+      .statusCode(200)
+      .contentType(ContentType.JSON)
+      // The test data includes at least 3 shipment events related to the reference. But something adding additional
+      // events.
+      .body("size()", greaterThanOrEqualTo(3))
+      .body("eventType", everyItem(equalTo("SHIPMENT")))
+      .body("eventClassifierCode", everyItem(equalTo("ACT")))
+      .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'TRD' }.size()", greaterThanOrEqualTo(3))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'TRD' }.documentReferenceValue", everyItem(equalTo("2b02401c-b2fb-5009")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -162,12 +200,15 @@ class ShipmentEventIT {
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
-      .body("eventCreatedDateTime", everyItem(asDateTime(allOf(
+      .body("eventCreatedDateTime", everyItem(
+        asDateTime(
+          allOf(
             greaterThanOrEqualTo(ZonedDateTime.parse(rangeStart)),
             lessThan(ZonedDateTime.parse(rangeEnd))
       ))))
-      // TODO: Assert that document references contain the carrier booking reference 832deb4bd4ea4b728430b857c59bd057
-      // (Needs a fix for DDT-928 first)
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(3))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
@@ -193,14 +234,15 @@ class ShipmentEventIT {
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
-      .body("eventCreatedDateTime", everyItem(asDateTime(allOf(
-        greaterThanOrEqualTo(ZonedDateTime.parse(rangeStart)),
-        lessThan(ZonedDateTime.parse(rangeEnd))
+      .body("eventCreatedDateTime", everyItem(
+        asDateTime(
+          allOf(
+            greaterThanOrEqualTo(ZonedDateTime.parse(rangeStart)),
+            lessThan(ZonedDateTime.parse(rangeEnd))
       ))))
-    // TODO: Assert that document references contain the carrier booking reference 832deb4bd4ea4b728430b857c59bd057
-    // (Needs a fix for DDT-928 first)
-    // Note: The carrier booking reference must be present in the range due to the date range (but others could
-    // be present as well).
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.size()", greaterThanOrEqualTo(1))
+      .body("documentReferences.flatten().findAll { it.documentReferenceType == 'BKG' }.documentReferenceValue", everyItem(equalTo("832deb4bd4ea4b728430b857c59bd057")))
+      .body(jsonSchemaValidator("shipmentEvent"))
     ;
   }
 
