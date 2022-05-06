@@ -1,55 +1,61 @@
 package org.dcsa.ebl.model.transferobjects;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.dcsa.ebl.model.Location;
-import org.dcsa.ebl.model.TransportPlan;
-import org.dcsa.ebl.model.base.AbstractTransportDocument;
-import org.dcsa.ebl.model.enums.ServiceType;
-import org.dcsa.ebl.model.enums.ShipmentTerm;
+import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
+import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
+import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.skernel.model.transferobjects.LocationTO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class TransportDocumentTO extends AbstractTransportDocument {
+public class TransportDocumentTO {
 
-    @Valid
-    @JsonProperty("placeOfIssue")
-    private Location placeOfIssueLocation;
+  @Size(max = 20)
+  private String transportDocumentReference;
 
-    @Valid
-    private ShipmentTerm shipmentTermAtOrigin;
+  private OffsetDateTime transportDocumentCreatedDateTime;
 
-    @Valid
-    private ShipmentTerm shipmentTermAtDestination;
+  private OffsetDateTime transportDocumentUpdatedDateTime;
 
-    @Valid
-    private ServiceType serviceTypeAtOrigin;
+  private LocalDate issueDate;
 
-    @Valid
-    private ServiceType serviceTypeAtDestination;
+  private LocalDate shippedOnBoardDate;
 
-    @Valid
-    @Size(max = 30)
-    private String serviceContract;
+  private LocalDate receivedForShipmentDate;
 
-    @Valid
-    private ShippingInstructionTO shippingInstruction;
+  private Integer numberOfOriginals;
 
-    @Valid
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<ChargeTO> charges;
+  @Size(max = 4)
+  private String issuerCode;
 
-    @Valid
-    private List<ClauseTO> clauses;
+  private CarrierCodeListProvider issuerCodeListProvider;
 
-    @Valid
-    private TransportPlan transportPlan;
+  @Size(max = 3, message = "Declared Value Currency has a max size of 3.")
+  private String declaredValueCurrency;
+
+  private Double declaredValue;
+
+  private Integer numberOfRiderPages;
+
+  @Valid private LocationTO placeOfIssue;
+
+  @Valid
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private ShippingInstructionTO shippingInstruction;
+
+  @Valid
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private List<ChargeTO> charges;
+
+//  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  @Valid private List<CarrierClauseTO> carrierClauses;
 }

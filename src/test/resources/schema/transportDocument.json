@@ -1,0 +1,227 @@
+{
+  "required": [
+    "shippingInstruction",
+    "transportDocumentReference"
+  ],
+  "type": "object",
+  "description": "The document that governs the terms of carriage between shipper and carrier for maritime transportation. Two distinct types of transport documents exist:\n- Bill of Lading\n- Sea Waybill. \n",
+  "additionalProperties": false,
+  "properties": {
+    "transportDocumentReference": {
+      "maxLength": 20,
+      "type": "string",
+      "description": "A unique number allocated by the shipping line to the transport document and the main number used for the tracking of the status of the shipment.\n"
+    },
+    "transportDocumentCreatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the TransportDocument was created\n",
+      "format": "date-time"
+    },
+    "transportDocumentUpdatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the TransportDocument was updated\n",
+      "format": "date-time"
+    },
+    "issueDate": {
+      "type": "string",
+      "description": "Date when the transport document has been issued"
+    },
+    "shippedOnBoardDate": {
+      "type": "string",
+      "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document."
+    },
+    "receivedForShipmentDate": {
+      "type": "string",
+      "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel)."
+    },
+    "numberOfOriginals": {
+      "type": "integer",
+      "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n"
+    },
+    "issuerCode": {
+      "maxLength": 4,
+      "type": "string",
+      "description": "The code containing the SCAC and/or the SMGD code to specify the issuing carrier.  Details about the issuer can be given in the Document Parties entity using the party function code MS.\n"
+    },
+    "issuerCodeListProvider": {
+      "type": "string",
+      "description": "The provider used for identifying the issuer Code\n",
+      "enum": [
+        "SMDG",
+        "NMFTA"
+      ]
+    },
+    "declaredValueCurrency": {
+      "maxLength": 3,
+      "type": "string",
+      "description": "The currency used for the declared value, using the 3-character code defined by ISO 4217."
+    },
+    "declaredValue": {
+      "type": "number",
+      "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper."
+    },
+    "numberOfRiderPages": {
+      "type": "integer",
+      "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents."
+    },
+    "placeOfIssue": {
+      "type": "object",
+      "description": "General purpose object to capture location-related data, the location can be specified in **any** of the following ways: `geoLocation` (lat+long), `UN Location Code`, a `Facility` or an `Address`.\n\nIf multiple ways are used - then they all have to point to the same location!\n",
+      "additionalProperties": false,
+      "properties": {
+        "locationName": {
+          "maxLength": 100,
+          "type": "string",
+          "description": "The name of the location."
+        },
+        "latitude": {
+          "maxLength": 10,
+          "type": "string",
+          "description": "Geographic coordinate that specifies the north–south position of a point on the Earth&apos;s surface."
+        },
+        "longitude": {
+          "maxLength": 11,
+          "type": "string",
+          "description": "Geographic coordinate that specifies the east–west position of a point on the Earth&apos;s surface."
+        },
+        "UNLocationCode": {
+          "maxLength": 5,
+          "type": "string",
+          "description": "The UN Location code specifying where the place is located."
+        },
+        "facilityCode": {
+          "maxLength": 6,
+          "type": "string",
+          "description": "The code used for identifying the specific facility. This code does <b>not</b> include the UN Location Code.\n"
+        },
+        "facilityCodeListProvider": {
+          "type": "string",
+          "description": "The provider used for identifying the facility Code\n",
+          "enum": [
+            "BIC",
+            "SMDG"
+          ]
+        },
+        "address": {
+          "description": "Address related information",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "maxLength": 100,
+              "type": "string",
+              "description": "Name of the address"
+            },
+            "street": {
+              "maxLength": 100,
+              "type": "string",
+              "description": "The name of the street of the party’s address."
+            },
+            "streetNumber": {
+              "maxLength": 50,
+              "type": "string",
+              "description": "The number of the street of the party’s address."
+            },
+            "floor": {
+              "maxLength": 50,
+              "type": "string",
+              "description": "The floor of the party’s street number."
+            },
+            "postCode": {
+              "maxLength": 10,
+              "type": "string",
+              "description": "The post code of the party’s address."
+            },
+            "city": {
+              "maxLength": 65,
+              "type": "string",
+              "description": "The city name of the party’s address."
+            },
+            "stateRegion": {
+              "maxLength": 65,
+              "type": "string",
+              "description": "The state/region of the party’s address."
+            },
+            "country": {
+              "maxLength": 75,
+              "type": "string",
+              "description": "The country of the party’s address."
+            }
+          }
+        }
+      }
+    },
+    "shippingInstruction": {
+      "$ref": "shippingInstruction.json"
+    },
+    "charges": {
+      "type": "array",
+      "items": {
+        "required": [
+          "calculationBasis",
+          "chargeType",
+          "currencyAmount",
+          "currencyCode",
+          "paymentTermCode",
+          "quantity",
+          "unitPrice"
+        ],
+        "type": "object",
+        "description": "addresses the monetary value of freight and other service charges for a transport document.\n",
+        "additionalProperties": false,
+        "properties": {
+          "chargeType": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "Free text field describing the charge type to apply\n"
+          },
+          "currencyAmount": {
+            "type": "number",
+            "description": "The monetary value of all freight and other service charges for a transport document, with a maximum of 2-digit decimals."
+          },
+          "currencyCode": {
+            "maxLength": 3,
+            "type": "string",
+            "description": "The currency for the charge, using a 3-character code (ISO 4217)."
+          },
+          "paymentTermCode": {
+            "type": "string",
+            "description": "Indicates whether freight & charges are due for payment before the shipment is effected, practically before the transport document is released to shipper (Prepaid) or before the shipment is finalized meaning cargo released to consignee (Collect)\n- PRE (Prepaid)\n- COL (Collect)\n",
+            "enum": [
+              "PRE",
+              "COL"
+            ]
+          },
+          "calculationBasis": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "The code specifying the measure unit used for the corresponding unit price for this cost, such as per day, per ton, per square metre."
+          },
+          "unitPrice": {
+            "type": "number",
+            "description": "The unit price of this charge item in the currency of the charge."
+          },
+          "quantity": {
+            "type": "number",
+            "description": "The amount of unit for this charge item."
+          }
+        }
+      }
+    },
+    "carrierClauses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "description": "comprises clauses, added by the carrier to the Transport Document, which are subject to local rules/guidelines or certain mandatory information required to be shared with the customer. Usually printed below the cargo description.\n",
+        "additionalProperties": false,
+        "properties": {
+          "clauseContent": {
+            "type": "string",
+            "description": "The content of the clause."
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

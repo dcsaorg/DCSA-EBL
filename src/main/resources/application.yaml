@@ -41,17 +41,7 @@ spring:
         jwt:
           issuer-uri: https://dcsa.eu.auth0.com/
   webflux:
-    base-path: /v1
-
-auth0:
-  audience: localhost
-  enabled: true
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    # swagger-ui custom path
-    path: /docs
+    base-path: /v2
 
 server:
   port: 9090
@@ -61,5 +51,8 @@ server:
 
 logging:
   level:
-    dk: DEBUG
-
+    root: ${ROOT_LOG_LEVEL:INFO}
+    org:
+      springframework:
+        r2dbc: ${R2DBC_LOG_LEVEL:INFO}
+      dcsa: ${DCSA_LOG_LEVEL:INFO}

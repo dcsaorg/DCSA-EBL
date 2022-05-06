@@ -1,29 +1,31 @@
 package org.dcsa.ebl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.dcsa.core.repository.ExtendedRepositoryImpl;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
+
+import java.text.SimpleDateFormat;
 
 @SpringBootApplication
-@ComponentScan("org.dcsa")
-@EnableR2dbcRepositories(basePackages = {"org.dcsa"}, repositoryBaseClass = ExtendedRepositoryImpl.class)
 public class Application {
 
-	@Bean
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper()
-				.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-				.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
-				.findAndRegisterModules();
-	}
+  @Bean
+  public ObjectMapper objectMapper() {
+    return new ObjectMapper()
+        .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+        .setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
+        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .findAndRegisterModules();
+  }
 
-
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 }

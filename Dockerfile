@@ -1,12 +1,6 @@
-FROM debian:buster
-
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade \
-    && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
-        openjdk-11-jre-headless \
-    && rm -rf /var/lib/apt/lists/*
+FROM eclipse-temurin:17-jre-alpine
 
 EXPOSE 9090
 ENV db_hostname dcsa_db
-COPY target/dcsa_ebl-*.war .
-CMD java -jar dcsa_ebl-*.war
+COPY target/dcsa_ebl-*.jar .
+CMD java -jar dcsa_ebl-*.jar

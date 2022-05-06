@@ -1,0 +1,119 @@
+{
+  "type": "array",
+  "items": {
+    "required": [
+      "documentStatus",
+      "isElectronic",
+      "isShippedOnboardType",
+      "isToOrder",
+      "shippingInstructionCreatedDateTime",
+      "shippingInstructionReference",
+      "shippingInstructionUpdatedDateTime"
+    ],
+    "type": "object",
+    "description": "A 'shallow' representation of the Shipping Instruction. This version of the Shipping Instruction does not contain nested objects. For a 'rich' version of the Shipping Instruction please use the `GET` endPoint.\n",
+    "additionalProperties": false,
+    "properties": {
+      "shippingInstructionReference": {
+        "maxLength": 100,
+        "type": "string",
+        "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n"
+      },
+      "documentStatus": {
+        "type": "string",
+        "description": "The status of the Bill of Lading. Possible values are:\n- RECE (Received)\n- PENU (Pending Update)\n- DRFT (Draft)\n- PENA (Pending Approval)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- VOID (Void)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>. Be aware that the list linked to is the `ShipmentEventTypeCodes` which is equivalent to `documentStatus`, the list is a subset of the possible values.\n",
+        "enum": [
+          "RECE",
+          "PENU",
+          "DRFT",
+          "PENA",
+          "APPR",
+          "ISSU",
+          "SURR",
+          "VOID"
+        ]
+      },
+      "shippingInstructionCreatedDateTime": {
+        "type": "string",
+        "description": "Date and time when the ShippingInstruction was created\n",
+        "format": "date-time"
+      },
+      "shippingInstructionUpdatedDateTime": {
+        "type": "string",
+        "description": "Date and time when the ShippingInstruction was updated\n",
+        "format": "date-time"
+      },
+      "amendToTransportDocument": {
+        "maxLength": 20,
+        "type": "string",
+        "description": "This field can be used to reference a Transport Document that is issued (documentStatus = `ISSU`) in order to amend changes.\n\nThe field cannot be modified once set.\n"
+      },
+      "transportDocumentTypeCode": {
+        "type": "string",
+        "description": "Specifies the type of the transport document\n- BOL (Bill of Lading)\n- SWB (Sea Waybill)\n",
+        "enum": [
+          "BOL",
+          "SWB"
+        ]
+      },
+      "isShippedOnboardType": {
+        "type": "boolean",
+        "description": "Specifies whether the Transport document is a received for shipment, or shipped onboard."
+      },
+      "numberOfCopies": {
+        "type": "integer",
+        "description": "The requested number of copies of the Transport document to be issued by the carrier. Only applicable for physical documents"
+      },
+      "numberOfOriginals": {
+        "type": "integer",
+        "description": "Number of original copies of the negotiable bill of lading that has been requested by the customer.\n"
+      },
+      "isElectronic": {
+        "type": "boolean",
+        "description": "An indicator whether the transport document is electronically transferred."
+      },
+      "isToOrder": {
+        "type": "boolean",
+        "description": "Indicates whether the transport document is issued `to order` or not\n"
+      },
+      "areChargesDisplayedOnOriginals": {
+        "type": "boolean",
+        "description": "An indicator of whether the charges are displayed on the original documents.\n"
+      },
+      "areChargesDisplayedOnCopies": {
+        "type": "boolean",
+        "description": "An indicator of whether the charges are displayed on the copies of the documents.\n"
+      },
+      "displayedNameForPlaceOfReceipt": {
+        "maxLength": 250,
+        "type": "string",
+        "description": "The address of the Party to be displayed on the transport document."
+      },
+      "displayedNameForPortOfLoad": {
+        "maxLength": 250,
+        "type": "string",
+        "description": "The address of the Party to be displayed on the transport document."
+      },
+      "displayedNameForPortOfDischarge": {
+        "maxLength": 250,
+        "type": "string",
+        "description": "The address of the Party to be displayed on the transport document."
+      },
+      "displayedNameForPlaceOfDelivery": {
+        "maxLength": 250,
+        "type": "string",
+        "description": "The address of the Party to be displayed on the transport document."
+      },
+      "carrierBookingReferences": {
+        "type": "array",
+        "description": "A list of all `carrierBookingReferences` used. The `carrierBookingReferences` are sourced from the `CargoItems` or the root object of the SI.\n",
+        "items": {
+          "maxLength": 35,
+          "type": "string",
+          "description": "A set of unique characters provided by carrier to identify a booking."
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

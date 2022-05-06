@@ -1,0 +1,154 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "documentID",
+      "documentTypeCode",
+      "eventClassifierCode",
+      "eventCreatedDateTime",
+      "eventDateTime",
+      "eventType",
+      "shipmentEventTypeCode"
+    ],
+    "description": "The Event entity is described as a generalization of all the specific event categories. An event always takes place in relation to a shipment and can additionally be linked to a transport or an equipment\n",
+    "additionalProperties": false,
+    "properties": {
+      "eventID": {
+        "type": "string",
+        "description": "The unique identifier for the event (the message - not the source).\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+        "format": "uuid"
+      },
+      "eventCreatedDateTime": {
+        "type": "string",
+        "description": "The timestamp of when the event was created.\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+        "format": "date-time"
+      },
+      "eventType": {
+        "type": "string",
+        "description": "The Event Type of the object - to be used as a discriminator.\n\n<b>NB</b>&#58; This field should be considered Metadata\n",
+        "enum": [
+          "SHIPMENT"
+        ]
+      },
+      "eventClassifierCode": {
+        "type": "string",
+        "description": "Code for the event classifier. Values can vary depending on eventType\n",
+        "enum": [
+          "ACT"
+        ]
+      },
+      "eventDateTime": {
+        "type": "string",
+        "description": "The local date and time, where the event took place or when the event will take place, in ISO 8601 format.",
+        "format": "date-time"
+      },
+      "shipmentEventTypeCode": {
+        "type": "string",
+        "description": "The status of the document in the process. Possible values are\n- RECE (Received)\n- DRFT (Drafted)\n- PENA (Pending Approval)\n- PENU (Pending Update)\n- PENC (Pending Confirmation)\n- CONF (Confirmed)\n- REJE (Rejected)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- SUBM (Submitted)\n- VOID (Void)\n- REQS (Requested)\n- CMPL (Completed)\n- HOLD (On Hold)\n- RELS (Released)\n- CANC (Cancelled)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>\n",
+        "enum": [
+          "RECE",
+          "DRFT",
+          "PENA",
+          "PENU",
+          "PENC",
+          "CONF",
+          "REJE",
+          "APPR",
+          "ISSU",
+          "SURR",
+          "SUBM",
+          "VOID",
+          "REQS",
+          "CMPL",
+          "HOLD",
+          "RELS",
+          "CANC"
+        ]
+      },
+      "documentID": {
+        "type": "string",
+        "description": "The id of the object defined by the documentTypeCode.\n"
+      },
+      "documentTypeCode": {
+        "maxLength": 3,
+        "type": "string",
+        "description": "The code to identify the type of information documentID points to. Can be one of the following values\n- CBR (Carrier Booking Request Reference)\n- BKG (Booking)\n- SHI (Shipping Instruction)\n- SRM (Shipment Release Message)\n- TRD (Transport Document)\n- ARN (Arrival Notice)\n- VGM (Verified Gross Mass)\n- CAS (Cargo Survey)\n- CUS (Customs Inspection)\n- DGD (Dangerous Goods Declaration)\n- OOG (Out of Gauge)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/documenttypecodes.csv\">GitHub</a>\n",
+        "enum": [
+          "CBR",
+          "BKG",
+          "SHI",
+          "SRM",
+          "TRD",
+          "ARN",
+          "VGM",
+          "CAS",
+          "CUS",
+          "DGD",
+          "OOG"
+        ]
+      },
+      "reason": {
+        "maxLength": 250,
+        "type": "string",
+        "description": "Reason field in a Shipment event. This field can be used to explain why a specific event has been sent."
+      },
+      "documentReferences": {
+        "type": "array",
+        "description": "An optional list of key-value (`documentReferenceType`-`documentReferenceValue`) pairs representing links to objects relevant to the event. The `documentReferenceType`-field is used to describe where the `documentReferenceValue`-field is pointing to.\n",
+        "items": {
+          "type": "object",
+          "properties": {
+            "documentReferenceType": {
+              "type": "string",
+              "description": "Describes where the documentReferenceValue is pointing to:\n- CBR (Carrier Booking Request Reference)\n- BKG (Carrier Booking Reference)\n- SHI (Shipping Instruction Reference)\n- TRD (Transport Document Reference)\n",
+              "enum": [
+                "CBR",
+                "BKG",
+                "SHI",
+                "TRD"
+              ]
+            },
+            "documentReferenceValue": {
+              "type": "string",
+              "description": "The value of the identifier the documentReferenceType is describing"
+            }
+          }
+        }
+      },
+      "references": {
+        "type": "array",
+        "items": {
+          "required": [
+            "referenceType",
+            "referenceValue"
+          ],
+          "type": "object",
+          "description": "references provided by the shipper or freight forwarder at the time of booking or at the time of providing shipping instruction. Carriers share it back when providing track and trace event updates, some are also printed on the B/L. Customers can use these references to track shipments in their internal systems.\n",
+          "properties": {
+            "referenceType": {
+              "type": "string",
+              "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder’s Reference)\n- SI (Shipper’s Reference)\n- PO (Purchase Order Reference)\n- CR (Customer’s Reference)\n- AAO (Consignee’s Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
+              "enum": [
+                "FF",
+                "SI",
+                "PO",
+                "CR",
+                "AAO",
+                "ECR",
+                "CSI",
+                "BPR",
+                "BID"
+              ]
+            },
+            "referenceValue": {
+              "maxLength": 100,
+              "type": "string",
+              "description": "The actual value of the reference."
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "description": "The `shippingInstructionReference` along with the `documentStatus`, created and updated timestamps is returned\n",
+  "required": [
+    "documentStatus",
+    "shippingInstructionCreatedDateTime",
+    "shippingInstructionReference",
+    "shippingInstructionUpdatedDateTime"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "shippingInstructionReference": {
+      "maxLength": 100,
+      "type": "string",
+      "description": "The identifier for a shipping instruction provided by the carrier for system purposes.\n"
+    },
+    "documentStatus": {
+      "type": "string",
+      "description": "The status of the Bill of Lading. Possible values are:\n- RECE (Received)\n- PENU (Pending Update)\n- DRFT (Draft)\n- PENA (Pending Approval)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- VOID (Void)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>. Be aware that the list linked to is the `ShipmentEventTypeCodes` which is equivalent to `documentStatus`, the list is a subset of the possible values.\n",
+      "enum": [
+        "RECE",
+        "PENU",
+        "DRFT",
+        "PENA",
+        "APPR",
+        "ISSU",
+        "SURR",
+        "VOID"
+      ]
+    },
+    "shippingInstructionCreatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the ShippingInstruction was created\n",
+      "format": "date-time"
+    },
+    "shippingInstructionUpdatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the ShippingInstruction was updated\n",
+      "format": "date-time"
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}
