@@ -327,13 +327,16 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                     shippingInstructionTO.getUtilizedTransportEquipments(), shippingInstructionTO)
                 .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
             referenceService.createReferencesByShippingInstructionIdAndTOs(
-                si.getId(), shippingInstructionTO.getReferences()),
-            consignmentItemService
-                .createConsignmentItemsByShippingInstructionIDAndTOs(
-                    si.getId(),
-                    shippingInstructionTO.getConsignmentItems(),
-                    shippingInstructionTO.getUtilizedTransportEquipments())
-                .doOnNext(shippingInstructionTO::setConsignmentItems))
+                si.getId(), shippingInstructionTO.getReferences())
+        // Defer consignment items until utilizedTransportEquipments have been handled (we need to ID from them
+        // to process the cargo items which is done inside the consignment item service)
+        ).then(Mono.defer(() -> consignmentItemService
+          .createConsignmentItemsByShippingInstructionIDAndTOs(
+            si.getId(),
+            shippingInstructionTO.getConsignmentItems(),
+            shippingInstructionTO.getUtilizedTransportEquipments())
+        ))
+        .doOnNext(shippingInstructionTO::setConsignmentItems)
         .thenReturn(shippingInstructionTO);
   }
 
