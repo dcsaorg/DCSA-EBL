@@ -6,17 +6,15 @@ name: Docker
 # documentation.
 
 on:
-  push:
-    branches:
-      - v2.0-beta1
-      - v2.0-beta2
+  create:
+    tags:
+      - v*
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-
 
 jobs:
   build:
