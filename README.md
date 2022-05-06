@@ -1,5 +1,7 @@
 # DCSA EBL
 
+![DCSA-EBL MASTER](https://github.com/dcsaorg/DCSA-EBL/actions/workflows/master.yml/badge.svg?branch=master)
+
 Code standard
 -------------------------------------
 We use [Google Java Style](https://google.github.io/styleguide/javaguide.html), when using
