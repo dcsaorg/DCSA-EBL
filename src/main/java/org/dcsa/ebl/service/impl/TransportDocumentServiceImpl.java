@@ -28,7 +28,6 @@ import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -61,13 +60,6 @@ public class TransportDocumentServiceImpl
   public TransportDocumentRepository getRepository() {
     return transportDocumentRepository;
   }
-
-  @Transactional
-  @Override
-  public Mono<TransportDocumentTO> findById(String transportDocumentReference) {
-    return Mono.empty();
-  }
-
   @Override
   protected Mono<TransportDocumentSummary> mapDM2TO(TransportDocument transportDocument) {
     TransportDocumentSummary transportDocumentSummary =
