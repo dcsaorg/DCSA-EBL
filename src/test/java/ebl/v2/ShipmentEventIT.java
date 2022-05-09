@@ -227,10 +227,10 @@ class ShipmentEventIT {
       .assertThat()
       .statusCode(200)
       .contentType(ContentType.JSON)
-      // The test data includes 1 shipment event for this case. Given the narrow date range, it seems acceptable to
+      // The test data includes 2 shipment events for this case. Given the narrow date range, it seems acceptable to
       // validate an exact match.  Note the strict match is used to validate that the TZ conversion works correctly
       // when filtering
-      .body("size()", equalTo(1))
+      .body("size()", equalTo(2))
       .body("eventType", everyItem(equalTo("SHIPMENT")))
       .body("eventClassifierCode", everyItem(equalTo("ACT")))
       .body("documentTypeCode", everyItem(anyOf(equalTo("SHI"), equalTo("TRD"))))
