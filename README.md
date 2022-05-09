@@ -50,3 +50,16 @@ This repository has the following branching and versioning policy:
 For example, if the latest stable version is 1.x.x the master branch will contain this 1.x.x version. Active development on 2.x.x is being done
 on the *dev* branch. When version 2.x.x is released master is tagged with version 1.x.x and the *dev* branch is merged into master
 the result is a tag-1.x.x and master containing the 2.x.x version.
+
+------------------------------------------------------------------------------------------------------------------------
+
+## Json schemas used for validation
+
+Generated from resolved OAS Yaml file using: https://github.com/Abdiiir/openapi2schema
+
+This will generate a tree of request/response JSON Schemas from the definitions in the OAS Yaml file.
+
+To generate the JSON schemas follow the instructions listed in the [project](https://github.com/Abdiiir/openapi2schema).
+
+The OAS Yaml file can be downloaded at [EBL OpenAPI specification](https://app.swaggerhub.com/apis/dcsaorg/DCSA_EBL).
+
