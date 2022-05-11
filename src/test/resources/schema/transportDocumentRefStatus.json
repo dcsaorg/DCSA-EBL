@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "transportDocumentReference": {
+      "maxLength": 20,
+      "type": "string",
+      "description": "A unique number allocated by the shipping line to the transport document and the main number used for the tracking of the status of the shipment.\n"
+    },
+    "transportDocumentCreatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the TransportDocument was created\n",
+      "format": "date-time"
+    },
+    "transportDocumentUpdatedDateTime": {
+      "type": "string",
+      "description": "Date and time when the TransportDocument was updated\n",
+      "format": "date-time"
+    },
+    "documentStatus": {
+      "type": "string",
+      "description": "The status of the Bill of Lading. Possible values are:\n- RECE (Received)\n- PENU (Pending Update)\n- DRFT (Draft)\n- PENA (Pending Approval)\n- APPR (Approved)\n- ISSU (Issued)\n- SURR (Surrendered)\n- VOID (Void)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/shipmenteventtypecodes.csv\">GitHub</a>. Be aware that the list linked to is the `ShipmentEventTypeCodes` which is equivalent to `documentStatus`, the list is a subset of the possible values.\n",
+      "enum": [
+        "RECE",
+        "PENU",
+        "DRFT",
+        "PENA",
+        "APPR",
+        "ISSU",
+        "SURR",
+        "VOID"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
+}

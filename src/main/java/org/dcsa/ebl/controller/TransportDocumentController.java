@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
+import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.http.MediaType;
@@ -37,8 +38,8 @@ public class TransportDocumentController {
                         + transportDocumentReference)));
   }
 
-  @PutMapping(path = "{transportDocumentReference}")
-  public Mono<TransportDocumentTO> updateTransportDocumentReference(
+  @PatchMapping(path = "{transportDocumentReference}")
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocumentReference(
       @PathVariable String transportDocumentReference,
       @RequestBody @Valid ApproveTransportDocumentRequestTO approveTransportDocumentRequestTO) {
     return transportDocumentService.approveTransportDocument(transportDocumentReference);

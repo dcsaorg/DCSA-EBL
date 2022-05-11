@@ -143,8 +143,8 @@ class TransportDocumentServiceImplTest {
     transportDocument.setTransportDocumentReference("TransportDocumentReference1");
     transportDocument.setIssuer(carrier.getId());
     transportDocument.setIssueDate(LocalDate.now());
-    transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-    transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+    transportDocument.setTransportDocumentCreatedDateTime(now);
+    transportDocument.setTransportDocumentUpdatedDateTime(now);
     transportDocument.setDeclaredValue(12f);
     transportDocument.setDeclaredValueCurrency("DKK");
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
@@ -220,7 +220,7 @@ class TransportDocumentServiceImplTest {
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
-    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
+    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.DRFT);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
@@ -433,7 +433,6 @@ class TransportDocumentServiceImplTest {
       when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
-      when(locationService.fetchLocationDeepObjByID(any())).thenReturn(Mono.empty());
       when(shippingInstructionService.findByID(transportDocument.getShippingInstructionID()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentID(transportDocument.getId()))
@@ -707,14 +706,15 @@ class TransportDocumentServiceImplTest {
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .assertNext(
-              transportDocumentTOResponse -> {
-                assertNotNull(transportDocumentTOResponse.getShippingInstruction());
-                assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
+              transportDocumentRefStatusTOResponse -> {
                 assertEquals(
-                    ShipmentEventTypeCode.APPR,
-                    transportDocumentTOResponse.getShippingInstruction().getDocumentStatus());
-                assertEquals(1, transportDocumentTOResponse.getCharges().size());
-                assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                  "TransportDocumentReference1",
+                  transportDocumentRefStatusTOResponse.getTransportDocumentReference()
+                );
+                assertEquals(
+                  ShipmentEventTypeCode.APPR,
+                  transportDocumentRefStatusTOResponse.getDocumentStatus()
+                );
               })
           .verifyComplete();
     }
@@ -777,7 +777,7 @@ class TransportDocumentServiceImplTest {
                       && throwable
                           .getMessage()
                           .equals(
-                              "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA"))
+                              "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"))
           .verify();
     }
 
@@ -854,7 +854,7 @@ class TransportDocumentServiceImplTest {
                       && throwable
                           .getMessage()
                           .equals(
-                              "The CarrierBookingReference: "
+                              "The CarrierBookingRequestReference: "
                                   + transportDocumentTO.getTransportDocumentReference()
                                   + " specified on ShippingInstruction:"
                                   + transportDocumentTO
