@@ -1,10 +1,12 @@
 package org.dcsa.ebl.model.transferobjects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.TransportTO;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
@@ -58,4 +60,7 @@ public class TransportDocumentTO {
 
 //  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Valid private List<CarrierClauseTO> carrierClauses;
+
+  @Valid
+  private List<TransportTO> transports;
 }
