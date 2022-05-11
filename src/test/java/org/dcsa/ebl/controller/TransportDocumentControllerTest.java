@@ -8,6 +8,7 @@ import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.exception.handler.GlobalExceptionHandler;
 import org.dcsa.core.security.SecurityConfig;
 import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
+import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.dcsa.skernel.model.Address;
@@ -46,7 +47,7 @@ class TransportDocumentControllerTest {
   private final String TRANSPORT_DOCUMENT_ENDPOINT = "/transport-documents";
 
   TransportDocumentTO transportDocumentTO;
-  TransportDocumentTO approvedTransportDocument;
+  TransportDocumentRefStatusTO approvedTransportDocument;
   ApproveTransportDocumentRequestTO validTransportDocumentRequestTO;
   ApproveTransportDocumentRequestTO invalidTransportDocumentRequestTO;
   Address address;
@@ -199,13 +200,11 @@ class TransportDocumentControllerTest {
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
 
-    approvedTransportDocument = new TransportDocumentTO();
+    approvedTransportDocument = new TransportDocumentRefStatusTO();
     approvedTransportDocument.setTransportDocumentReference("approvedTRDocRefer");
-    approvedTransportDocument.setCharges(List.of(chargeTO));
-    approvedTransportDocument.setPlaceOfIssue(locationTO);
-    approvedTransportDocument.setCarrierClauses(List.of(carrierClauseTO));
-    approvedTransportDocument.setShippingInstruction(approveShippingInstructionTO);
+    approvedTransportDocument.setDocumentStatus(ShipmentEventTypeCode.APPR);
     approvedTransportDocument.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
+    approvedTransportDocument.setTransportDocumentUpdatedDateTime(OffsetDateTime.now());
 
     // request body for valid & invalid approval request body
     validTransportDocumentRequestTO = ApproveTransportDocumentRequestTO.builder()
@@ -309,7 +308,7 @@ class TransportDocumentControllerTest {
       .thenReturn(Mono.just(approvedTransportDocument));
 
     webTestClient
-      .put()
+      .patch()
       .uri(
         uriBuilder ->
           uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("approvedTRDocReference").build())
@@ -320,10 +319,10 @@ class TransportDocumentControllerTest {
       .isOk()
       .expectBody()
       .jsonPath("$.transportDocumentReference").hasJsonPath()
-      .jsonPath("$.shippingInstruction.documentStatus").hasJsonPath()
+      .jsonPath("$.documentStatus").hasJsonPath()
       .consumeWith(
         response ->
-          JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocument.json"));
+          JsonSchemaValidator.validateAgainstJsonSchema(response, "transportDocumentRefStatus.json"));
 
   }
 
@@ -333,7 +332,7 @@ class TransportDocumentControllerTest {
   void testApproveTransportDocumentWithInvalidBodyRequest() {
 
       webTestClient
-        .put()
+        .patch()
         .uri(
           uriBuilder ->
             uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
@@ -355,10 +354,10 @@ class TransportDocumentControllerTest {
       .thenReturn(
         Mono.error(
           ConcreteRequestErrorMessageException.notFound(
-            "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA")));
+            "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT")));
 
     webTestClient
-        .put()
+        .patch()
         .uri(
           uriBuilder ->
             uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
@@ -384,7 +383,7 @@ class TransportDocumentControllerTest {
             "No shipments found for Shipping instruction of transport document reference: " + "{transport document ID}")));
 
     webTestClient
-      .put()
+      .patch()
       .uri(
         uriBuilder ->
           uriBuilder.path(TRANSPORT_DOCUMENT_ENDPOINT).pathSegment("TRDocReference1").build())
