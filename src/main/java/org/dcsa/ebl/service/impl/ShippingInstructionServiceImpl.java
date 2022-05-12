@@ -542,8 +542,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       OffsetDateTime now = OffsetDateTime.now();
       TransportDocument transportDocument = new TransportDocument();
       transportDocument.setShippingInstructionID(shippingInstructionID);
-      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+      transportDocument.setTransportDocumentCreatedDateTime(now);
+      transportDocument.setTransportDocumentUpdatedDateTime(now);
       return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
     } else {
       return Mono.just(shippingInstructionTO);

@@ -143,8 +143,8 @@ class TransportDocumentServiceImplTest {
     transportDocument.setTransportDocumentReference("TransportDocumentReference1");
     transportDocument.setIssuer(carrier.getId());
     transportDocument.setIssueDate(LocalDate.now());
-    transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-    transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+    transportDocument.setTransportDocumentCreatedDateTime(now);
+    transportDocument.setTransportDocumentUpdatedDateTime(now);
     transportDocument.setDeclaredValue(12f);
     transportDocument.setDeclaredValueCurrency("DKK");
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
