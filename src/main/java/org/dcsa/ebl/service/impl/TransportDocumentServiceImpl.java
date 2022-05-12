@@ -133,7 +133,8 @@ public class TransportDocumentServiceImpl
                       locationService
                           .fetchLocationDeepObjByID(transportDocument.getPlaceOfIssue())
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
-                      shipmentLocationService.fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
+                      shipmentLocationService
+                          .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
                           .doOnNext(transportDocumentTO::setShipmentLocations),
                       shippingInstructionService
                           .findByID(transportDocument.getShippingInstructionID())
