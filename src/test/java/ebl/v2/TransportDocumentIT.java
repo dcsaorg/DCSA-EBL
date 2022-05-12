@@ -84,11 +84,11 @@ public class TransportDocumentIT {
         .body("shippingInstruction", notNullValue())
         .body("shippingInstruction.shippingInstructionReference", equalTo("SI_REF_9"))
         .body("shipmentLocations.size()", equalTo(3))
-        .body("shipmentLocations[0].location.locationName", equalTo("Copenhagen"))
-        .body("shipmentLocations[1].location.locationName", equalTo("Orlando"))
-        .body("shipmentLocations[2].location.locationName", equalTo("Miami"))
-        .body("shipmentLocations[0].shipmentLocationTypeCode", equalTo(LocationType.PRE.toString()))
-        .body("shipmentLocations[1].shipmentLocationTypeCode", equalTo(LocationType.POL.toString()))
-        .body("shipmentLocations[2].shipmentLocationTypeCode", equalTo(LocationType.POD.toString()));
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen' }.size()", equalTo(1))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Orlando' }.size()", equalTo(1))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.size()", equalTo(1))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen1' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.PRE.toString())))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Orlando' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POL.toString())))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POD.toString())));
   }
 }
