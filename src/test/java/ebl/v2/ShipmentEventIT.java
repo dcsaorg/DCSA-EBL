@@ -36,6 +36,7 @@ class ShipmentEventIT {
   void testGetAllEventsAndHeaders() {
     given()
       .contentType("application/json")
+      .queryParam("limit", 2)
       .get("/v2/events")
       .then()
       .assertThat()
