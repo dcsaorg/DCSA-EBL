@@ -30,6 +30,7 @@ public class TransportDocumentIT {
         .assertThat()
         .statusCode(200)
         .body("size()", greaterThanOrEqualTo(0))
+        .body("transportDocumentReference.size()", equalTo(0))
         .body("transportDocumentReference", anyOf(hasItem("9b02401c-b2fb-5009")));
   }
 
