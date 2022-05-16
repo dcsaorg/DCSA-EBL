@@ -2,10 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
-import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
-import org.dcsa.core.events.edocumentation.service.ChargeService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
-import org.dcsa.core.events.edocumentation.service.TransportService;
+import org.dcsa.core.events.edocumentation.service.*;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
@@ -57,6 +54,7 @@ public class TransportDocumentServiceImpl
   private final ShipmentService shipmentService;
   private final ShipmentEventService shipmentEventService;
   private final TransportService transportService;
+  private final ShipmentLocationService shipmentLocationService;
 
   private final TransportDocumentMapper transportDocumentMapper;
 
@@ -133,6 +131,9 @@ public class TransportDocumentServiceImpl
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
                           .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
+                      shipmentLocationService
+                          .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
+                          .doOnNext(transportDocumentTO::setShipmentLocations),
                       shippingInstructionService
                           .findByID(transportDocument.getShippingInstructionID())
                           .switchIfEmpty(

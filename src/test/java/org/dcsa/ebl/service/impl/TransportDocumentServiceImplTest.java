@@ -1,10 +1,8 @@
 package org.dcsa.ebl.service.impl;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
-import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
-import org.dcsa.core.events.edocumentation.service.ChargeService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
-import org.dcsa.core.events.edocumentation.service.TransportService;
+import org.dcsa.core.events.edocumentation.repository.ShipmentLocationRepository;
+import org.dcsa.core.events.edocumentation.service.*;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.CargoItemTO;
@@ -64,6 +62,7 @@ class TransportDocumentServiceImplTest {
   @Mock ShipmentService shipmentService;
   @Mock ShipmentEventService shipmentEventService;
   @Mock TransportService transportService;
+  @Mock ShipmentLocationService shipmentLocationService;
 
   @InjectMocks TransportDocumentServiceImpl transportDocumentServiceImpl;
 
@@ -407,6 +406,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -440,6 +440,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -474,6 +475,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -508,6 +510,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -542,6 +545,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.empty());
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -571,6 +575,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -602,6 +607,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -702,6 +708,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn((Mono.just(List.of(shipmentTO))));
       when(shipmentEventService.create(any())).thenReturn(Mono.just(new ShipmentEvent()));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -765,6 +772,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -804,6 +812,7 @@ class TransportDocumentServiceImplTest {
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -845,6 +854,7 @@ class TransportDocumentServiceImplTest {
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -882,6 +892,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       // Test all invalid status except CONFIRMED
       for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
@@ -931,6 +942,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(carrierClauseTO));
       when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.empty());
       when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
+      when(shipmentLocationService.fetchShipmentLocationByTransportDocumentID(any())).thenReturn(Mono.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument(transportDocumentReference))
