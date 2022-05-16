@@ -44,8 +44,9 @@ jobs:
 
     - name: Fetch Backend Status
       run: |
-        sleep 10
-        echo "::set-output name=STATUS::$(curl -s http://localhost:9090/v2/actuator/health | jq -r '.status')"
+        status=UNKNOWN
+        for i in $(seq 1 5); do status=$(curl -s http://localhost:9090/v2/actuator/health | jq -r '.status'); if [ "${status}" = "up" ]; then break; fi; sleep 5; done
+        echo "::set-output name=STATUS::${status}"
       id: healthcheck
 
     - name: Confirm microservice status

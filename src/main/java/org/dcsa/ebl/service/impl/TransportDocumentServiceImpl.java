@@ -17,6 +17,7 @@ import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.service.impl.AsymmetricQueryServiceImpl;
 import org.dcsa.ebl.model.TransportDocumentSummary;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
+import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
@@ -124,14 +125,11 @@ public class TransportDocumentServiceImpl
               TransportDocumentTO transportDocumentTO =
                   transportDocumentMapper.transportDocumentToDTO(transportDocument);
               return Mono.when(
-                      carrierRepository
-                          .findById(transportDocument.getIssuer())
-                          .doOnNext(
-                              carrier -> {
-                                setIssuerOnTransportDocument(transportDocumentTO, carrier);
-                              }),
-                      locationService
-                          .fetchLocationDeepObjByID(transportDocument.getPlaceOfIssue())
+                      Mono.justOrEmpty(transportDocument.getIssuer())
+                          .flatMap(carrierRepository::findById)
+                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                      Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
+                          .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
                       shipmentLocationService
                           .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
@@ -198,7 +196,7 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -209,10 +207,10 @@ public class TransportDocumentServiceImpl
         .flatMap(tdTO -> validateDocumentStatusOnBooking(tdTO).thenReturn(tdTO))
         .flatMap(
             TdTO -> {
-              if (TdTO.getShippingInstruction().getDocumentStatus() != ShipmentEventTypeCode.PENA) {
+              if (TdTO.getShippingInstruction().getDocumentStatus() != ShipmentEventTypeCode.DRFT) {
                 return Mono.error(
                     ConcreteRequestErrorMessageException.invalidParameter(
-                        "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA"));
+                        "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"));
               }
 
               TdTO.setTransportDocumentUpdatedDateTime(now);
@@ -243,7 +241,7 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getCarrierBookingReference(),
+                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
@@ -274,20 +272,21 @@ public class TransportDocumentServiceImpl
                           .doOnNext(TdTO::setShippingInstruction))
                   .thenReturn(TdTO);
             })
-        .flatMap(tdTO -> createShipmentEventFromTransportDocumentTO(tdTO).thenReturn(tdTO));
+        .flatMap(tdTO -> createShipmentEventFromTransportDocumentTO(tdTO).thenReturn(tdTO))
+        .map(transportDocumentMapper::dtoToTransportDocumentRefStatus);
   }
 
   private Mono<Booking> getBooking(
-      String carrierBookingReference, String shippingInstructionReference) {
+      String carrierBookingRequestReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
-        .findByCarrierBookingRequestReferenceAndValidUntilIsNull(carrierBookingReference)
+        .findByCarrierBookingRequestReferenceAndValidUntilIsNull(carrierBookingRequestReference)
         .switchIfEmpty(
             Mono.error(
                 new IllegalStateException(
-                    "The CarrierBookingReference: "
-                        + carrierBookingReference
+                    "The CarrierBookingRequestReference: "
+                        + carrierBookingRequestReference
                         + " specified on ShippingInstruction:"
                         + shippingInstructionReference
                         + " does not exist!")));

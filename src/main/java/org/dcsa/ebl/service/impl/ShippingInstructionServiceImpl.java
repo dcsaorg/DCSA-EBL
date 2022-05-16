@@ -213,7 +213,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository
                   .save(shippingInstruction2)
-                  .flatMap(si -> createTransportDocumentFromShippingInstructionTO(si.getId(), siTO))
+                  .flatMap(si -> createTransportDocumentFromShippingInstructionTO(si, siTO))
                   .thenReturn(siTO);
             })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
@@ -298,7 +298,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                             .flatMap(
                                 savedSi ->
                                     createTransportDocumentFromShippingInstructionTO(
-                                        savedSi.getId(), siTO))
+                                        savedSi, siTO))
                             .thenReturn(siTO);
                       });
             })
@@ -537,13 +537,14 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(
-      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
+      ShippingInstruction shippingInstruction, ShippingInstructionTO shippingInstructionTO) {
     if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
       OffsetDateTime now = OffsetDateTime.now();
       TransportDocument transportDocument = new TransportDocument();
-      transportDocument.setShippingInstructionID(shippingInstructionID);
+      transportDocument.setShippingInstructionID(shippingInstruction.getId());
       transportDocument.setTransportDocumentCreatedDateTime(now);
       transportDocument.setTransportDocumentUpdatedDateTime(now);
+      transportDocument.setPlaceOfIssue(shippingInstructionTO.getPlaceOfIssueID());
       return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
     } else {
       return Mono.just(shippingInstructionTO);
