@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static com.github.fge.jsonschema.SchemaVersion.DRAFTV4;
 import static ebl.config.TestConfig.*;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -28,9 +27,10 @@ public class TransportDocumentIT {
         .get(TRANSPORT_DOCUMENT_SUMMARIES)
         .then()
         .assertThat()
-        .statusCode(200)
+        .statusCode(HttpStatus.SC_OK)
         .body("size()", greaterThanOrEqualTo(0))
-        .body("transportDocumentReference", anyOf(hasItem("9b02401c-b2fb-5009")));
+        .body("transportDocumentReference", anyOf(hasItem("9b02401c-b2fb-5009")))
+        .body(jsonSchemaValidator("transportDocument"));
   }
 
   @Test
@@ -89,6 +89,7 @@ public class TransportDocumentIT {
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.size()", equalTo(1))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.PRE.toString())))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Orlando' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POL.toString())))
-        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POD.toString())));
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POD.toString())))
+        .body(jsonSchemaValidator("transportDocument"));
   }
 }

@@ -10,9 +10,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TransportDocumentMapper {
 
-    @Mapping(source = "issueDate", target = "issueDate")
-    @Mapping(source = "shippedOnBoardDate", target = "shippedOnboardDate")
-    TransportDocumentSummary transportDocumentToTransportDocumentSummary(TransportDocument transportDocument);
+  @Mapping(source = "issueDate", target = "issueDate")
+  @Mapping(source = "shippedOnBoardDate", target = "shippedOnboardDate")
+  TransportDocumentSummary transportDocumentToTransportDocumentSummary(
+      TransportDocument transportDocument);
 
   @Mapping(source = "placeOfIssue", target = "placeOfIssue", ignore = true)
   TransportDocumentTO transportDocumentToDTO(TransportDocument transportDocument);
@@ -21,5 +22,6 @@ public interface TransportDocumentMapper {
   TransportDocument dtoToTransportDocument(TransportDocumentTO transportDocumentTO);
 
   @Mapping(source = "shippingInstruction.documentStatus", target = "documentStatus")
-  TransportDocumentRefStatusTO dtoToTransportDocumentRefStatus(TransportDocumentTO transportDocumentTO);
+  TransportDocumentRefStatusTO dtoToTransportDocumentRefStatus(
+      TransportDocumentTO transportDocumentTO);
 }
