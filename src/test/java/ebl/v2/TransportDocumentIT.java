@@ -87,7 +87,7 @@ public class TransportDocumentIT {
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen' }.size()", equalTo(1))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Orlando' }.size()", equalTo(1))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.size()", equalTo(1))
-        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen1' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.PRE.toString())))
+        .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Copenhagen' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.PRE.toString())))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Orlando' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POL.toString())))
         .body("shipmentLocations.flatten().findAll { it.location.locationName == 'Miami' }.shipmentLocationTypeCode", everyItem(equalTo(LocationType.POD.toString())));
   }
