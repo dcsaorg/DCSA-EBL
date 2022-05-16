@@ -4,11 +4,9 @@ import org.dcsa.core.events.edocumentation.model.transferobject.*;
 import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
+import org.dcsa.core.events.edocumentation.service.TransportService;
 import org.dcsa.core.events.model.*;
-import org.dcsa.core.events.model.enums.PaymentTerm;
-import org.dcsa.core.events.model.enums.ReferenceTypeCode;
-import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.core.events.model.enums.WeightUnit;
+import org.dcsa.core.events.model.enums.*;
 import org.dcsa.core.events.model.transferobjects.CargoItemTO;
 import org.dcsa.core.events.model.transferobjects.CargoLineItemTO;
 import org.dcsa.core.events.model.transferobjects.ReferenceTO;
@@ -24,6 +22,7 @@ import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.skernel.model.Address;
 import org.dcsa.skernel.model.Carrier;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
+import org.dcsa.skernel.model.enums.FacilityCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
@@ -64,6 +63,7 @@ class TransportDocumentServiceImplTest {
   @Mock LocationService locationService;
   @Mock ShipmentService shipmentService;
   @Mock ShipmentEventService shipmentEventService;
+  @Mock TransportService transportService;
 
   @InjectMocks TransportDocumentServiceImpl transportDocumentServiceImpl;
 
@@ -92,6 +92,7 @@ class TransportDocumentServiceImplTest {
   CargoLineItemTO cargoLineItemTO;
   Address address;
   ReferenceTO referenceTO;
+  TransportTO transportTO;
 
   @BeforeEach
   void init() {
@@ -142,8 +143,8 @@ class TransportDocumentServiceImplTest {
     transportDocument.setTransportDocumentReference("TransportDocumentReference1");
     transportDocument.setIssuer(carrier.getId());
     transportDocument.setIssueDate(LocalDate.now());
-    transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-    transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+    transportDocument.setTransportDocumentCreatedDateTime(now);
+    transportDocument.setTransportDocumentUpdatedDateTime(now);
     transportDocument.setDeclaredValue(12f);
     transportDocument.setDeclaredValueCurrency("DKK");
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
@@ -219,7 +220,7 @@ class TransportDocumentServiceImplTest {
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
-    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.PENA);
+    shippingInstructionTO.setDocumentStatus(ShipmentEventTypeCode.DRFT);
     shippingInstructionTO.setPlaceOfIssueID(locationTO.getId());
     shippingInstructionTO.setAreChargesDisplayedOnCopies(true);
     shippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
@@ -232,6 +233,34 @@ class TransportDocumentServiceImplTest {
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
+
+    LocationTO dischargeLocation = new LocationTO();
+    dischargeLocation.setFacilityCode("123456");
+    dischargeLocation.setFacilityCodeListProvider(FacilityCodeListProvider.SMDG);
+    dischargeLocation.setId("7bf6f428-58f0-4347-9ce8-d6be2f5d5745");
+    dischargeLocation.setAddressID(UUID.fromString("8fecc6d0-2a78-401d-948a-b9753f6b53d5"));
+    dischargeLocation.setFacilityID(UUID.fromString("74dcf8e6-4ed4-439e-a935-ec183df73013"));
+
+    LocationTO loadLocation = new LocationTO();
+    loadLocation.setFacilityCode("654321");
+    loadLocation.setFacilityCodeListProvider(FacilityCodeListProvider.SMDG);
+    loadLocation.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
+
+    transportTO = new TransportTO();
+    transportTO.setTransportPlanStageSequenceNumber(1);
+    transportTO.setTransportPlanStage(TransportPlanStageCode.ONC);
+    transportTO.setIsUnderShippersResponsibility(false);
+    transportTO.setModeOfTransport(DCSATransportType.VESSEL);
+    transportTO.setVesselName("vesselName");
+    transportTO.setVesselIMONumber("9876543");
+    transportTO.setImportVoyageNumber("1234E");
+    transportTO.setExportVoyageNumber("1234W");
+    transportTO.setPlannedArrivalDate(OffsetDateTime.now());
+    transportTO.setPlannedDepartureDate(OffsetDateTime.now());
+    transportTO.setTransportName("TransportName");
+    transportTO.setTransportReference("TrRef1");
+    transportTO.setDischargeLocation(dischargeLocation);
+    transportTO.setLoadLocation(loadLocation);
   }
 
   @Nested
@@ -377,6 +406,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -387,6 +417,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -402,13 +433,13 @@ class TransportDocumentServiceImplTest {
       when(transportDocumentRepository.findLatestTransportDocumentByTransportDocumentReference(any()))
           .thenReturn(Mono.just(transportDocument));
       when(carrierRepository.findById((UUID) any())).thenReturn(Mono.just(carrier));
-      when(locationService.fetchLocationDeepObjByID(any())).thenReturn(Mono.empty());
       when(shippingInstructionService.findByID(transportDocument.getShippingInstructionID()))
           .thenReturn(Mono.just(shippingInstructionTO));
       when(chargeService.fetchChargesByTransportDocumentID(transportDocument.getId()))
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -419,6 +450,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -441,6 +473,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -451,6 +484,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -473,6 +507,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.empty());
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -483,6 +518,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(0, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -505,6 +541,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.empty());
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -515,6 +552,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(0, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -563,6 +601,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.just(transportTO));
 
       StepVerifier.create(
               transportDocumentServiceImpl.findByTransportDocumentReference(
@@ -574,6 +613,7 @@ class TransportDocumentServiceImplTest {
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                assertEquals(1, transportDocumentTOResponse.getTransports().size());
               })
           .verifyComplete();
     }
@@ -661,18 +701,20 @@ class TransportDocumentServiceImplTest {
       when(shipmentService.findByShippingInstructionReference(any()))
           .thenReturn((Mono.just(List.of(shipmentTO))));
       when(shipmentEventService.create(any())).thenReturn(Mono.just(new ShipmentEvent()));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
           .assertNext(
-              transportDocumentTOResponse -> {
-                assertNotNull(transportDocumentTOResponse.getShippingInstruction());
-                assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
+              transportDocumentRefStatusTOResponse -> {
                 assertEquals(
-                    ShipmentEventTypeCode.APPR,
-                    transportDocumentTOResponse.getShippingInstruction().getDocumentStatus());
-                assertEquals(1, transportDocumentTOResponse.getCharges().size());
-                assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
+                  "TransportDocumentReference1",
+                  transportDocumentRefStatusTOResponse.getTransportDocumentReference()
+                );
+                assertEquals(
+                  ShipmentEventTypeCode.APPR,
+                  transportDocumentRefStatusTOResponse.getDocumentStatus()
+                );
               })
           .verifyComplete();
     }
@@ -722,6 +764,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -734,7 +777,7 @@ class TransportDocumentServiceImplTest {
                       && throwable
                           .getMessage()
                           .equals(
-                              "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA"))
+                              "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"))
           .verify();
     }
 
@@ -760,6 +803,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn((Mono.just(Collections.emptyList())));
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -800,6 +844,7 @@ class TransportDocumentServiceImplTest {
       when(bookingRepository.findByCarrierBookingRequestReferenceAndValidUntilIsNull(any())).thenReturn(Mono.empty());
       when(bookingRepository.findAllByShippingInstructionReference(any()))
           .thenReturn(Flux.just(booking));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument("TransportDocumentReference1"))
@@ -809,7 +854,7 @@ class TransportDocumentServiceImplTest {
                       && throwable
                           .getMessage()
                           .equals(
-                              "The CarrierBookingReference: "
+                              "The CarrierBookingRequestReference: "
                                   + transportDocumentTO.getTransportDocumentReference()
                                   + " specified on ShippingInstruction:"
                                   + transportDocumentTO
@@ -836,6 +881,7 @@ class TransportDocumentServiceImplTest {
           .thenReturn(Flux.just(chargeTO));
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       // Test all invalid status except CONFIRMED
       for (ShipmentEventTypeCode s : ShipmentEventTypeCode.values()) {
@@ -884,6 +930,7 @@ class TransportDocumentServiceImplTest {
       when(carrierClauseService.fetchCarrierClausesByTransportDocumentID(any()))
           .thenReturn(Flux.just(carrierClauseTO));
       when(bookingRepository.findAllByShippingInstructionReference(any())).thenReturn(Flux.empty());
+      when(transportService.findByCarrierBookingReference(any())).thenReturn(Flux.empty());
 
       StepVerifier.create(
               transportDocumentServiceImpl.approveTransportDocument(transportDocumentReference))

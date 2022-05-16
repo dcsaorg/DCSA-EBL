@@ -57,23 +57,25 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   @Transactional(readOnly = true)
   @Override
   public Mono<ShippingInstructionTO> findByReference(String shippingInstructionReference) {
-    return findEditableShippingInstructionByShippingInstructionReference(shippingInstructionReference)
+    return findEditableShippingInstructionByShippingInstructionReference(
+            shippingInstructionReference)
         .flatMap(this::getDeepObjectsForShippingInstruction);
   }
 
-  private Mono<ShippingInstruction> findEditableShippingInstructionByShippingInstructionReference(String shippingInstructionReference) {
+  private Mono<ShippingInstruction> findEditableShippingInstructionByShippingInstructionReference(
+      String shippingInstructionReference) {
     return shippingInstructionRepository
-      .findLatestShippingInstructionByShippingInstructionReference(shippingInstructionReference)
-      .switchIfEmpty(
-        Mono.error(
-          ConcreteRequestErrorMessageException.notFound(
-            "No shipping instruction found with shipping instruction reference: "
-              + shippingInstructionReference)))
-      .filter(td -> Objects.isNull(td.getValidUntil()))
-      .switchIfEmpty(
-        Mono.error(
-          ConcreteRequestErrorMessageException.internalServerError(
-            "All shipping instructions are inactive, at least one active shipping instruction should be present.")));
+        .findLatestShippingInstructionByShippingInstructionReference(shippingInstructionReference)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No shipping instruction found with shipping instruction reference: "
+                        + shippingInstructionReference)))
+        .filter(td -> Objects.isNull(td.getValidUntil()))
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "All shipping instructions are inactive, at least one active shipping instruction should be present.")));
   }
 
   @Transactional(readOnly = true)
@@ -97,15 +99,8 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
             shippingInstructionRepository
                 .findCarrierBookingReferenceByShippingInstructionID(shippingInstruction.getId())
                 .collectList()
-                .doOnNext(
-                    cRefs -> {
-                      // we should only set carrier booking reference on root SI TO if
-                      // there is only one distinct value
-                      // This is as per requirement
-                      if (cRefs.size() == 1) {
-                        siTO.setCarrierBookingReference(cRefs.get(0));
-                      }
-                    }),
+                .filter(strings -> strings.size() == 1)
+                .doOnNext(cRefs -> siTO.setCarrierBookingReference(cRefs.get(0))),
             locationService
                 .fetchLocationByID(shippingInstruction.getPlaceOfIssueID())
                 .doOnNext(siTO::setPlaceOfIssue),
@@ -218,7 +213,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                   siTO.getShippingInstructionUpdatedDateTime());
               return shippingInstructionRepository
                   .save(shippingInstruction2)
-                  .flatMap(si -> createTransportDocumentFromShippingInstructionTO(si.getId(), siTO))
+                  .flatMap(si -> createTransportDocumentFromShippingInstructionTO(si, siTO))
                   .thenReturn(siTO);
             })
         .map(shippingInstructionMapper::dtoToShippingInstructionResponseTO);
@@ -303,7 +298,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                             .flatMap(
                                 savedSi ->
                                     createTransportDocumentFromShippingInstructionTO(
-                                        savedSi.getId(), siTO))
+                                        savedSi, siTO))
                             .thenReturn(siTO);
                       });
             })
@@ -328,14 +323,17 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
                 .doOnNext(shippingInstructionTO::setUtilizedTransportEquipments),
             referenceService.createReferencesByShippingInstructionIdAndTOs(
                 si.getId(), shippingInstructionTO.getReferences())
-        // Defer consignment items until utilizedTransportEquipments have been handled (we need to ID from them
-        // to process the cargo items which is done inside the consignment item service)
-        ).then(Mono.defer(() -> consignmentItemService
-          .createConsignmentItemsByShippingInstructionIDAndTOs(
-            si.getId(),
-            shippingInstructionTO.getConsignmentItems(),
-            shippingInstructionTO.getUtilizedTransportEquipments())
-        ))
+            // Defer consignment items until utilizedTransportEquipments have been handled (we need
+            // to ID from them
+            // to process the cargo items which is done inside the consignment item service)
+            )
+        .then(
+            Mono.defer(
+                () ->
+                    consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
+                        si.getId(),
+                        shippingInstructionTO.getConsignmentItems(),
+                        shippingInstructionTO.getUtilizedTransportEquipments())))
         .doOnNext(shippingInstructionTO::setConsignmentItems)
         .thenReturn(shippingInstructionTO);
   }
@@ -539,13 +537,15 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
   }
 
   private Mono<ShippingInstructionTO> createTransportDocumentFromShippingInstructionTO(
-      UUID shippingInstructionID, ShippingInstructionTO shippingInstructionTO) {
+      ShippingInstruction shippingInstruction, ShippingInstructionTO shippingInstructionTO) {
     if (ShipmentEventTypeCode.DRFT.equals(shippingInstructionTO.getDocumentStatus())) {
       OffsetDateTime now = OffsetDateTime.now();
       TransportDocument transportDocument = new TransportDocument();
-      transportDocument.setShippingInstructionID(shippingInstructionID);
-      transportDocument.setTransportDocumentRequestCreatedDateTime(now);
-      transportDocument.setTransportDocumentRequestUpdatedDateTime(now);
+      transportDocument.setShippingInstructionID(shippingInstruction.getId());
+      transportDocument.setTransportDocumentCreatedDateTime(now);
+      transportDocument.setTransportDocumentUpdatedDateTime(now);
+      transportDocument.setPlaceOfIssue(shippingInstructionTO.getPlaceOfIssueID());
+
       return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
     } else {
       return Mono.just(shippingInstructionTO);

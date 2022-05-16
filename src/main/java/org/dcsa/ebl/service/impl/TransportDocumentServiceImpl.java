@@ -5,6 +5,7 @@ import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
 import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
 import org.dcsa.core.events.edocumentation.service.ChargeService;
 import org.dcsa.core.events.edocumentation.service.ShipmentService;
+import org.dcsa.core.events.edocumentation.service.TransportService;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
@@ -19,6 +20,7 @@ import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
 import org.dcsa.core.service.impl.AsymmetricQueryServiceImpl;
 import org.dcsa.ebl.model.TransportDocumentSummary;
 import org.dcsa.ebl.model.mappers.TransportDocumentMapper;
+import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
@@ -54,12 +56,14 @@ public class TransportDocumentServiceImpl
   private final LocationService locationService;
   private final ShipmentService shipmentService;
   private final ShipmentEventService shipmentEventService;
+  private final TransportService transportService;
 
   private final TransportDocumentMapper transportDocumentMapper;
 
   public TransportDocumentRepository getRepository() {
     return transportDocumentRepository;
   }
+
   @Override
   protected Mono<TransportDocumentSummary> mapDM2TO(TransportDocument transportDocument) {
     TransportDocumentSummary transportDocumentSummary =
@@ -123,14 +127,11 @@ public class TransportDocumentServiceImpl
               TransportDocumentTO transportDocumentTO =
                   transportDocumentMapper.transportDocumentToDTO(transportDocument);
               return Mono.when(
-                      carrierRepository
-                          .findById(transportDocument.getIssuer())
-                          .doOnNext(
-                              carrier -> {
-                                setIssuerOnTransportDocument(transportDocumentTO, carrier);
-                              }),
-                      locationService
-                          .fetchLocationDeepObjByID(transportDocument.getPlaceOfIssue())
+                      Mono.justOrEmpty(transportDocument.getIssuer())
+                          .flatMap(carrierRepository::findById)
+                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                      Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
+                          .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
                       shippingInstructionService
                           .findByID(transportDocument.getShippingInstructionID())
@@ -149,7 +150,38 @@ public class TransportDocumentServiceImpl
                           .collectList()
                           .doOnNext(transportDocumentTO::setCarrierClauses))
                   .thenReturn(transportDocumentTO);
-            });
+            })
+        .flatMap(this::setTransportsOnTransportDocument);
+  }
+
+  private Mono<TransportDocumentTO> setTransportsOnTransportDocument(
+      TransportDocumentTO transportDocumentTO) {
+    String carrierBookingReference =
+        getSingleCarrierBookingReferenceOnTransportDocument(transportDocumentTO);
+    return transportService
+        .findByCarrierBookingReference(carrierBookingReference)
+        .collectList()
+        .doOnNext(transportDocumentTO::setTransports)
+        .thenReturn(transportDocumentTO);
+  }
+
+  // All consignmentItems inside a transportDocument share the same
+  // transportplan. So we can take one CarrierBookingReference, either on the root of the SI or on
+  // one of the consignmentItems
+  private String getSingleCarrierBookingReferenceOnTransportDocument(
+      TransportDocumentTO transportDocumentTO) {
+    String carrierBookingReference =
+        transportDocumentTO.getShippingInstruction().getCarrierBookingReference();
+    if (carrierBookingReference == null) {
+      carrierBookingReference =
+          transportDocumentTO
+              .getShippingInstruction()
+              .getConsignmentItems()
+              .get(0)
+              .getCarrierBookingReference();
+    }
+
+    return carrierBookingReference;
   }
 
   void setIssuerOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
@@ -163,7 +195,7 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -174,10 +206,10 @@ public class TransportDocumentServiceImpl
         .flatMap(tdTO -> validateDocumentStatusOnBooking(tdTO).thenReturn(tdTO))
         .flatMap(
             TdTO -> {
-              if (TdTO.getShippingInstruction().getDocumentStatus() != ShipmentEventTypeCode.PENA) {
+              if (TdTO.getShippingInstruction().getDocumentStatus() != ShipmentEventTypeCode.DRFT) {
                 return Mono.error(
                     ConcreteRequestErrorMessageException.invalidParameter(
-                        "Cannot Approve Transport Document with Shipping Instruction that is not in status PENA"));
+                        "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"));
               }
 
               TdTO.setTransportDocumentUpdatedDateTime(now);
@@ -196,7 +228,8 @@ public class TransportDocumentServiceImpl
                           .flatMap(
                               shipmentTOs -> {
                                 // check if returned list is empty
-                                // TODO: This check does not seem like it belongs here? (and if it does, it is not a 404 but a 500)
+                                // TODO: This check does not seem like it belongs here? (and if it
+                                // does, it is not a 404 but a 500)
                                 if (shipmentTOs.isEmpty()) {
                                   return Mono.error(
                                       ConcreteRequestErrorMessageException.notFound(
@@ -207,7 +240,7 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getCarrierBookingReference(),
+                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
@@ -234,25 +267,25 @@ public class TransportDocumentServiceImpl
                                                 .doOnNext(shipmentTO::setBooking))
                                     .then(Mono.just(shipmentTOs));
                               })
-                          //ToDo need shipments when reintroducing the transport plan
                           .thenReturn(shippingInstructionTO)
                           .doOnNext(TdTO::setShippingInstruction))
                   .thenReturn(TdTO);
             })
-        .flatMap(TdTO -> createShipmentEventFromTransportDocumentTO(TdTO).thenReturn(TdTO));
+        .flatMap(tdTO -> createShipmentEventFromTransportDocumentTO(tdTO).thenReturn(tdTO))
+        .map(transportDocumentMapper::dtoToTransportDocumentRefStatus);
   }
 
   private Mono<Booking> getBooking(
-      String carrierBookingReference, String shippingInstructionReference) {
+      String carrierBookingRequestReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
     // BookingReference does not exist.
     return bookingRepository
-        .findByCarrierBookingRequestReferenceAndValidUntilIsNull(carrierBookingReference)
+        .findByCarrierBookingRequestReferenceAndValidUntilIsNull(carrierBookingRequestReference)
         .switchIfEmpty(
             Mono.error(
                 new IllegalStateException(
-                    "The CarrierBookingReference: "
-                        + carrierBookingReference
+                    "The CarrierBookingRequestReference: "
+                        + carrierBookingRequestReference
                         + " specified on ShippingInstruction:"
                         + shippingInstructionReference
                         + " does not exist!")));
@@ -278,24 +311,26 @@ public class TransportDocumentServiceImpl
         .flatMap(shipmentEventService::create);
   }
 
-  private Mono<TransportDocument> findEditableTransportDocumentByTransportDocumentReference(String transportDocumentReference) {
+  private Mono<TransportDocument> findEditableTransportDocumentByTransportDocumentReference(
+      String transportDocumentReference) {
     return transportDocumentRepository
-      .findLatestTransportDocumentByTransportDocumentReference(transportDocumentReference)
-      .switchIfEmpty(
-        Mono.error(
-          ConcreteRequestErrorMessageException.notFound(
-            "No transport document found with transport document reference: "
-              + transportDocumentReference)))
-      .filter(td -> Objects.isNull(td.getValidUntil()))
-      .switchIfEmpty(
-        Mono.error(
-          ConcreteRequestErrorMessageException.internalServerError(
-            "All transport documents are inactive, at least one active transport document should be present.")));
+        .findLatestTransportDocumentByTransportDocumentReference(transportDocumentReference)
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No transport document found with transport document reference: "
+                        + transportDocumentReference)))
+        .filter(td -> Objects.isNull(td.getValidUntil()))
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.internalServerError(
+                    "All transport documents are inactive, at least one active transport document should be present.")));
   }
 
-  Mono<? extends ShipmentEvent> createShipmentEventFromTransportDocumentTO(
+  Mono<ShipmentEvent> createShipmentEventFromTransportDocumentTO(
       TransportDocumentTO transportDocumentTO) {
-    return findEditableTransportDocumentByTransportDocumentReference(transportDocumentTO.getTransportDocumentReference())
+    return findEditableTransportDocumentByTransportDocumentReference(
+            transportDocumentTO.getTransportDocumentReference())
         .flatMap(
             transportDocument ->
                 shipmentEventFromTransportDocumentTO(
@@ -350,5 +385,4 @@ public class TransportDocumentServiceImpl
                         + transportDocumentTO.getTransportDocumentReference())))
         .collectList();
   }
-
 }
