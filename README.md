@@ -63,3 +63,27 @@ To generate the JSON schemas follow the instructions listed in the [project](htt
 
 The OAS Yaml file can be downloaded at [EBL OpenAPI specification](https://app.swaggerhub.com/apis/dcsaorg/DCSA_EBL).
 
+----------------------------------------
+
+## Example of how to create a schema valiation using GET shipping-instructions endpoint as an example
+
+- Downloading the API:
+  - Go to [eBL 2.0.0-beta2 Swagger API](https://app.swaggerhub.com/apis/dcsaorg/DCSA_EBL/2.0.0-Beta-2#/Shipping%20Instructions/get_v2_shipping_instructions__shippingInstructionReference_)
+  - Click 'export' in the top-right corner of the page. 
+  - Select 'Download API'.
+  - Click 'JSON Resolved' to download.
+
+- Generate schemas:
+  - Open a terminal in the directory of aforementioend downloaded API file. 
+  - Run `openapi2schema -i path/to/api.json > shipping-instruction.json` command.
+  - Open `shipping-instruction.json` in a text editor.
+  - In the JSON to go `/v2/shipping-instructions/{shippingInstructionReference} > {} get > {} responses > {} 200`.
+  - Clip out the JSON segment excluding the 200-brackets and put into a separate JSON file to get your JSON schema.
+
+
+
+
+
+
+
+
