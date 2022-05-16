@@ -74,7 +74,7 @@ The OAS Yaml file can be downloaded at [EBL OpenAPI specification](https://app.s
   - Click 'JSON Resolved' to download.
 
 - Generate schemas:
-  - Open a terminal in the directory of aforementioend downloaded API file. 
+  - Open a terminal in the directory of aforementioned downloaded API file. 
   - Run `openapi2schema -i path/to/api.json > shipping-instruction.json` command.
   - Open `shipping-instruction.json` in a text editor.
   - In the JSON to go `/v2/shipping-instructions/{shippingInstructionReference} > {} get > {} responses > {} 200`.
