@@ -11,6 +11,7 @@ import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -46,6 +47,7 @@ public class TransportDocumentServiceImpl
   private final CarrierRepository carrierRepository;
   private final BookingRepository bookingRepository;
   private final ShippingInstructionRepository shippingInstructionRepository;
+  private final ShipmentRepository shipmentRepository;
 
   private final ShippingInstructionService shippingInstructionService;
   private final ChargeService chargeService;
@@ -127,7 +129,9 @@ public class TransportDocumentServiceImpl
               return Mono.when(
                       Mono.justOrEmpty(transportDocument.getIssuer())
                           .flatMap(carrierRepository::findById)
-                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                          .doOnNext(
+                              carrier ->
+                                  setIssuerOnTransportDocument(transportDocumentTO, carrier)),
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
                           .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
@@ -141,7 +145,30 @@ public class TransportDocumentServiceImpl
                                   ConcreteRequestErrorMessageException.notFound(
                                       "No shipping instruction found with shipping instruction reference: "
                                           + transportDocument.getShippingInstructionID())))
-                          .doOnNext(transportDocumentTO::setShippingInstruction),
+                          .flatMap(
+                              shippingInstructionTO ->
+                                  shipmentRepository
+                                      .findByCarrierBookingReferenceAndValidUntilIsNull(
+                                          shippingInstructionTO.getCarrierBookingReference())
+                                      .doOnNext(
+                                          x ->
+                                              transportDocumentTO.setTermsAndConditions(
+                                                  x.getTermsAndConditions()))
+                                      .then(
+                                          bookingRepository
+                                              .findCarrierBookingReferenceAndValidUntilIsNull(
+                                                  shippingInstructionTO
+                                                      .getCarrierBookingReference())
+                                              .doOnNext(
+                                                  booking -> {
+                                                    transportDocumentTO.setReceiptTypeAtOrigin(booking.getReceiptTypeAtOrigin());
+                                                    transportDocumentTO.setDeliveryTypeAtDestination(booking.getDeliveryTypeAtDestination());
+                                                    transportDocumentTO.setCargoMovementTypeAtOrigin(booking.getCargoMovementTypeAtOrigin());
+                                                    transportDocumentTO.setCargoMovementTypeAtDestination(booking.getCargoMovementTypeAtDestination());
+                                                    transportDocumentTO.setServiceContractReference(booking.getServiceContractReference());
+                                                  }))
+                                      .thenReturn(shippingInstructionTO)
+                                      .doOnNext(transportDocumentTO::setShippingInstruction)),
                       chargeService
                           .fetchChargesByTransportDocumentID(transportDocument.getId())
                           .collectList()
@@ -196,7 +223,8 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(
+      String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -241,7 +269,9 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
+                                                    shipmentTO
+                                                        .getBooking()
+                                                        .getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
