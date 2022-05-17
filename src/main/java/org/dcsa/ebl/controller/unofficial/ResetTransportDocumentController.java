@@ -1,14 +1,10 @@
 package org.dcsa.ebl.controller.unofficial;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.repository.BookingRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
-import org.dcsa.ebl.model.transferobjects.ApproveTransportDocumentRequestTO;
-import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
-import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.springframework.http.MediaType;
@@ -16,8 +12,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @RestController
@@ -34,18 +28,27 @@ public class ResetTransportDocumentController {
   private final BookingRepository bookingRepository;
 
   @PostMapping(path = "/{transportDocumentId}")
-  public Mono<Void> findById(@PathVariable UUID transportDocumentId) {
-    System.out.println(transportDocumentId);
+  public Mono<Void> findById(
+      @PathVariable UUID transportDocumentId,
+      @RequestParam(required = false) ShipmentEventTypeCode bookingStatus,
+      @RequestParam(required = false) ShipmentEventTypeCode shippingInstructionStatus) {
+
+    if (bookingStatus == null) bookingStatus = ShipmentEventTypeCode.CONF;
+    if (shippingInstructionStatus == null) shippingInstructionStatus = ShipmentEventTypeCode.DRFT;
+
+    ShipmentEventTypeCode finalBookingStatus = bookingStatus;
+    ShipmentEventTypeCode finalShippingInstructionStatus = shippingInstructionStatus;
+
     return transportDocumentRepository
         .findById(transportDocumentId)
-        .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("argh!")))
+        .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("No transport document found with transport document id: " + transportDocumentId)))
         .flatMap(
             transportDocumentTO ->
                 shippingInstructionRepository
                     .findById(transportDocumentTO.getShippingInstructionID())
                     .flatMap(
                         shippingInstruction -> {
-                          shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.DRFT);
+                          shippingInstruction.setDocumentStatus(finalShippingInstructionStatus);
                           return shippingInstructionRepository.save(shippingInstruction);
                         }))
         .flatMap(
@@ -56,7 +59,7 @@ public class ResetTransportDocumentController {
                     .flatMap(
                         booking -> {
                           System.out.println(booking.getId());
-                          booking.setDocumentStatus(ShipmentEventTypeCode.CONF);
+                          booking.setDocumentStatus(finalBookingStatus);
                           return bookingRepository.save(booking);
                         })
                     .collectList())

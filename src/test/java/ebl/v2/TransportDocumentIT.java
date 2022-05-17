@@ -5,20 +5,13 @@ import org.apache.http.HttpStatus;
 import org.dcsa.core.events.model.TransportDocument;
 import org.dcsa.core.events.model.enums.LocationType;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
-import org.dcsa.ebl.model.TransportDocumentSummary;
-import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static ebl.config.TestConfig.*;
-import static ebl.config.TestUtil.loadFileAsString;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
@@ -117,35 +110,10 @@ public class TransportDocumentIT {
 
   @Test
   void testApproveValidTransportDocument() {
-    String transportDocumentReference = "c90a0ed6-ccc9-48e3";
-
-    System.out.println("Resetting transport document!");
-    given()
-        .contentType("application/json")
-        .post("v2/unofficial/reset-transport-document/" + transportDocumentReference)
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK);
-
-    System.out.println("Approving transport document!");
-    given()
-        .contentType("application/json")
-        .body("{ \"documentStatus\": \"APPR\" }")
-        .patch(TRANSPORT_DOCUMENTS + "/" + transportDocumentReference)
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK)
-        .body("transportDocumentReference", equalTo(transportDocumentReference))
-        .body("documentStatus", equalTo(ShipmentEventTypeCode.APPR.toString()));
-  }
-
-  @Test
-  void testApproveInvalidTransportDocument() {
     TransportDocument td = new TransportDocument();
     td.setId(UUID.fromString("cf48ad0a-9a4b-48a7-b752-c248fb5d88d9"));
     td.setTransportDocumentReference("c90a0ed6-ccc9-48e3");
 
-    System.out.println("Resetting transport document!");
     given()
         .contentType("application/json")
         .post("/v2/unofficial/reset-transport-document/" + td.getId())
@@ -153,7 +121,6 @@ public class TransportDocumentIT {
         .assertThat()
         .statusCode(HttpStatus.SC_OK);
 
-    System.out.println("Approving transport document!");
     given()
         .contentType("application/json")
         .body("{ \"documentStatus\": \"APPR\" }")
@@ -166,11 +133,68 @@ public class TransportDocumentIT {
   }
 
   @Test
-  void testApproveNotFoundTransportDocument() {
-    String transportDocumentReference = UUID.randomUUID().toString().substring(0, 12);
+  void testApproveInvalidCancelledBookingTransportDocument() {
+    TransportDocument td = new TransportDocument();
+    td.setId(UUID.fromString("cf48ad0a-9a4b-48a7-b752-c248fb5d88d9"));
+    td.setTransportDocumentReference("c90a0ed6-ccc9-48e3");
+
     given()
         .contentType("application/json")
-        .post("v2/unofficial/reset-transport-document/" + transportDocumentReference)
+        .queryParam("bookingStatus", ShipmentEventTypeCode.CANC)
+        .post("/v2/unofficial/reset-transport-document/" + td.getId())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK);
+
+    given()
+        .contentType("application/json")
+        .body("{ \"documentStatus\": \"APPR\" }")
+        .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
+        .then()
+        .assertThat()
+        .body(
+            "errors[0].message",
+            equalTo(
+                "DocumentStatus CANC for booking KUBERNETES_IN_ACTION_03 related to carrier booking reference c90a0ed6-ccc9-48e3 is not in CONF state!"))
+        .body("errors[0].reason", equalTo("invalidParameter"))
+        .body(jsonSchemaValidator("error"));
+  }
+
+  @Test
+  void testApproveInvalidShippingInstructionIssuedTransportDocument() {
+    TransportDocument td = new TransportDocument();
+    td.setId(UUID.fromString("cf48ad0a-9a4b-48a7-b752-c248fb5d88d9"));
+    td.setTransportDocumentReference("c90a0ed6-ccc9-48e3");
+
+    given()
+        .contentType("application/json")
+        .queryParam("shippingInstructionStatus", ShipmentEventTypeCode.ISSU)
+        .post("/v2/unofficial/reset-transport-document/" + td.getId())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_OK);
+
+    given()
+        .contentType("application/json")
+        .body("{ \"documentStatus\": \"APPR\" }")
+        .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
+        .then()
+        .assertThat()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .body(
+            "errors[0].message",
+            equalTo(
+                "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"))
+        .body("errors[0].reason", equalTo("invalidParameter"))
+        .body(jsonSchemaValidator("error"));
+  }
+
+  @Test
+  void testApproveNotFoundTransportDocument() {
+    UUID transportDocumentId = UUID.randomUUID();
+    given()
+        .contentType("application/json")
+        .post("v2/unofficial/reset-transport-document/" + transportDocumentId)
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_NOT_FOUND)
@@ -178,8 +202,7 @@ public class TransportDocumentIT {
         .body(
             "errors[0].message",
             containsString(
-                "No transport document found with transport document reference: "
-                    + transportDocumentReference))
+                "No transport document found with transport document id: " + transportDocumentId))
         .body(jsonSchemaValidator("error"))
         .extract()
         .asString();
