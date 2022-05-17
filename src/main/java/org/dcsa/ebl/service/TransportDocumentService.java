@@ -17,7 +17,4 @@ public interface TransportDocumentService
 
   @Transactional
   Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference);
-
-  @Transactional
-  Mono<Void> resetTransportDocument(UUID transportDocumentId);
 }

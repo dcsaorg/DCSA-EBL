@@ -281,37 +281,6 @@ public class TransportDocumentServiceImpl
         .map(transportDocumentMapper::dtoToTransportDocumentRefStatus);
   }
 
-  // Unofficial function
-  @Override
-  public Mono<Void> resetTransportDocument(UUID transportDocumentId) {
-    System.out.println(transportDocumentId);
-    return transportDocumentRepository
-        .findById(transportDocumentId)
-        .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("argh!")))
-        .flatMap(
-            transportDocumentTO ->
-                shippingInstructionRepository
-                    .findById(transportDocumentTO.getShippingInstructionID())
-                    .flatMap(
-                        shippingInstruction -> {
-                          shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.DRFT);
-                          return shippingInstructionRepository.save(shippingInstruction);
-                        }))
-        .flatMap(
-            shippingInstruction ->
-                bookingRepository
-                    .findAllByShippingInstructionReference(
-                        shippingInstruction.getShippingInstructionReference())
-                    .flatMap(
-                        booking -> {
-                          System.out.println(booking.getId());
-                          booking.setDocumentStatus(ShipmentEventTypeCode.CONF);
-                          return bookingRepository.save(booking);
-                        })
-                    .collectList())
-        .flatMap(transportDocumentTO -> Mono.empty());
-  }
-
   private Mono<Booking> getBooking(
       String carrierBookingRequestReference, String shippingInstructionReference) {
     // Don't use ServiceClass - use Repository directly in order to throw internal error if
