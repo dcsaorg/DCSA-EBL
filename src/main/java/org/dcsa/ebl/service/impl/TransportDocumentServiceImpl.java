@@ -148,17 +148,11 @@ public class TransportDocumentServiceImpl
                           .flatMap(
                               shippingInstructionTO ->
                                   shipmentRepository
-                                      .findByCarrierBookingReferenceAndValidUntilIsNull(
-                                          shippingInstructionTO.getCarrierBookingReference())
-                                      .doOnNext(
-                                          x ->
-                                              transportDocumentTO.setTermsAndConditions(
-                                                  x.getTermsAndConditions()))
+                                      .findByCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                      .doOnNext(shipment -> transportDocumentTO.setTermsAndConditions(shipment.getTermsAndConditions()))
                                       .then(
                                           bookingRepository
-                                              .findCarrierBookingReferenceAndValidUntilIsNull(
-                                                  shippingInstructionTO
-                                                      .getCarrierBookingReference())
+                                              .findCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
                                               .doOnNext(
                                                   booking -> {
                                                     transportDocumentTO.setReceiptTypeAtOrigin(booking.getReceiptTypeAtOrigin());
