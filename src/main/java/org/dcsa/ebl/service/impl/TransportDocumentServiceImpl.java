@@ -127,7 +127,9 @@ public class TransportDocumentServiceImpl
               return Mono.when(
                       Mono.justOrEmpty(transportDocument.getIssuer())
                           .flatMap(carrierRepository::findById)
-                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                          .doOnNext(
+                              carrier ->
+                                  setIssuerOnTransportDocument(transportDocumentTO, carrier)),
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
                           .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
@@ -196,7 +198,8 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(
+      String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -241,7 +244,9 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
+                                                    shipmentTO
+                                                        .getBooking()
+                                                        .getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
@@ -274,6 +279,37 @@ public class TransportDocumentServiceImpl
             })
         .flatMap(tdTO -> createShipmentEventFromTransportDocumentTO(tdTO).thenReturn(tdTO))
         .map(transportDocumentMapper::dtoToTransportDocumentRefStatus);
+  }
+
+  // Unofficial function
+  @Override
+  public Mono<Void> resetTransportDocument(UUID transportDocumentId) {
+    System.out.println(transportDocumentId);
+    return transportDocumentRepository
+        .findById(transportDocumentId)
+        .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("argh!")))
+        .flatMap(
+            transportDocumentTO ->
+                shippingInstructionRepository
+                    .findById(transportDocumentTO.getShippingInstructionID())
+                    .flatMap(
+                        shippingInstruction -> {
+                          shippingInstruction.setDocumentStatus(ShipmentEventTypeCode.DRFT);
+                          return shippingInstructionRepository.save(shippingInstruction);
+                        }))
+        .flatMap(
+            shippingInstruction ->
+                bookingRepository
+                    .findAllByShippingInstructionReference(
+                        shippingInstruction.getShippingInstructionReference())
+                    .flatMap(
+                        booking -> {
+                          System.out.println(booking.getId());
+                          booking.setDocumentStatus(ShipmentEventTypeCode.CONF);
+                          return bookingRepository.save(booking);
+                        })
+                    .collectList())
+        .flatMap(transportDocumentTO -> Mono.empty());
   }
 
   private Mono<Booking> getBooking(
