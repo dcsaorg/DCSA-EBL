@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static ebl.config.TestConfig.*;
 import static io.restassured.RestAssured.given;
+import static org.dcsa.core.events.model.enums.ShipmentEventTypeCode.*;
 import static org.hamcrest.Matchers.*;
 
 public class TransportDocumentIT {
@@ -133,60 +134,71 @@ public class TransportDocumentIT {
   }
 
   @Test
-  void testApproveInvalidCancelledBookingTransportDocument() {
+  void testAllInvalidBookingDocumentStatusOnApproveTransportDocument() {
     TransportDocument td = new TransportDocument();
     td.setId(UUID.fromString("cf48ad0a-9a4b-48a7-b752-c248fb5d88d9"));
     td.setTransportDocumentReference("c90a0ed6-ccc9-48e3");
 
-    given()
-        .contentType("application/json")
-        .queryParam("bookingStatus", ShipmentEventTypeCode.CANC)
-        .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK);
+    for (String b : BOOKING_DOCUMENT_STATUSES.split(",")) {
+      ShipmentEventTypeCode bookingDocumentStatus = ShipmentEventTypeCode.valueOf(b);
+      if (bookingDocumentStatus == CONF) continue;
 
-    given()
-        .contentType("application/json")
-        .body("{ \"documentStatus\": \"APPR\" }")
-        .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
-        .then()
-        .assertThat()
-        .body(
-            "errors[0].message",
-            equalTo(
-                "DocumentStatus CANC for booking KUBERNETES_IN_ACTION_03 related to carrier booking reference c90a0ed6-ccc9-48e3 is not in CONF state!"))
-        .body("errors[0].reason", equalTo("invalidParameter"))
-        .body(jsonSchemaValidator("error"));
+      given()
+          .contentType("application/json")
+          .queryParam("bookingStatus", bookingDocumentStatus)
+          .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
+          .then()
+          .assertThat()
+          .statusCode(HttpStatus.SC_OK);
+
+      given()
+          .contentType("application/json")
+          .body("{ \"documentStatus\": \"APPR\" }")
+          .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
+          .then()
+          .assertThat()
+          .body(
+              "errors[0].message",
+              equalTo(
+                  "DocumentStatus "
+                      + bookingDocumentStatus
+                      + " for booking KUBERNETES_IN_ACTION_03 related to carrier booking reference c90a0ed6-ccc9-48e3 is not in CONF state!"))
+          .body("errors[0].reason", equalTo("invalidParameter"))
+          .body(jsonSchemaValidator("error"));
+    }
   }
 
   @Test
-  void testApproveInvalidShippingInstructionIssuedTransportDocument() {
+  void testAllInvalidShippingInstructionDocumentStatusOnApproveTransportDocument() {
     TransportDocument td = new TransportDocument();
     td.setId(UUID.fromString("cf48ad0a-9a4b-48a7-b752-c248fb5d88d9"));
     td.setTransportDocumentReference("c90a0ed6-ccc9-48e3");
 
-    given()
-        .contentType("application/json")
-        .queryParam("shippingInstructionStatus", ShipmentEventTypeCode.ISSU)
-        .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_OK);
+    for (String si : EBL_DOCUMENT_STATUSES.split(",")) {
+      ShipmentEventTypeCode documentStatus = ShipmentEventTypeCode.valueOf(si);
+      if (documentStatus == DRFT) continue;
+      given()
+          .contentType("application/json")
+          .queryParam("shippingInstructionStatus", documentStatus)
+          .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
+          .then()
+          .assertThat()
+          .statusCode(HttpStatus.SC_OK);
 
-    given()
-        .contentType("application/json")
-        .body("{ \"documentStatus\": \"APPR\" }")
-        .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
-        .then()
-        .assertThat()
-        .statusCode(HttpStatus.SC_BAD_REQUEST)
-        .body(
-            "errors[0].message",
-            equalTo(
-                "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"))
-        .body("errors[0].reason", equalTo("invalidParameter"))
-        .body(jsonSchemaValidator("error"));
+      given()
+          .contentType("application/json")
+          .body("{ \"documentStatus\": \"APPR\" }")
+          .patch(TRANSPORT_DOCUMENTS + "/" + td.getTransportDocumentReference())
+          .then()
+          .assertThat()
+          .statusCode(HttpStatus.SC_BAD_REQUEST)
+          .body(
+              "errors[0].message",
+              equalTo(
+                  "Cannot Approve Transport Document with Shipping Instruction that is not in status DRFT"))
+          .body("errors[0].reason", equalTo("invalidParameter"))
+          .body(jsonSchemaValidator("error"));
+    }
   }
 
   @Test
