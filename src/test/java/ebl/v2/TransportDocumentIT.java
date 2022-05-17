@@ -116,7 +116,7 @@ public class TransportDocumentIT {
 
     given()
         .contentType("application/json")
-        .post("/v2/unofficial/reset-transport-document/" + td.getId())
+        .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK);
@@ -141,7 +141,7 @@ public class TransportDocumentIT {
     given()
         .contentType("application/json")
         .queryParam("bookingStatus", ShipmentEventTypeCode.CANC)
-        .post("/v2/unofficial/reset-transport-document/" + td.getId())
+        .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK);
@@ -169,7 +169,7 @@ public class TransportDocumentIT {
     given()
         .contentType("application/json")
         .queryParam("shippingInstructionStatus", ShipmentEventTypeCode.ISSU)
-        .post("/v2/unofficial/reset-transport-document/" + td.getId())
+        .post("/v2/unofficial/change-document-status-by-transport-document/" + td.getId())
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_OK);
@@ -194,7 +194,7 @@ public class TransportDocumentIT {
     UUID transportDocumentId = UUID.randomUUID();
     given()
         .contentType("application/json")
-        .post("v2/unofficial/reset-transport-document/" + transportDocumentId)
+        .post("v2/unofficial/change-document-status-by-transport-document/" + transportDocumentId)
         .then()
         .assertThat()
         .statusCode(HttpStatus.SC_NOT_FOUND)

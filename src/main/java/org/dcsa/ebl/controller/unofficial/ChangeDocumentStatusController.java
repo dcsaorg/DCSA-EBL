@@ -17,10 +17,10 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(
-    value = "unofficial/reset-transport-document",
+    value = "unofficial/change-document-status-by-transport-document",
     produces = {MediaType.APPLICATION_JSON_VALUE})
 @Validated
-public class ResetTransportDocumentController {
+public class ChangeDocumentStatusController {
 
   private final TransportDocumentService transportDocumentService;
   private final ShippingInstructionRepository shippingInstructionRepository;
@@ -28,7 +28,7 @@ public class ResetTransportDocumentController {
   private final BookingRepository bookingRepository;
 
   @PostMapping(path = "/{transportDocumentId}")
-  public Mono<Void> findById(
+  public Mono<Void> updateDocumentStatusForBookingAndShippingInstructionByTransportDocumentID(
       @PathVariable UUID transportDocumentId,
       @RequestParam(required = false) ShipmentEventTypeCode bookingStatus,
       @RequestParam(required = false) ShipmentEventTypeCode shippingInstructionStatus) {
@@ -41,7 +41,11 @@ public class ResetTransportDocumentController {
 
     return transportDocumentRepository
         .findById(transportDocumentId)
-        .switchIfEmpty(Mono.error(ConcreteRequestErrorMessageException.notFound("No transport document found with transport document id: " + transportDocumentId)))
+        .switchIfEmpty(
+            Mono.error(
+                ConcreteRequestErrorMessageException.notFound(
+                    "No transport document found with transport document id: "
+                        + transportDocumentId)))
         .flatMap(
             transportDocumentTO ->
                 shippingInstructionRepository
@@ -62,7 +66,6 @@ public class ResetTransportDocumentController {
                           booking.setDocumentStatus(finalBookingStatus);
                           return bookingRepository.save(booking);
                         })
-                    .collectList())
-        .flatMap(transportDocumentTO -> Mono.empty());
+                    .then(Mono.empty()));
   }
 }
