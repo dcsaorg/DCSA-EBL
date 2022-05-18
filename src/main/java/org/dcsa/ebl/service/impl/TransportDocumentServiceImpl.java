@@ -343,15 +343,15 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
-      UUID shippingInstructionID, TransportDocumentTO transportDocumentTO, String reason) {
+      UUID transportDocumentID, TransportDocumentTO transportDocumentTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(
             transportDocumentTO.getShippingInstruction().getDocumentStatus().name()));
     shipmentEvent.setEventType(null);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
-    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
-    shipmentEvent.setDocumentID(shippingInstructionID);
+    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.TRD);
+    shipmentEvent.setDocumentID(transportDocumentID);
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
     shipmentEvent.setDocumentReference(transportDocumentTO.getTransportDocumentReference());
