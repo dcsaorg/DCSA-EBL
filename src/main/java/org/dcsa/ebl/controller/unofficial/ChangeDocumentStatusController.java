@@ -62,7 +62,6 @@ public class ChangeDocumentStatusController {
                         shippingInstruction.getShippingInstructionReference())
                     .flatMap(
                         booking -> {
-                          System.out.println(booking.getId());
                           booking.setDocumentStatus(finalBookingStatus);
                           return bookingRepository.save(booking);
                         })
