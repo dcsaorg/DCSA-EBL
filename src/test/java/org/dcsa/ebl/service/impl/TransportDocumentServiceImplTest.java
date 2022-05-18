@@ -168,7 +168,6 @@ class TransportDocumentServiceImplTest {
     booking.setDeliveryTypeAtDestination(ReceiptDeliveryType.SD);
     booking.setCargoMovementTypeAtDestination(CargoMovementType.FCL);
     booking.setCargoMovementTypeAtOrigin(CargoMovementType.LCL);
-    booking.setCargoMovementTypeAtOrigin(CargoMovementType.LCL);
     booking.setServiceContractReference("x".repeat(30));
   }
 
