@@ -87,13 +87,13 @@ public class TransportDocumentServiceImpl
             })
         .flatMap(
             ignored -> {
-              if (transportDocument.getIssuer() == null) return Mono.just(transportDocumentSummary);
+              if (transportDocument.getCarrier() == null) return Mono.just(transportDocumentSummary);
               return carrierRepository
-                  .findById(transportDocument.getIssuer())
+                  .findById(transportDocument.getCarrier())
                   .switchIfEmpty(
                       Mono.error(
                           ConcreteRequestErrorMessageException.internalServerError(
-                              "No carrier found with issuer ID: " + transportDocument.getIssuer())))
+                              "No carrier found with issuer ID: " + transportDocument.getCarrier())))
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {
@@ -125,7 +125,7 @@ public class TransportDocumentServiceImpl
               TransportDocumentTO transportDocumentTO =
                   transportDocumentMapper.transportDocumentToDTO(transportDocument);
               return Mono.when(
-                      Mono.justOrEmpty(transportDocument.getIssuer())
+                      Mono.justOrEmpty(transportDocument.getCarrier())
                           .flatMap(carrierRepository::findById)
                           .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
@@ -187,11 +187,11 @@ public class TransportDocumentServiceImpl
 
   void setIssuerOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
     if (Objects.nonNull(carrier.getSmdgCode())) {
-      transportDocumentTO.setIssuerCode(carrier.getSmdgCode());
-      transportDocumentTO.setIssuerCodeListProvider(CarrierCodeListProvider.SMDG);
+      transportDocumentTO.setCarrierCode(carrier.getSmdgCode());
+      transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.SMDG);
     } else if (Objects.nonNull(carrier.getNmftaCode())) {
-      transportDocumentTO.setIssuerCode(carrier.getNmftaCode());
-      transportDocumentTO.setIssuerCodeListProvider(CarrierCodeListProvider.NMFTA);
+      transportDocumentTO.setCarrierCode(carrier.getNmftaCode());
+      transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.NMFTA);
     }
   }
 
@@ -303,6 +303,7 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setDocumentID(bookingID);
     shipmentEvent.setEventDateTime(booking.getBookingRequestUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setDocumentReference(booking.getCarrierBookingRequestReference());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }
@@ -342,17 +343,18 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
-      UUID shippingInstructionID, TransportDocumentTO transportDocumentTO, String reason) {
+      UUID transportDocumentID, TransportDocumentTO transportDocumentTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(
             transportDocumentTO.getShippingInstruction().getDocumentStatus().name()));
     shipmentEvent.setEventType(null);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
-    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
-    shipmentEvent.setDocumentID(shippingInstructionID);
+    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.TRD);
+    shipmentEvent.setDocumentID(transportDocumentID);
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setDocumentReference(transportDocumentTO.getTransportDocumentReference());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }

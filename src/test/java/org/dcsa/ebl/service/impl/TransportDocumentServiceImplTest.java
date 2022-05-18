@@ -140,7 +140,7 @@ class TransportDocumentServiceImplTest {
     transportDocument = new TransportDocument();
     transportDocument.setShippingInstructionID(shippingInstruction.getId());
     transportDocument.setTransportDocumentReference("TransportDocumentReference1");
-    transportDocument.setIssuer(carrier.getId());
+    transportDocument.setCarrier(carrier.getId());
     transportDocument.setIssueDate(LocalDate.now());
     transportDocument.setTransportDocumentCreatedDateTime(now);
     transportDocument.setTransportDocumentUpdatedDateTime(now);
@@ -325,7 +325,7 @@ class TransportDocumentServiceImplTest {
     @DisplayName("Test GET transport document summaries for null issuer")
     void testGetTransportDocumentWithNullIssuer() {
 
-      transportDocument.setIssuer(null);
+      transportDocument.setCarrier(null);
 
       when(shippingInstructionRepository.findById((UUID) any()))
           .thenReturn(Mono.just(shippingInstruction));
@@ -359,7 +359,7 @@ class TransportDocumentServiceImplTest {
               throwable -> {
                 Assertions.assertTrue(throwable instanceof ConcreteRequestErrorMessageException);
                 assertEquals(
-                    "No carrier found with issuer ID: " + transportDocument.getIssuer(),
+                    "No carrier found with issuer ID: " + transportDocument.getCarrier(),
                     throwable.getMessage());
               })
           .verify();
@@ -413,7 +413,7 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
+                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getCarrierCode());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
@@ -447,7 +447,7 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
+                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getCarrierCode());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
@@ -482,7 +482,7 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
+                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getCarrierCode());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
@@ -517,7 +517,7 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
+                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getCarrierCode());
                 assertEquals(0, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
@@ -552,7 +552,7 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getIssuerCode());
+                assertEquals(carrier.getSmdgCode(), transportDocumentTOResponse.getCarrierCode());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(0, transportDocumentTOResponse.getCarrierClauses().size());
@@ -614,8 +614,8 @@ class TransportDocumentServiceImplTest {
                   "TransportDocumentReference1"))
           .assertNext(
               transportDocumentTOResponse -> {
-                assertNull(transportDocumentTOResponse.getIssuerCode());
-                assertNull(transportDocumentTOResponse.getIssuerCodeListProvider());
+                assertNull(transportDocumentTOResponse.getCarrierCode());
+                assertNull(transportDocumentTOResponse.getCarrierCodeListProvider());
                 assertEquals(1, transportDocumentTOResponse.getCharges().size());
                 assertNotNull(transportDocumentTOResponse.getPlaceOfIssue());
                 assertEquals(1, transportDocumentTOResponse.getCarrierClauses().size());
@@ -649,8 +649,8 @@ class TransportDocumentServiceImplTest {
       carrier.setSmdgCode("123");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
       transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
-      assertEquals(carrier.getSmdgCode(), transportDocumentTO.getIssuerCode());
-      assertEquals(CarrierCodeListProvider.SMDG, transportDocumentTO.getIssuerCodeListProvider());
+      assertEquals(carrier.getSmdgCode(), transportDocumentTO.getCarrierCode());
+      assertEquals(CarrierCodeListProvider.SMDG, transportDocumentTO.getCarrierCodeListProvider());
     }
 
     @Test
@@ -660,8 +660,8 @@ class TransportDocumentServiceImplTest {
       carrier.setNmftaCode("abcd");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
       transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
-      assertEquals(carrier.getNmftaCode(), transportDocumentTO.getIssuerCode());
-      assertEquals(CarrierCodeListProvider.NMFTA, transportDocumentTO.getIssuerCodeListProvider());
+      assertEquals(carrier.getNmftaCode(), transportDocumentTO.getCarrierCode());
+      assertEquals(CarrierCodeListProvider.NMFTA, transportDocumentTO.getCarrierCodeListProvider());
     }
 
     @Test
@@ -670,7 +670,7 @@ class TransportDocumentServiceImplTest {
       Carrier carrier = new Carrier();
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
       transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
-      assertNull(transportDocumentTO.getIssuerCode());
+      assertNull(transportDocumentTO.getCarrierCode());
     }
   }
 

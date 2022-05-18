@@ -37,9 +37,9 @@ public class TransportDocumentTO {
   private Integer numberOfOriginals;
 
   @Size(max = 4)
-  private String issuerCode;
+  private String carrierCode;
 
-  private CarrierCodeListProvider issuerCodeListProvider;
+  private CarrierCodeListProvider carrierCodeListProvider;
 
   @Size(max = 3, message = "Declared Value Currency has a max size of 3.")
   private String declaredValueCurrency;
