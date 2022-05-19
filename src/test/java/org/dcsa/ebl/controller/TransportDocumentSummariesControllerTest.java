@@ -77,8 +77,9 @@ class TransportDocumentSummariesControllerTest {
     transportDocumentSummary.setDocumentStatus(ShipmentEventTypeCode.RECE);
     transportDocumentSummary.setTransportDocumentCreatedDateTime(now);
     transportDocumentSummary.setTransportDocumentUpdatedDateTime(now);
-    transportDocumentSummary.setIssuerCode("x".repeat(3));
-    transportDocumentSummary.setIssuerCodeListProvider(CarrierCodeListProvider.SMDG);
+    transportDocumentSummary.setCarrierCode("x".repeat(3));
+    transportDocumentSummary.setCarrierCodeListProvider(CarrierCodeListProvider.SMDG);
+    transportDocumentSummary.setIssueDate(LocalDate.now());
     transportDocumentSummary.setIssueDate(LocalDate.now());
     transportDocumentSummary.setShippedOnboardDate(LocalDate.now());
     transportDocumentSummary.setReceivedForShipmentDate(LocalDate.now());
@@ -183,9 +184,9 @@ class TransportDocumentSummariesControllerTest {
                   .hasJsonPath()
                   .jsonPath("$.[0].receivedForShipmentDate")
                   .hasJsonPath()
-                  .jsonPath("$.[0].issuerCode")
+                  .jsonPath("$.[0].carrierCode")
                   .hasJsonPath()
-                  .jsonPath("$.[0].issuerCodeListProvider")
+                  .jsonPath("$.[0].carrierCodeListProvider")
                   .hasJsonPath()
                   .jsonPath("$.[0].declaredValueCurrency")
                   .hasJsonPath()

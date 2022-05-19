@@ -50,9 +50,9 @@ public class TransportDocumentSummary {
   private LocalDate receivedForShipmentDate;
 
   @Size(max = 4)
-  private String issuerCode;
+  private String carrierCode;
 
-  private CarrierCodeListProvider issuerCodeListProvider;
+  private CarrierCodeListProvider carrierCodeListProvider;
 
   @Size(max = 3)
   private String declaredValueCurrency;

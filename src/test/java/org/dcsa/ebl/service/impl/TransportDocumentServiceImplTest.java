@@ -285,7 +285,7 @@ class TransportDocumentServiceImplTest {
           .assertNext(
               result -> {
                 assertNotNull(result.getTransportDocumentReference());
-                assertNotNull(result.getIssuerCode());
+                assertNotNull(result.getCarrierCode());
                 assertNotNull(result.getIssueDate());
                 assertNotNull(result.getTransportDocumentCreatedDateTime());
                 assertNotNull(result.getTransportDocumentUpdatedDateTime());
@@ -293,7 +293,7 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getReceivedForShipmentDate());
                 assertNotNull(result.getDeclaredValue());
                 assertNotNull(result.getDeclaredValueCurrency());
-                assertNotNull(result.getIssuerCodeListProvider());
+                assertNotNull(result.getCarrierCodeListProvider());
                 assertFalse(result.getCarrierBookingReferences().isEmpty());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
               })
@@ -313,7 +313,7 @@ class TransportDocumentServiceImplTest {
           .assertNext(
               result -> {
                 assertNotNull(result.getTransportDocumentReference());
-                assertNotNull(result.getIssuerCode());
+                assertNotNull(result.getCarrierCode());
                 assertNotNull(result.getIssueDate());
                 assertNotNull(result.getTransportDocumentCreatedDateTime());
                 assertNotNull(result.getTransportDocumentUpdatedDateTime());
@@ -321,7 +321,7 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getReceivedForShipmentDate());
                 assertNotNull(result.getDeclaredValue());
                 assertNotNull(result.getDeclaredValueCurrency());
-                assertNotNull(result.getIssuerCodeListProvider());
+                assertNotNull(result.getCarrierCodeListProvider());
                 assertTrue(result.getCarrierBookingReferences().isEmpty());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
               })
