@@ -99,13 +99,13 @@ public class TransportDocumentServiceImpl
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.SMDG);
-                          transportDocumentSummary.setIssuerCode(carrier.getSmdgCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getSmdgCode());
                         } else if (carrier.getNmftaCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.NMFTA);
-                          transportDocumentSummary.setIssuerCode(carrier.getNmftaCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getNmftaCode());
                         } else {
                           return Mono.error(
                               ConcreteRequestErrorMessageException.invalidParameter(
