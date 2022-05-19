@@ -9,44 +9,70 @@ IntelliJ it is recommended to download and activate the
 [google-java-format plugin](https://github.com/google/google-java-format).
 
 
-Building and running manually/locally
--------------------------------------
+### BUILDING AND RUNNING THE PROJECT
 
-Initialize your local postgresql database as described in datamodel/README.md, then
-```
-export db_hostname=localhost
-export DCSA_Version=0.7.4 #or whatever version is the right one
-```
-If running without auth0, disable it in src/main/resources/application.yaml
+> **[RECOMMENDED]** Set up a Github Personal Access Token (PAT) as mentioned [here](https://github.com/dcsaorg/DCSA-Core/blob/master/README.md#how-to-use-dcsa-core-packages), then skip to **step 3**.
 
-Then build and run with
+If you would like to build required DCSA packages individually, begin with step 1.
+
+1) Build **DCSA-Core** as described
+   in [DCSA-Core/README.md](https://github.com/dcsaorg/DCSA-Core/blob/master/README.md#to-build-manually-run), then
+
+2) Build **DCSA-Event-Core** as described
+   in [DCSA-Event-Core/README.md](https://github.com/dcsaorg/DCSA-Event-Core/blob/master/README.md#to-build-manually-run)
+   , then
+
+3) Clone **DCSA-EBL** (with ``--recurse-submodules`` option.) and Build using, ``mvn package``
+
+4) Initialize your local postgresql database as described
+   in [datamodel/README.md](https://github.com/dcsaorg/DCSA-Information-Model/blob/master/README.md) \
+   or If you have docker installed, you may skip this step and use the docker-compose command mentioned below to set it
+   up (This will initialize the application along with the database).
+
+5) Run application,
+
 ```
-mvn install:install-file -Dfile=../DCSA-Core/target/dcsa_core-$DCSA_Version.jar -DgroupId=org.dcsa -DartifactId=dcsa_core -Dversion=local-SNAPSHOT -Dpackaging=jar -DgeneratePom=true
-mvn spring-boot:run -Ddcsa.version=local-SNAPSHOT
+mvn spring-boot:run [options]
+
+options:
+ -Dspring-boot.run.arguments="--DB_HOSTNAME=localhost:5432 --AUTH0_ENABLED=false --LOG_LEVEL=DEBUG"
 ```
-or using docker-compose
+
+OR using **docker-compose**
+
 ```
-mvn package -Ddcsa.version=local-SNAPSHOT
 docker-compose up -d -V --build
 ```
 
-Building and running using docker-compose
------------------------------------------
-To build using DCSA-core from GitHub packages
+6) Verify if the application is running,
+
 ```
-mvn package
-docker-compose up -d -V --build
+curl http://localhost:9090/v2/actuator/health
 ```
 
-Branching and versioning
-------------------------
-This repository has the following branching and versioning policy:
-- The *master* branch always contains the *latest* stable major version.
-- Active development on the next major version is performed in the *dev* branch
-- Once a new major version is stable the following is done:
-  - the now old version is tagged with the version
-  - the new version is merged into master
+------------------------------------------------------------------------------------------------------------------------
 
-For example, if the latest stable version is 1.x.x the master branch will contain this 1.x.x version. Active development on 2.x.x is being done
-on the *dev* branch. When version 2.x.x is released master is tagged with version 1.x.x and the *dev* branch is merged into master
-the result is a tag-1.x.x and master containing the 2.x.x version.
+### DEVELOPMENT FLOW
+
+`master` is the main development branch.
+
+`pre-release` and `release` are tagged and should be used as a stable version.
+
+Development continues on `master` and feature branches are created based on `master`.
+
+A typical development flow would look like:
+
+1) Create a feature branch with `master` as base, proceed to make changes to feature branch.
+2) Raise PR against `master`. When a PR is raised against master a CI is run to ensure everything is fine.
+3) Merge with `master` after approval by at least one verified code owner and successful CI run.
+
+> Note: If changes are required in the `DCSA-Event-Core` or `DCSA-Core`, those changes should first be merged into their respective `master` branches before continuing development in this repository.
+
+4) If development has been completed as per requirements for a given API version, `master` must be tagged to <br>
+   create a `release` or `pre-release` accordingly.
+
+When bug fixes are required or changes in pre-release versions are needed, we branch off using the respective <br>
+tags and continue development on that branch. It is important to note that these changes must be cherry-picked <br>
+and included into `master`.
+
+------------------------------------------------------------------------------------------------------------------------
