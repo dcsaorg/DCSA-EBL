@@ -7,6 +7,8 @@ import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentLocationTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.TransportTO;
+import org.dcsa.core.events.model.enums.CargoMovementType;
+import org.dcsa.core.events.model.enums.ReceiptDeliveryType;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
@@ -47,6 +49,19 @@ public class TransportDocumentTO {
   private Double declaredValue;
 
   private Integer numberOfRiderPages;
+
+  private ReceiptDeliveryType receiptTypeAtOrigin;
+
+  private ReceiptDeliveryType deliveryTypeAtDestination;
+
+  private CargoMovementType cargoMovementTypeAtOrigin;
+
+  private CargoMovementType cargoMovementTypeAtDestination;
+
+  @Size(max = 30)
+  private String serviceContractReference;
+
+  private String termsAndConditions;
 
   @Valid private LocationTO placeOfIssue;
 
