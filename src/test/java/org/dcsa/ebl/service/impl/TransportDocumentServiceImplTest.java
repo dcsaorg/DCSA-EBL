@@ -1,7 +1,6 @@
 package org.dcsa.ebl.service.impl;
 
 import org.dcsa.core.events.edocumentation.model.transferobject.*;
-import org.dcsa.core.events.edocumentation.repository.ShipmentLocationRepository;
 import org.dcsa.core.events.edocumentation.service.*;
 import org.dcsa.core.events.model.*;
 import org.dcsa.core.events.model.enums.*;
@@ -648,7 +647,7 @@ class TransportDocumentServiceImplTest {
       Carrier carrier = new Carrier();
       carrier.setSmdgCode("123");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertEquals(carrier.getSmdgCode(), transportDocumentTO.getCarrierCode());
       assertEquals(CarrierCodeListProvider.SMDG, transportDocumentTO.getCarrierCodeListProvider());
     }
@@ -659,7 +658,7 @@ class TransportDocumentServiceImplTest {
       Carrier carrier = new Carrier();
       carrier.setNmftaCode("abcd");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertEquals(carrier.getNmftaCode(), transportDocumentTO.getCarrierCode());
       assertEquals(CarrierCodeListProvider.NMFTA, transportDocumentTO.getCarrierCodeListProvider());
     }
@@ -669,7 +668,7 @@ class TransportDocumentServiceImplTest {
     void testNoIssuerOnTransportDocument() {
       Carrier carrier = new Carrier();
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertNull(transportDocumentTO.getCarrierCode());
     }
   }

@@ -26,6 +26,7 @@ import org.dcsa.skernel.model.Carrier;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
+import org.dcsa.skernel.service.PartyService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -55,6 +56,7 @@ public class TransportDocumentServiceImpl
   private final ShipmentEventService shipmentEventService;
   private final TransportService transportService;
   private final ShipmentLocationService shipmentLocationService;
+  private final PartyService partyService;
 
   private final TransportDocumentMapper transportDocumentMapper;
 
@@ -87,13 +89,15 @@ public class TransportDocumentServiceImpl
             })
         .flatMap(
             ignored -> {
-              if (transportDocument.getCarrier() == null) return Mono.just(transportDocumentSummary);
+              if (transportDocument.getCarrier() == null)
+                return Mono.just(transportDocumentSummary);
               return carrierRepository
                   .findById(transportDocument.getCarrier())
                   .switchIfEmpty(
                       Mono.error(
                           ConcreteRequestErrorMessageException.internalServerError(
-                              "No carrier found with issuer ID: " + transportDocument.getCarrier())))
+                              "No carrier found with issuer ID: "
+                                  + transportDocument.getCarrier())))
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {
@@ -127,10 +131,15 @@ public class TransportDocumentServiceImpl
               return Mono.when(
                       Mono.justOrEmpty(transportDocument.getCarrier())
                           .flatMap(carrierRepository::findById)
-                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                          .doOnNext(
+                              carrier ->
+                                  setCarrierOnTransportDocument(transportDocumentTO, carrier)),
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
                           .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
+                      Mono.justOrEmpty(transportDocument.getIssuingParty())
+                          .flatMap(partyService::findTOById)
+                          .doOnNext(transportDocumentTO::setParty),
                       shipmentLocationService
                           .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
                           .doOnNext(transportDocumentTO::setShipmentLocations),
@@ -185,7 +194,7 @@ public class TransportDocumentServiceImpl
     return carrierBookingReference;
   }
 
-  void setIssuerOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
+  void setCarrierOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
     if (Objects.nonNull(carrier.getSmdgCode())) {
       transportDocumentTO.setCarrierCode(carrier.getSmdgCode());
       transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.SMDG);
@@ -196,7 +205,8 @@ public class TransportDocumentServiceImpl
   }
 
   @Override
-  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(
+      String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -241,7 +251,9 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
+                                                    shipmentTO
+                                                        .getBooking()
+                                                        .getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
