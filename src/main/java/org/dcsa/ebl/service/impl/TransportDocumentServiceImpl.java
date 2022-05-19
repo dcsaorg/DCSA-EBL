@@ -11,6 +11,7 @@ import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -47,6 +48,7 @@ public class TransportDocumentServiceImpl
   private final CarrierRepository carrierRepository;
   private final BookingRepository bookingRepository;
   private final ShippingInstructionRepository shippingInstructionRepository;
+  private final ShipmentRepository shipmentRepository;
 
   private final ShippingInstructionService shippingInstructionService;
   private final ChargeService chargeService;
@@ -101,13 +103,13 @@ public class TransportDocumentServiceImpl
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.SMDG);
-                          transportDocumentSummary.setIssuerCode(carrier.getSmdgCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getSmdgCode());
                         } else if (carrier.getNmftaCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.NMFTA);
-                          transportDocumentSummary.setIssuerCode(carrier.getNmftaCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getNmftaCode());
                         } else {
                           return Mono.error(
                               ConcreteRequestErrorMessageException.invalidParameter(
@@ -150,7 +152,24 @@ public class TransportDocumentServiceImpl
                                   ConcreteRequestErrorMessageException.notFound(
                                       "No shipping instruction found with shipping instruction reference: "
                                           + transportDocument.getShippingInstructionID())))
-                          .doOnNext(transportDocumentTO::setShippingInstruction),
+                          .flatMap(
+                              shippingInstructionTO ->
+                                  shipmentRepository
+                                      .findByCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                      .doOnNext(shipment -> transportDocumentTO.setTermsAndConditions(shipment.getTermsAndConditions()))
+                                      .then(
+                                          bookingRepository
+                                              .findCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                              .doOnNext(
+                                                  booking -> {
+                                                    transportDocumentTO.setReceiptTypeAtOrigin(booking.getReceiptTypeAtOrigin());
+                                                    transportDocumentTO.setDeliveryTypeAtDestination(booking.getDeliveryTypeAtDestination());
+                                                    transportDocumentTO.setCargoMovementTypeAtOrigin(booking.getCargoMovementTypeAtOrigin());
+                                                    transportDocumentTO.setCargoMovementTypeAtDestination(booking.getCargoMovementTypeAtDestination());
+                                                    transportDocumentTO.setServiceContractReference(booking.getServiceContractReference());
+                                                  }))
+                                      .thenReturn(shippingInstructionTO)
+                                      .doOnNext(transportDocumentTO::setShippingInstruction)),
                       chargeService
                           .fetchChargesByTransportDocumentID(transportDocument.getId())
                           .collectList()
