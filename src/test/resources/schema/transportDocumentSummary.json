@@ -25,32 +25,25 @@
       },
       "issueDate": {
         "type": "string",
-        "description": "Date when the transport document has been issued"
+        "description": "Date when the transport document has been issued",
+        "format": "date"
       },
       "shippedOnBoardDate": {
         "type": "string",
-        "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document."
+        "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document.",
+        "format": "date"
       },
       "receivedForShipmentDate": {
         "type": "string",
-        "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel)."
+        "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel).",
+        "format": "date"
       },
       "numberOfOriginals": {
         "type": "integer",
-        "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n"
-      },
-      "issuerCode": {
-        "maxLength": 4,
-        "type": "string",
-        "description": "The code containing the SCAC and/or the SMGD code to specify the issuing carrier.  Details about the issuer can be given in the Document Parties entity using the party function code MS.\n"
-      },
-      "issuerCodeListProvider": {
-        "type": "string",
-        "description": "The provider used for identifying the issuer Code\n",
-        "enum": [
-          "SMDG",
-          "NMFTA"
-        ]
+        "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
       "declaredValueCurrency": {
         "maxLength": 3,
@@ -59,11 +52,17 @@
       },
       "declaredValue": {
         "type": "number",
-        "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper."
+        "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper.",
+        "format": "float",
+        "minimum": -3.402823669209385e+38,
+        "maximum": 3.402823669209385e+38
       },
       "numberOfRiderPages": {
         "type": "integer",
-        "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents."
+        "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents.",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
       "shippingInstructionReference": {
         "maxLength": 100,

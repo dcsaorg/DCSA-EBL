@@ -25,6 +25,7 @@ import org.dcsa.ebl.model.transferobjects.ShippingInstructionResponseTO;
 import org.dcsa.ebl.repository.ShippingInstructionRepository;
 import org.dcsa.ebl.service.ShippingInstructionService;
 import org.dcsa.skernel.model.enums.PartyFunction;
+import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +51,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
 
   private final BookingRepository bookingRepository;
   private final TransportDocumentRepository transportDocumentRepository;
+  private final CarrierRepository carrierRepository;
 
   // Mappers
   private final ShippingInstructionMapper shippingInstructionMapper;
@@ -546,7 +548,10 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       transportDocument.setTransportDocumentUpdatedDateTime(now);
       transportDocument.setPlaceOfIssue(shippingInstructionTO.getPlaceOfIssueID());
       transportDocument.setIssuingParty("499918a2-d12d-4df6-840c-dd92357002df"); // carrier-specific implementation
-      return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+      return carrierRepository.findBySmdgCode("MSK").flatMap(carrier -> {
+        transportDocument.setCarrier(carrier.getId());
+        return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
+      });
     } else {
       return Mono.just(shippingInstructionTO);
     }

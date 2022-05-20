@@ -191,7 +191,6 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
     approveShippingInstructionTO.setShippingInstructionCreatedDateTime(OffsetDateTime.now());
 
-
     transportDocumentTO = new TransportDocumentTO();
     transportDocumentTO.setTransportDocumentReference("TRDocReference1");
     transportDocumentTO.setCharges(List.of(chargeTO));
@@ -218,8 +217,7 @@ class TransportDocumentControllerTest {
   @Test
   @DisplayName("Get transport document with valid reference should return transport document.")
   void testGetTransportDocumentByReference() {
-    when(transportDocumentService.findByTransportDocumentReference(eq("TRDocReference1")))
-        .thenReturn(Mono.just(transportDocumentTO));
+    when(transportDocumentService.findByTransportDocumentReference(eq("TRDocReference1"))).thenReturn(Mono.just(transportDocumentTO));
 
     webTestClient
         .get()
