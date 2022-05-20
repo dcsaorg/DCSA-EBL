@@ -34,7 +34,7 @@ public class TransportDocumentIT {
         .statusCode(HttpStatus.SC_OK)
         .body("size()", greaterThanOrEqualTo(0))
         .body("transportDocumentReference", anyOf(hasItem("9b02401c-b2fb-5009")))
-        .body(jsonSchemaValidator("transportDocument"));
+        .body(jsonSchemaValidator("transportDocumentSummary"));
   }
 
   @Test
