@@ -142,7 +142,7 @@ class TransportDocumentControllerTest {
 
     CommodityTO commodityTO = new CommodityTO();
     commodityTO.setCargoGrossWeight(10.0);
-    commodityTO.setCargoGrossWeightUnit(CargoGrossWeight.KGM);
+    commodityTO.setCargoGrossWeightUnit(WeightUnit.KGM);
     commodityTO.setCommodityType("Type");
 
     BookingTO bookingTO = new BookingTO();

@@ -12,6 +12,7 @@ import org.dcsa.core.events.model.enums.ReceiptDeliveryType;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.model.transferobjects.PartyTO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
@@ -79,4 +80,6 @@ public class TransportDocumentTO {
   @Valid private List<TransportTO> transports;
 
   @Valid private List<ShipmentLocationTO> shipmentLocations;
+
+  @Valid private PartyTO issuingParty;
 }

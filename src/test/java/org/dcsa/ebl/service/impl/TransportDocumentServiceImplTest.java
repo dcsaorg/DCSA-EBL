@@ -24,6 +24,7 @@ import org.dcsa.skernel.model.enums.FacilityCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
+import org.dcsa.skernel.service.PartyService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -64,6 +65,7 @@ class TransportDocumentServiceImplTest {
   @Mock ShipmentEventService shipmentEventService;
   @Mock TransportService transportService;
   @Mock ShipmentLocationService shipmentLocationService;
+  @Mock PartyService partyService;
 
   @InjectMocks TransportDocumentServiceImpl transportDocumentServiceImpl;
 
@@ -704,7 +706,7 @@ class TransportDocumentServiceImplTest {
       Carrier carrier = new Carrier();
       carrier.setSmdgCode("123");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertEquals(carrier.getSmdgCode(), transportDocumentTO.getCarrierCode());
       assertEquals(CarrierCodeListProvider.SMDG, transportDocumentTO.getCarrierCodeListProvider());
     }
@@ -715,7 +717,7 @@ class TransportDocumentServiceImplTest {
       Carrier carrier = new Carrier();
       carrier.setNmftaCode("abcd");
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertEquals(carrier.getNmftaCode(), transportDocumentTO.getCarrierCode());
       assertEquals(CarrierCodeListProvider.NMFTA, transportDocumentTO.getCarrierCodeListProvider());
     }
@@ -725,7 +727,7 @@ class TransportDocumentServiceImplTest {
     void testNoIssuerOnTransportDocument() {
       Carrier carrier = new Carrier();
       TransportDocumentTO transportDocumentTO = new TransportDocumentTO();
-      transportDocumentServiceImpl.setIssuerOnTransportDocument(transportDocumentTO, carrier);
+      transportDocumentServiceImpl.setCarrierOnTransportDocument(transportDocumentTO, carrier);
       assertNull(transportDocumentTO.getCarrierCode());
     }
   }
