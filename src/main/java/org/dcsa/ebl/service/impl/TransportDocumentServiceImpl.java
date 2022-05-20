@@ -141,7 +141,7 @@ public class TransportDocumentServiceImpl
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
                       Mono.justOrEmpty(transportDocument.getIssuingParty())
                           .flatMap(partyService::findTOById)
-                          .doOnNext(transportDocumentTO::setParty),
+                          .doOnNext(transportDocumentTO::setIssuingParty),
                       shipmentLocationService
                           .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
                           .doOnNext(transportDocumentTO::setShipmentLocations),

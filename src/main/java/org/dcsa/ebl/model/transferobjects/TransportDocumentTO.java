@@ -81,5 +81,5 @@ public class TransportDocumentTO {
 
   @Valid private List<ShipmentLocationTO> shipmentLocations;
 
-  @Valid private PartyTO party;
+  @Valid private PartyTO issuingParty;
 }
