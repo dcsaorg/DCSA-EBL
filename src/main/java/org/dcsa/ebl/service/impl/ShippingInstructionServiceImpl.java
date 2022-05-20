@@ -545,6 +545,7 @@ public class ShippingInstructionServiceImpl implements ShippingInstructionServic
       transportDocument.setTransportDocumentCreatedDateTime(now);
       transportDocument.setTransportDocumentUpdatedDateTime(now);
       transportDocument.setPlaceOfIssue(shippingInstructionTO.getPlaceOfIssueID());
+      transportDocument.setIssuingParty("499918a2-d12d-4df6-840c-dd92357002df"); // carrier-specific implementation
       return transportDocumentRepository.save(transportDocument).thenReturn(shippingInstructionTO);
     } else {
       return Mono.just(shippingInstructionTO);
