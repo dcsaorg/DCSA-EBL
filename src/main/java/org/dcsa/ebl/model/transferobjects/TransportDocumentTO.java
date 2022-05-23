@@ -1,15 +1,18 @@
 package org.dcsa.ebl.model.transferobjects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.CarrierClauseTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.ChargeTO;
+import org.dcsa.core.events.edocumentation.model.transferobject.ShipmentLocationTO;
 import org.dcsa.core.events.edocumentation.model.transferobject.TransportTO;
-import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
+import org.dcsa.core.events.model.enums.CargoMovementType;
+import org.dcsa.core.events.model.enums.ReceiptDeliveryType;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
+import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.model.transferobjects.PartyTO;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
@@ -37,9 +40,9 @@ public class TransportDocumentTO {
   private Integer numberOfOriginals;
 
   @Size(max = 4)
-  private String issuerCode;
+  private String carrierCode;
 
-  private CarrierCodeListProvider issuerCodeListProvider;
+  private CarrierCodeListProvider carrierCodeListProvider;
 
   @Size(max = 3, message = "Declared Value Currency has a max size of 3.")
   private String declaredValueCurrency;
@@ -47,6 +50,19 @@ public class TransportDocumentTO {
   private Double declaredValue;
 
   private Integer numberOfRiderPages;
+
+  private ReceiptDeliveryType receiptTypeAtOrigin;
+
+  private ReceiptDeliveryType deliveryTypeAtDestination;
+
+  private CargoMovementType cargoMovementTypeAtOrigin;
+
+  private CargoMovementType cargoMovementTypeAtDestination;
+
+  @Size(max = 30)
+  private String serviceContractReference;
+
+  private String termsAndConditions;
 
   @Valid private LocationTO placeOfIssue;
 
@@ -58,9 +74,12 @@ public class TransportDocumentTO {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   private List<ChargeTO> charges;
 
-//  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  //  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Valid private List<CarrierClauseTO> carrierClauses;
 
-  @Valid
-  private List<TransportTO> transports;
+  @Valid private List<TransportTO> transports;
+
+  @Valid private List<ShipmentLocationTO> shipmentLocations;
+
+  @Valid private PartyTO issuingParty;
 }

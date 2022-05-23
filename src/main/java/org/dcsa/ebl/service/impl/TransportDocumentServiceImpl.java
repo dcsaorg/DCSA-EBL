@@ -2,10 +2,7 @@ package org.dcsa.ebl.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.dcsa.core.events.edocumentation.model.transferobject.BookingTO;
-import org.dcsa.core.events.edocumentation.service.CarrierClauseService;
-import org.dcsa.core.events.edocumentation.service.ChargeService;
-import org.dcsa.core.events.edocumentation.service.ShipmentService;
-import org.dcsa.core.events.edocumentation.service.TransportService;
+import org.dcsa.core.events.edocumentation.service.*;
 import org.dcsa.core.events.model.Booking;
 import org.dcsa.core.events.model.ShipmentEvent;
 import org.dcsa.core.events.model.TransportDocument;
@@ -14,6 +11,7 @@ import org.dcsa.core.events.model.enums.EventClassifierCode;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.events.model.transferobjects.ShippingInstructionTO;
 import org.dcsa.core.events.repository.BookingRepository;
+import org.dcsa.core.events.repository.ShipmentRepository;
 import org.dcsa.core.events.repository.TransportDocumentRepository;
 import org.dcsa.core.events.service.ShipmentEventService;
 import org.dcsa.core.exception.ConcreteRequestErrorMessageException;
@@ -29,6 +27,7 @@ import org.dcsa.skernel.model.Carrier;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
+import org.dcsa.skernel.service.PartyService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -49,6 +48,7 @@ public class TransportDocumentServiceImpl
   private final CarrierRepository carrierRepository;
   private final BookingRepository bookingRepository;
   private final ShippingInstructionRepository shippingInstructionRepository;
+  private final ShipmentRepository shipmentRepository;
 
   private final ShippingInstructionService shippingInstructionService;
   private final ChargeService chargeService;
@@ -57,6 +57,8 @@ public class TransportDocumentServiceImpl
   private final ShipmentService shipmentService;
   private final ShipmentEventService shipmentEventService;
   private final TransportService transportService;
+  private final ShipmentLocationService shipmentLocationService;
+  private final PartyService partyService;
 
   private final TransportDocumentMapper transportDocumentMapper;
 
@@ -89,23 +91,25 @@ public class TransportDocumentServiceImpl
             })
         .flatMap(
             ignored -> {
-              if (transportDocument.getIssuer() == null) return Mono.just(transportDocumentSummary);
+              if (transportDocument.getCarrier() == null)
+                return Mono.just(transportDocumentSummary);
               return carrierRepository
-                  .findById(transportDocument.getIssuer())
+                  .findById(transportDocument.getCarrier())
                   .switchIfEmpty(
                       Mono.error(
                           ConcreteRequestErrorMessageException.internalServerError(
-                              "No carrier found with issuer ID: " + transportDocument.getIssuer())))
+                              "No carrier found with issuer ID: "
+                                  + transportDocument.getCarrier())))
                   .flatMap(
                       carrier -> {
                         if (carrier.getSmdgCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.SMDG);
-                          transportDocumentSummary.setIssuerCode(carrier.getSmdgCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getSmdgCode());
                         } else if (carrier.getNmftaCode() != null) {
-                          transportDocumentSummary.setIssuerCodeListProvider(
+                          transportDocumentSummary.setCarrierCodeListProvider(
                               CarrierCodeListProvider.NMFTA);
-                          transportDocumentSummary.setIssuerCode(carrier.getNmftaCode());
+                          transportDocumentSummary.setCarrierCode(carrier.getNmftaCode());
                         } else {
                           return Mono.error(
                               ConcreteRequestErrorMessageException.invalidParameter(
@@ -127,12 +131,20 @@ public class TransportDocumentServiceImpl
               TransportDocumentTO transportDocumentTO =
                   transportDocumentMapper.transportDocumentToDTO(transportDocument);
               return Mono.when(
-                      Mono.justOrEmpty(transportDocument.getIssuer())
+                      Mono.justOrEmpty(transportDocument.getCarrier())
                           .flatMap(carrierRepository::findById)
-                          .doOnNext(carrier -> setIssuerOnTransportDocument(transportDocumentTO, carrier)),
+                          .doOnNext(
+                              carrier ->
+                                  setCarrierOnTransportDocument(transportDocumentTO, carrier)),
                       Mono.justOrEmpty(transportDocument.getPlaceOfIssue())
                           .flatMap(locationService::fetchLocationDeepObjByID)
                           .doOnNext(transportDocumentTO::setPlaceOfIssue),
+                      Mono.justOrEmpty(transportDocument.getIssuingParty())
+                          .flatMap(partyService::findTOById)
+                          .doOnNext(transportDocumentTO::setIssuingParty),
+                      shipmentLocationService
+                          .fetchShipmentLocationByTransportDocumentID(transportDocument.getId())
+                          .doOnNext(transportDocumentTO::setShipmentLocations),
                       shippingInstructionService
                           .findByID(transportDocument.getShippingInstructionID())
                           .switchIfEmpty(
@@ -140,7 +152,24 @@ public class TransportDocumentServiceImpl
                                   ConcreteRequestErrorMessageException.notFound(
                                       "No shipping instruction found with shipping instruction reference: "
                                           + transportDocument.getShippingInstructionID())))
-                          .doOnNext(transportDocumentTO::setShippingInstruction),
+                          .flatMap(
+                              shippingInstructionTO ->
+                                  shipmentRepository
+                                      .findByCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                      .doOnNext(shipment -> transportDocumentTO.setTermsAndConditions(shipment.getTermsAndConditions()))
+                                      .then(
+                                          bookingRepository
+                                              .findCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                              .doOnNext(
+                                                  booking -> {
+                                                    transportDocumentTO.setReceiptTypeAtOrigin(booking.getReceiptTypeAtOrigin());
+                                                    transportDocumentTO.setDeliveryTypeAtDestination(booking.getDeliveryTypeAtDestination());
+                                                    transportDocumentTO.setCargoMovementTypeAtOrigin(booking.getCargoMovementTypeAtOrigin());
+                                                    transportDocumentTO.setCargoMovementTypeAtDestination(booking.getCargoMovementTypeAtDestination());
+                                                    transportDocumentTO.setServiceContractReference(booking.getServiceContractReference());
+                                                  }))
+                                      .thenReturn(shippingInstructionTO)
+                                      .doOnNext(transportDocumentTO::setShippingInstruction)),
                       chargeService
                           .fetchChargesByTransportDocumentID(transportDocument.getId())
                           .collectList()
@@ -184,18 +213,19 @@ public class TransportDocumentServiceImpl
     return carrierBookingReference;
   }
 
-  void setIssuerOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
+  void setCarrierOnTransportDocument(TransportDocumentTO transportDocumentTO, Carrier carrier) {
     if (Objects.nonNull(carrier.getSmdgCode())) {
-      transportDocumentTO.setIssuerCode(carrier.getSmdgCode());
-      transportDocumentTO.setIssuerCodeListProvider(CarrierCodeListProvider.SMDG);
+      transportDocumentTO.setCarrierCode(carrier.getSmdgCode());
+      transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.SMDG);
     } else if (Objects.nonNull(carrier.getNmftaCode())) {
-      transportDocumentTO.setIssuerCode(carrier.getNmftaCode());
-      transportDocumentTO.setIssuerCodeListProvider(CarrierCodeListProvider.NMFTA);
+      transportDocumentTO.setCarrierCode(carrier.getNmftaCode());
+      transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.NMFTA);
     }
   }
 
   @Override
-  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(String transportDocumentReference) {
+  public Mono<TransportDocumentRefStatusTO> approveTransportDocument(
+      String transportDocumentReference) {
 
     OffsetDateTime now = OffsetDateTime.now();
     return findByTransportDocumentReference(transportDocumentReference)
@@ -240,7 +270,9 @@ public class TransportDocumentServiceImpl
                                     .concatMap(
                                         shipmentTO ->
                                             getBooking(
-                                                    shipmentTO.getBooking().getCarrierBookingRequestReference(),
+                                                    shipmentTO
+                                                        .getBooking()
+                                                        .getCarrierBookingRequestReference(),
                                                     TdTO.getShippingInstruction()
                                                         .getShippingInstructionReference()) //
                                                 .flatMap(
@@ -302,6 +334,7 @@ public class TransportDocumentServiceImpl
     shipmentEvent.setDocumentID(bookingID);
     shipmentEvent.setEventDateTime(booking.getBookingRequestUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setDocumentReference(booking.getCarrierBookingRequestReference());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }
@@ -341,17 +374,18 @@ public class TransportDocumentServiceImpl
   }
 
   Mono<ShipmentEvent> shipmentEventFromTransportDocumentTO(
-      UUID shippingInstructionID, TransportDocumentTO transportDocumentTO, String reason) {
+      UUID transportDocumentID, TransportDocumentTO transportDocumentTO, String reason) {
     ShipmentEvent shipmentEvent = new ShipmentEvent();
     shipmentEvent.setShipmentEventTypeCode(
         ShipmentEventTypeCode.valueOf(
             transportDocumentTO.getShippingInstruction().getDocumentStatus().name()));
     shipmentEvent.setEventType(null);
     shipmentEvent.setEventClassifierCode(EventClassifierCode.ACT);
-    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.SHI);
-    shipmentEvent.setDocumentID(shippingInstructionID);
+    shipmentEvent.setDocumentTypeCode(DocumentTypeCode.TRD);
+    shipmentEvent.setDocumentID(transportDocumentID);
     shipmentEvent.setEventDateTime(transportDocumentTO.getTransportDocumentUpdatedDateTime());
     shipmentEvent.setEventCreatedDateTime(OffsetDateTime.now());
+    shipmentEvent.setDocumentReference(transportDocumentTO.getTransportDocumentReference());
     shipmentEvent.setReason(reason);
     return Mono.just(shipmentEvent);
   }

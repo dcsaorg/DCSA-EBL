@@ -24,7 +24,7 @@
       "weight": 13000.3,
       "volume": 12,
       "weightUnit": "KGM",
-      "volumeUnit": "CBM",
+      "volumeUnit": "MTQ",
       "descriptionOfGoods": "shoes",
       "HSCode": "411510",
       "cargoItems": [
@@ -39,7 +39,7 @@
           "weight": 13000.3,
           "volume": 12,
           "weightUnit": "KGM",
-          "volumeUnit": "CBM",
+          "volumeUnit": "MTQ",
           "numberOfPackages": 18,
           "packageCode": "5H4"
         }
