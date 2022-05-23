@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;
 import org.dcsa.core.validator.EnumSubset;
+import org.dcsa.skernel.model.transferobjects.PartyTO;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -62,4 +64,6 @@ public class TransportDocumentSummary {
   private Integer numberOfRiderPages;
 
   private List<String> carrierBookingReferences;
+
+  @NotNull private PartyTO issuingParty;
 }

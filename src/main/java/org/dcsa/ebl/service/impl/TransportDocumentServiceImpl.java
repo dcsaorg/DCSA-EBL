@@ -73,6 +73,12 @@ public class TransportDocumentServiceImpl
 
     return shippingInstructionRepository
         .findById(transportDocument.getShippingInstructionID())
+        .flatMap(
+            shippingInstruction ->
+                partyService
+                    .findTOById(transportDocument.getIssuingParty())
+                    .doOnNext(transportDocumentSummary::setIssuingParty)
+                    .thenReturn(shippingInstruction))
         .switchIfEmpty(
             Mono.error(
                 ConcreteRequestErrorMessageException.internalServerError(
@@ -155,18 +161,33 @@ public class TransportDocumentServiceImpl
                           .flatMap(
                               shippingInstructionTO ->
                                   shipmentRepository
-                                      .findByCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
-                                      .doOnNext(shipment -> transportDocumentTO.setTermsAndConditions(shipment.getTermsAndConditions()))
+                                      .findByCarrierBookingReferenceAndValidUntilIsNull(
+                                          shippingInstructionTO.getCarrierBookingReference())
+                                      .doOnNext(
+                                          shipment ->
+                                              transportDocumentTO.setTermsAndConditions(
+                                                  shipment.getTermsAndConditions()))
                                       .then(
                                           bookingRepository
-                                              .findCarrierBookingReferenceAndValidUntilIsNull(shippingInstructionTO.getCarrierBookingReference())
+                                              .findCarrierBookingReferenceAndValidUntilIsNull(
+                                                  shippingInstructionTO
+                                                      .getCarrierBookingReference())
                                               .doOnNext(
                                                   booking -> {
-                                                    transportDocumentTO.setReceiptTypeAtOrigin(booking.getReceiptTypeAtOrigin());
-                                                    transportDocumentTO.setDeliveryTypeAtDestination(booking.getDeliveryTypeAtDestination());
-                                                    transportDocumentTO.setCargoMovementTypeAtOrigin(booking.getCargoMovementTypeAtOrigin());
-                                                    transportDocumentTO.setCargoMovementTypeAtDestination(booking.getCargoMovementTypeAtDestination());
-                                                    transportDocumentTO.setServiceContractReference(booking.getServiceContractReference());
+                                                    transportDocumentTO.setReceiptTypeAtOrigin(
+                                                        booking.getReceiptTypeAtOrigin());
+                                                    transportDocumentTO
+                                                        .setDeliveryTypeAtDestination(
+                                                            booking.getDeliveryTypeAtDestination());
+                                                    transportDocumentTO
+                                                        .setCargoMovementTypeAtOrigin(
+                                                            booking.getCargoMovementTypeAtOrigin());
+                                                    transportDocumentTO
+                                                        .setCargoMovementTypeAtDestination(
+                                                            booking
+                                                                .getCargoMovementTypeAtDestination());
+                                                    transportDocumentTO.setServiceContractReference(
+                                                        booking.getServiceContractReference());
                                                   }))
                                       .thenReturn(shippingInstructionTO)
                                       .doOnNext(transportDocumentTO::setShippingInstruction)),
