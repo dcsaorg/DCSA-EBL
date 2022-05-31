@@ -52,8 +52,10 @@ public class TransportDocumentSummary {
   private LocalDate receivedForShipmentDate;
 
   @Size(max = 4)
+  @NotNull
   private String carrierCode;
 
+  @NotNull
   private CarrierCodeListProvider carrierCodeListProvider;
 
   @Size(max = 3)
