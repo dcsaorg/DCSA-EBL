@@ -1,6 +1,5 @@
 package ebl.v2;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ebl.config.TestConfig;
 import org.apache.http.HttpStatus;
 import org.dcsa.core.events.model.enums.ShipmentEventTypeCode;

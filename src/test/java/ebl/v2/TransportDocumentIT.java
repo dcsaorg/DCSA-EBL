@@ -27,6 +27,7 @@ public class TransportDocumentIT {
   void testValidTDIsInSummary() {
     // Test that the valid transport document exists in data set.
     given()
+        .queryParam("limit", 1000)
         .contentType("application/json")
         .get(TRANSPORT_DOCUMENT_SUMMARIES)
         .then()
@@ -34,7 +35,7 @@ public class TransportDocumentIT {
         .statusCode(HttpStatus.SC_OK)
         .body("size()", greaterThanOrEqualTo(0))
         .body("transportDocumentReference", anyOf(hasItem("9b02401c-b2fb-5009")))
-        .body(jsonSchemaValidator("transportDocument"));
+        .body(jsonSchemaValidator("transportDocumentSummary"));
   }
 
   @Test

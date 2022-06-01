@@ -22,6 +22,8 @@ import org.dcsa.skernel.model.Carrier;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.enums.FacilityCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.model.transferobjects.PartyContactDetailsTO;
+import org.dcsa.skernel.model.transferobjects.PartyTO;
 import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
 import org.dcsa.skernel.service.PartyService;
@@ -95,6 +97,8 @@ class TransportDocumentServiceImplTest {
   Address address;
   ReferenceTO referenceTO;
   TransportTO transportTO;
+
+  PartyTO partyTO;
 
   @BeforeEach
   void init() {
@@ -269,6 +273,14 @@ class TransportDocumentServiceImplTest {
     transportTO.setTransportReference("TrRef1");
     transportTO.setDischargeLocation(dischargeLocation);
     transportTO.setLoadLocation(loadLocation);
+
+    PartyContactDetailsTO partyContactDetailsTO = new PartyContactDetailsTO();
+    partyContactDetailsTO.setName("Maersk Incorporated");
+
+    partyTO = new PartyTO();
+    partyTO.setId(UUID.randomUUID().toString());
+    partyTO.setPartyContactDetails(List.of(partyContactDetailsTO));
+    partyTO.setPartyName("Maersk");
   }
 
   @Nested
@@ -278,6 +290,7 @@ class TransportDocumentServiceImplTest {
     @Test
     @DisplayName("Test GET shipping instruction with everything for a valid ID.")
     void testGetTransportDocumentWithEverythingForValidID() {
+      when(partyService.findTOById(any())).thenReturn(Mono.just(partyTO));
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
       when(shippingInstructionRepository.findById(any(UUID.class)))
           .thenReturn(Mono.just(shippingInstruction));
@@ -306,8 +319,8 @@ class TransportDocumentServiceImplTest {
     @DisplayName("Test GET shipping instruction without carrierBookingReferences.")
     void testGetTransportDocumentWithoutCarrierBookingReferences() {
       when(carrierRepository.findById(any(UUID.class))).thenReturn(Mono.just(carrier));
-      when(shippingInstructionRepository.findById((UUID) any()))
-          .thenReturn(Mono.just(shippingInstruction));
+      when(shippingInstructionRepository.findById((UUID) any())).thenReturn(Mono.just(shippingInstruction));
+      when(partyService.findTOById(any())).thenReturn(Mono.just(partyTO));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
           .thenReturn(Flux.empty());
 
@@ -336,6 +349,7 @@ class TransportDocumentServiceImplTest {
 
       transportDocument.setCarrier(null);
 
+      when(partyService.findTOById(any())).thenReturn(Mono.just(partyTO));
       when(shippingInstructionRepository.findById((UUID) any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))
@@ -357,6 +371,7 @@ class TransportDocumentServiceImplTest {
     @DisplayName("Test GET transport document summaries for invalid issuer")
     void testGetTransportDocumentWithInvalidIssuer() {
 
+      when(partyService.findTOById(any())).thenReturn(Mono.just(partyTO));
       when(shippingInstructionRepository.findById((UUID) any()))
           .thenReturn(Mono.just(shippingInstruction));
       when(shippingInstructionRepository.findCarrierBookingReferenceByShippingInstructionID(any()))

@@ -2,6 +2,9 @@
   "type": "array",
   "items": {
     "required": [
+      "carrierCode",
+      "carrierCodeListProvider",
+      "issuingParty",
       "shippingInstructionReference",
       "transportDocumentReference"
     ],
@@ -25,32 +28,189 @@
       },
       "issueDate": {
         "type": "string",
-        "description": "Date when the transport document has been issued"
+        "description": "Date when the transport document has been issued",
+        "format": "date"
       },
       "shippedOnBoardDate": {
         "type": "string",
-        "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document."
+        "description": "Date when the last container that is linked to the transport document is physically loaded onboard the vessel indicated on the transport document.",
+        "format": "date"
       },
       "receivedForShipmentDate": {
         "type": "string",
-        "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel)."
+        "description": "Date when the last container linked to the transport document is physically in the terminal (customers cleared against the intended vessel).",
+        "format": "date"
       },
       "numberOfOriginals": {
         "type": "integer",
-        "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n"
+        "description": "Number of original copies of the negotiable bill of lading that has been issued to the customer.\n",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
-      "issuerCode": {
+      "carrierCode": {
         "maxLength": 4,
         "type": "string",
-        "description": "The code containing the SCAC and/or the SMGD code to specify the issuing carrier.  Details about the issuer can be given in the Document Parties entity using the party function code MS.\n"
+        "description": "The code containing the SCAC and/or the SMDG code to specify the issuing carrier.  Details about the issuer can be given in the Document Parties entity using the party function code MS.\n"
       },
-      "issuerCodeListProvider": {
+      "carrierCodeListProvider": {
         "type": "string",
         "description": "The provider used for identifying the issuer Code\n",
         "enum": [
           "SMDG",
           "NMFTA"
         ]
+      },
+      "issuingParty": {
+        "required": [
+          "partyContactDetails"
+        ],
+        "type": "object",
+        "description": "refers to a company or a legal entity.",
+        "properties": {
+          "partyName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Name of the party."
+          },
+          "taxReference1": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "The identifying number of the consignee or shipper (Individual or entity) used for tax purposes."
+          },
+          "taxReference2": {
+            "maxLength": 20,
+            "type": "string",
+            "description": "Optional second identifying number of the consignee or shipper (Individual or entity) used for tax purposes."
+          },
+          "publicKey": {
+            "maxLength": 500,
+            "type": "string",
+            "description": "The public key used for a digital signature."
+          },
+          "address": {
+            "type": "object",
+            "description": "An object for storing address related information\n",
+            "properties": {
+              "name": {
+                "maxLength": 100,
+                "type": "string",
+                "description": "Name of the address"
+              },
+              "street": {
+                "maxLength": 100,
+                "type": "string",
+                "description": "The name of the street of the partyÔÇÖs address."
+              },
+              "streetNumber": {
+                "maxLength": 50,
+                "type": "string",
+                "description": "The number of the street of the partyÔÇÖs address."
+              },
+              "floor": {
+                "maxLength": 50,
+                "type": "string",
+                "description": "The floor of the partyÔÇÖs street number."
+              },
+              "postCode": {
+                "maxLength": 10,
+                "type": "string",
+                "description": "The post code of the partyÔÇÖs address."
+              },
+              "city": {
+                "maxLength": 65,
+                "type": "string",
+                "description": "The city name of the partyÔÇÖs address."
+              },
+              "stateRegion": {
+                "maxLength": 65,
+                "type": "string",
+                "description": "The state/region of the partyÔÇÖs address."
+              },
+              "country": {
+                "maxLength": 75,
+                "type": "string",
+                "description": "The country of the partyÔÇÖs address."
+              }
+            }
+          },
+          "partyContactDetails": {
+            "minItems": 1,
+            "type": "array",
+            "description": "A list of contact details - the list cannot be empty\n",
+            "items": {
+              "required": [
+                "name"
+              ],
+              "type": "object",
+              "description": "Contact information for a Party\n",
+              "properties": {
+                "name": {
+                  "maxLength": 100,
+                  "type": "string",
+                  "description": "Name of the contact"
+                },
+                "phone": {
+                  "maxLength": 30,
+                  "type": "string",
+                  "description": "Phone number for the contact"
+                },
+                "email": {
+                  "maxLength": 100,
+                  "type": "string",
+                  "description": "E-mail address for the contact"
+                },
+                "url": {
+                  "maxLength": 100,
+                  "type": "string",
+                  "description": "URL for the contact"
+                }
+              }
+            }
+          },
+          "identifyingCodes": {
+            "type": "array",
+            "items": {
+              "required": [
+                "DCSAResponsibleAgencyCode",
+                "partyCode"
+              ],
+              "type": "object",
+              "properties": {
+                "DCSAResponsibleAgencyCode": {
+                  "type": "string",
+                  "description": "A DCSA provided code for [UN/CEFACT](https://unece.org/fileadmin/DAM/trade/untdid/d16b/tred/tred3055.htm) code list providers:\n- ISO (International Standards Organization)\n- UNECE (United Nations Economic Commission for Europe)\n- LLOYD (Lloyd's register of shipping)\n- BIC (Bureau International des Containeurs)\n- IMO (International Maritime Organization)\n- SCAC (Standard Carrier Alpha Code)\n- ITIGG (International Transport Implementation Guidelines Group)\n- ITU (International Telecommunication Union)\n- SMDG (Shipplanning Message Development Group)\n- EXIS (Exis Technologies Ltd.)\n- FMC (Federal Maritime Commission)\n- CBSA (Canada Border Services Agency)\n- DCSA (Digital Container Shipping Association)\n- ZZZ (Mutually defined)\n\nMore details can be found on [GitHub](https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/codelistresponsibleagencycodes.csv).\n",
+                  "enum": [
+                    "ISO",
+                    "UNECE",
+                    "LLOYD",
+                    "BIC",
+                    "IMO",
+                    "SCAC",
+                    "ITIGG",
+                    "ITU",
+                    "SMDG",
+                    "EXIS",
+                    "FMC",
+                    "CBSA",
+                    "DCSA",
+                    "ZZZ"
+                  ]
+                },
+                "partyCode": {
+                  "maxLength": 100,
+                  "type": "string",
+                  "description": "Code to identify the party as provided by the agency\n"
+                },
+                "codeListName": {
+                  "maxLength": 100,
+                  "type": "string",
+                  "description": "The name of the list, provided by the responsible agency\n"
+                }
+              }
+            }
+          }
+        }
       },
       "declaredValueCurrency": {
         "maxLength": 3,
@@ -59,11 +219,17 @@
       },
       "declaredValue": {
         "type": "number",
-        "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper."
+        "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper.",
+        "format": "float",
+        "minimum": -3.402823669209385e+38,
+        "maximum": 3.402823669209385e+38
       },
       "numberOfRiderPages": {
         "type": "integer",
-        "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents."
+        "description": "The number of additional pages required to contain the goods description on a transport document. Only applicable for physical transport documents.",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
       "shippingInstructionReference": {
         "maxLength": 100,

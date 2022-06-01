@@ -24,6 +24,7 @@ import org.dcsa.skernel.model.enums.PartyFunction;
 import org.dcsa.skernel.model.mapper.LocationMapper;
 import org.dcsa.skernel.model.mapper.PartyMapper;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.repositority.CarrierRepository;
 import org.dcsa.skernel.service.LocationService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +63,7 @@ class ShippingInstructionServiceImplTest {
   @Mock ShipmentEventService shipmentEventService;
   @Mock DocumentPartyService documentPartyService;
   @Mock ConsignmentItemService consignmentItemService;
-
+  @Mock CarrierRepository carrierRepository;
   @InjectMocks ShippingInstructionServiceImpl shippingInstructionServiceImpl;
 
   @Spy
@@ -88,6 +89,7 @@ class ShippingInstructionServiceImplTest {
   UtilizedTransportEquipment utilizedTransportEquipment;
   CargoItem cargoItem;
   Booking booking;
+  Carrier carrier;
 
   ShippingInstructionTO shippingInstructionTO;
   LocationTO locationTO;
@@ -115,6 +117,11 @@ class ShippingInstructionServiceImplTest {
     booking.setId(UUID.randomUUID());
     booking.setDocumentStatus(ShipmentEventTypeCode.CONF);
     booking.setCarrierBookingRequestReference(UUID.randomUUID().toString());
+
+    carrier = new Carrier();
+    carrier.setId(UUID.randomUUID());
+    carrier.setCarrierName("Maersk");
+    carrier.setSmdgCode("MSK");
 
     location = new Location();
     location.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
@@ -310,6 +317,7 @@ class ShippingInstructionServiceImplTest {
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(any(), any())).thenReturn(Mono.just(List.of(utilizedTransportEquipmentTO)));
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any()))
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
           .thenReturn(Mono.just(List.of(referenceTO)));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
@@ -395,6 +403,7 @@ class ShippingInstructionServiceImplTest {
           .thenReturn(Mono.just(List.of(documentPartyTO1, documentPartyTO2)));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any()))
           .thenReturn(Mono.just(List.of(referenceTO)));
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
@@ -546,6 +555,7 @@ class ShippingInstructionServiceImplTest {
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any()))
           .thenReturn(Mono.just(booking));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(locationService.createLocationByTO(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
@@ -699,6 +709,7 @@ class ShippingInstructionServiceImplTest {
       shippingInstructionTO.setReferences(null);
 
       when(bookingRepository.findCarrierBookingReferenceAndValidUntilIsNull(any())).thenReturn(Mono.just(booking));
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(
               any(), any()))
@@ -1004,6 +1015,7 @@ class ShippingInstructionServiceImplTest {
       when(shipmentEventService.create(any()))
           .thenAnswer(arguments -> Mono.just(arguments.getArguments()[0]));
       when(transportDocumentRepository.save(any())).thenReturn(Mono.empty());
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(utilizedTransportEquipmentService
               .addUtilizedTransportEquipmentToShippingInstruction(any(), any()))
           .thenReturn(Mono.empty());
@@ -1104,6 +1116,7 @@ class ShippingInstructionServiceImplTest {
       when(documentPartyService.createDocumentPartiesByShippingInstructionID(any(), any())).thenReturn(Mono.empty());
       when(utilizedTransportEquipmentService.addUtilizedTransportEquipmentToShippingInstruction(any(), any())).thenReturn(Mono.empty());
       when(referenceService.createReferencesByShippingInstructionIdAndTOs(any(), any())).thenReturn(Mono.empty());
+      when(carrierRepository.findBySmdgCode(any())).thenReturn(Mono.just(carrier));
       when(consignmentItemService.createConsignmentItemsByShippingInstructionIDAndTOs(
               any(), any(), any()))
           .thenReturn(

@@ -12,7 +12,11 @@ import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.dcsa.skernel.model.Address;
+import org.dcsa.skernel.model.PartyContactDetails;
+import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
+import org.dcsa.skernel.model.transferobjects.PartyContactDetailsTO;
+import org.dcsa.skernel.model.transferobjects.PartyTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -191,11 +195,21 @@ class TransportDocumentControllerTest {
     approveShippingInstructionTO.setShippingInstructionUpdatedDateTime(OffsetDateTime.now());
     approveShippingInstructionTO.setShippingInstructionCreatedDateTime(OffsetDateTime.now());
 
+    PartyContactDetailsTO partyContactDetailsTO = new PartyContactDetailsTO();
+    partyContactDetailsTO.setName("Maersk Incorporated");
+
+    PartyTO partyTO = new PartyTO();
+    partyTO.setId(UUID.randomUUID().toString());
+    partyTO.setPartyName("Maersk");
+    partyTO.setPartyContactDetails(List.of(partyContactDetailsTO));
 
     transportDocumentTO = new TransportDocumentTO();
     transportDocumentTO.setTransportDocumentReference("TRDocReference1");
     transportDocumentTO.setCharges(List.of(chargeTO));
     transportDocumentTO.setPlaceOfIssue(locationTO);
+    transportDocumentTO.setCarrierCode("MSK");
+    transportDocumentTO.setCarrierCodeListProvider(CarrierCodeListProvider.SMDG);
+    transportDocumentTO.setIssuingParty(partyTO);
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentCreatedDateTime(OffsetDateTime.now());
@@ -218,8 +232,7 @@ class TransportDocumentControllerTest {
   @Test
   @DisplayName("Get transport document with valid reference should return transport document.")
   void testGetTransportDocumentByReference() {
-    when(transportDocumentService.findByTransportDocumentReference(eq("TRDocReference1")))
-        .thenReturn(Mono.just(transportDocumentTO));
+    when(transportDocumentService.findByTransportDocumentReference(eq("TRDocReference1"))).thenReturn(Mono.just(transportDocumentTO));
 
     webTestClient
         .get()

@@ -12,6 +12,7 @@ public interface TransportDocumentMapper {
 
   @Mapping(source = "issueDate", target = "issueDate")
   @Mapping(source = "shippedOnBoardDate", target = "shippedOnboardDate")
+  @Mapping(source = "issuingParty", target = "issuingParty", ignore = true)
   TransportDocumentSummary transportDocumentToTransportDocumentSummary(
       TransportDocument transportDocument);
 
