@@ -12,7 +12,6 @@ import org.dcsa.ebl.model.transferobjects.TransportDocumentRefStatusTO;
 import org.dcsa.ebl.model.transferobjects.TransportDocumentTO;
 import org.dcsa.ebl.service.TransportDocumentService;
 import org.dcsa.skernel.model.Address;
-import org.dcsa.skernel.model.PartyContactDetails;
 import org.dcsa.skernel.model.enums.CarrierCodeListProvider;
 import org.dcsa.skernel.model.transferobjects.LocationTO;
 import org.dcsa.skernel.model.transferobjects.PartyContactDetailsTO;
@@ -143,6 +142,8 @@ class TransportDocumentControllerTest {
     transportTO.setDischargeLocation(locationTO);
     transportTO.setPlannedDepartureDate(OffsetDateTime.now());
     transportTO.setPlannedArrivalDate(OffsetDateTime.now());
+    transportTO.setVesselName("vessel name");
+    transportTO.setExportVoyageNumber("export voyage number");
 
     CommodityTO commodityTO = new CommodityTO();
     commodityTO.setCargoGrossWeight(10.0);
@@ -170,7 +171,7 @@ class TransportDocumentControllerTest {
     approveShipmentTO.setBooking(bookingTO);
 
     ShippingInstructionTO shippingInstructionTO = new ShippingInstructionTO();
-    shippingInstructionTO.setIsShippedOnboardType(true);
+    shippingInstructionTO.setIsShippedOnBoardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
@@ -183,7 +184,7 @@ class TransportDocumentControllerTest {
     shippingInstructionTO.setShippingInstructionCreatedDateTime(OffsetDateTime.now());
 
     ShippingInstructionTO approveShippingInstructionTO = new ShippingInstructionTO();
-    approveShippingInstructionTO.setIsShippedOnboardType(true);
+    approveShippingInstructionTO.setIsShippedOnBoardType(true);
     approveShippingInstructionTO.setIsElectronic(true);
     approveShippingInstructionTO.setIsToOrder(true);
     approveShippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());

@@ -12,7 +12,6 @@
       "shipmentEventTypeCode"
     ],
     "description": "The Event entity is described as a generalization of all the specific event categories. An event always takes place in relation to a shipment and can additionally be linked to a transport or an equipment\n",
-    "additionalProperties": false,
     "properties": {
       "eventID": {
         "type": "string",
@@ -128,7 +127,7 @@
           "properties": {
             "referenceType": {
               "type": "string",
-              "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder’s Reference)\n- SI (Shipper’s Reference)\n- PO (Purchase Order Reference)\n- CR (Customer’s Reference)\n- AAO (Consignee’s Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
+              "description": "The reference type codes defined by DCSA.\n- FF (Freight Forwarder's Reference)\n- SI (Shipper's Reference)\n- PO (Purchase Order Reference)\n- CR (Customer's Reference)\n- AAO (Consignee's Reference)\n- ECR (Empty container release reference)\n- CSI (Customer shipment ID)\n- BPR (Booking party reference number)\n- BID (Booking Request ID)\n\nMore details can be found on <a href=\"https://github.com/dcsaorg/DCSA-Information-Model/blob/master/datamodel/referencedata.d/referencetypes.csv\">GitHub</a>. Be aware that the list is a subset of the possible values.\n",
               "enum": [
                 "FF",
                 "SI",
@@ -150,5 +149,6 @@
         }
       }
     }
-  }
+  },
+  "$schema": "http://json-schema.org/draft-04/schema#"
 }

@@ -100,37 +100,37 @@
               "street": {
                 "maxLength": 100,
                 "type": "string",
-                "description": "The name of the street of the partyÔÇÖs address."
+                "description": "The name of the street of the party's address."
               },
               "streetNumber": {
                 "maxLength": 50,
                 "type": "string",
-                "description": "The number of the street of the partyÔÇÖs address."
+                "description": "The number of the street of the party's address."
               },
               "floor": {
                 "maxLength": 50,
                 "type": "string",
-                "description": "The floor of the partyÔÇÖs street number."
+                "description": "The floor of the party's street number."
               },
               "postCode": {
-                "maxLength": 10,
+                "maxLength": 50,
                 "type": "string",
-                "description": "The post code of the partyÔÇÖs address."
+                "description": "The post code of the party's address."
               },
               "city": {
                 "maxLength": 65,
                 "type": "string",
-                "description": "The city name of the partyÔÇÖs address."
+                "description": "The city name of the party's address."
               },
               "stateRegion": {
                 "maxLength": 65,
                 "type": "string",
-                "description": "The state/region of the partyÔÇÖs address."
+                "description": "The state/region of the party's address."
               },
               "country": {
                 "maxLength": 75,
                 "type": "string",
-                "description": "The country of the partyÔÇÖs address."
+                "description": "The country of the party's address."
               }
             }
           },
@@ -211,18 +211,6 @@
             }
           }
         }
-      },
-      "declaredValueCurrency": {
-        "maxLength": 3,
-        "type": "string",
-        "description": "The currency used for the declared value, using the 3-character code defined by ISO 4217."
-      },
-      "declaredValue": {
-        "type": "number",
-        "description": "The value of the cargo that the shipper declares to avoid the carrier&apos;s limitation of liability and \"Ad Valorem\" freight, i.e. freight which is calculated based on the value of the goods declared by the shipper.",
-        "format": "float",
-        "minimum": -3.402823669209385e+38,
-        "maximum": 3.402823669209385e+38
       },
       "numberOfRiderPages": {
         "type": "integer",

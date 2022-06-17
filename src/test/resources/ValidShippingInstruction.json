@@ -1,7 +1,7 @@
 {
   "amendToTransportDocument": "string",
   "transportDocumentTypeCode": "SWB",
-  "isShippedOnboardType": true,
+  "isShippedOnBoardType": true,
   "numberOfCopies": 2,
   "numberOfOriginals": 4,
   "isElectronic": true,

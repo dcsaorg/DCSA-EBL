@@ -156,6 +156,8 @@ class TransportDocumentServiceImplTest {
     transportDocument.setDeclaredValueCurrency("DKK");
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
     transportDocument.setPlaceOfIssue("1");
+    transportDocument.setVesselName("vessel name");
+    transportDocument.setExportVoyageNumber("export voyage number");
 
     address = new Address();
     address.setCity("Amsterdam");
@@ -228,7 +230,7 @@ class TransportDocumentServiceImplTest {
     shipmentTO.setBooking(bookingTO);
 
     shippingInstructionTO = new ShippingInstructionTO();
-    shippingInstructionTO.setIsShippedOnboardType(true);
+    shippingInstructionTO.setIsShippedOnBoardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());
