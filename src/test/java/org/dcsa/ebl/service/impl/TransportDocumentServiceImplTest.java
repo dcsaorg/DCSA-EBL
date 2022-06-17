@@ -152,12 +152,8 @@ class TransportDocumentServiceImplTest {
     transportDocument.setIssueDate(LocalDate.now());
     transportDocument.setTransportDocumentCreatedDateTime(now);
     transportDocument.setTransportDocumentUpdatedDateTime(now);
-    transportDocument.setDeclaredValue(12f);
-    transportDocument.setDeclaredValueCurrency("DKK");
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
     transportDocument.setPlaceOfIssue("1");
-    transportDocument.setVesselName("vessel name");
-    transportDocument.setExportVoyageNumber("export voyage number");
 
     address = new Address();
     address.setCity("Amsterdam");
@@ -247,6 +243,10 @@ class TransportDocumentServiceImplTest {
     transportDocumentTO.setCarrierClauses(List.of(carrierClauseTO));
     transportDocumentTO.setShippingInstruction(shippingInstructionTO);
     transportDocumentTO.setTransportDocumentReference("TransportDocumentReference1");
+    transportDocumentTO.setDeclaredValue(12f);
+    transportDocumentTO.setDeclaredValueCurrency("DKK");
+    transportDocumentTO.setVesselName("vessel name");
+    transportDocumentTO.setExportVoyageNumber("export voyage number");
 
     LocationTO dischargeLocation = new LocationTO();
     dischargeLocation.setFacilityCode("123456");
@@ -308,8 +308,6 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getTransportDocumentUpdatedDateTime());
                 assertNotNull(result.getShippingInstructionReference());
                 assertNotNull(result.getReceivedForShipmentDate());
-                assertNotNull(result.getDeclaredValue());
-                assertNotNull(result.getDeclaredValueCurrency());
                 assertNotNull(result.getCarrierCodeListProvider());
                 assertFalse(result.getCarrierBookingReferences().isEmpty());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());
@@ -336,8 +334,6 @@ class TransportDocumentServiceImplTest {
                 assertNotNull(result.getTransportDocumentUpdatedDateTime());
                 assertNotNull(result.getShippingInstructionReference());
                 assertNotNull(result.getReceivedForShipmentDate());
-                assertNotNull(result.getDeclaredValue());
-                assertNotNull(result.getDeclaredValueCurrency());
                 assertNotNull(result.getCarrierCodeListProvider());
                 assertTrue(result.getCarrierBookingReferences().isEmpty());
                 assertEquals(shippingInstruction.getDocumentStatus(), result.getDocumentStatus());

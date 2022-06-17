@@ -1123,7 +1123,8 @@
                   "description": "The UN Location code specifying where the place is located."
                 }
               }
-            }
+            },
+            {"type":  "object"}
           ],
           "description": "General purpose object to capture where the original Transport Document (`Bill of Lading`) will be issued. The location can be specified in **any** of the following ways: `UN Location Code` and/or an `Address`.\n"
         },

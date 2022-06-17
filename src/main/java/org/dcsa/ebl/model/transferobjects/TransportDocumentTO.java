@@ -53,7 +53,7 @@ public class TransportDocumentTO {
   @Size(max = 3, message = "Declared Value Currency has a max size of 3.")
   private String declaredValueCurrency;
 
-  private Double declaredValue;
+  private Float declaredValue;
 
   private Integer numberOfRiderPages;
 
