@@ -143,7 +143,7 @@ class ShippingInstructionControllerTest {
     shippingInstructionTO.setUtilizedTransportEquipments(List.of(utilizedTransportEquipmentTO));
     shippingInstructionTO.setDocumentParties(List.of(documentPartyTO));
     shippingInstructionTO.setReferences(List.of(referenceTO));
-    shippingInstructionTO.setIsShippedOnboardType(true);
+    shippingInstructionTO.setIsShippedOnBoardType(true);
     shippingInstructionTO.setIsElectronic(true);
     shippingInstructionTO.setIsToOrder(true);
     shippingInstructionTO.setShippingInstructionReference(UUID.randomUUID().toString());

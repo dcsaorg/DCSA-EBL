@@ -44,10 +44,16 @@ public class TransportDocumentTO {
 
   private CarrierCodeListProvider carrierCodeListProvider;
 
+  @Size(max = 35)
+  private String vesselName;
+
+  @Size(max = 50)
+  private String exportVoyageNumber;
+
   @Size(max = 3, message = "Declared Value Currency has a max size of 3.")
   private String declaredValueCurrency;
 
-  private Double declaredValue;
+  private Float declaredValue;
 
   private Integer numberOfRiderPages;
 

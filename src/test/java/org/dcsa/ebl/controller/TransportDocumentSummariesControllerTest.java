@@ -83,8 +83,6 @@ class TransportDocumentSummariesControllerTest {
     transportDocumentSummary.setIssueDate(LocalDate.now());
     transportDocumentSummary.setShippedOnboardDate(LocalDate.now());
     transportDocumentSummary.setReceivedForShipmentDate(LocalDate.now());
-    transportDocumentSummary.setDeclaredValueCurrency("EUR");
-    transportDocumentSummary.setDeclaredValue(100F);
     transportDocumentSummary.setNumberOfRiderPages(10);
     transportDocumentSummary.setCarrierBookingReferences(List.of("CarrierBookingReference"));
     transportDocumentSummary.setTransportDocumentReference("TDref");
@@ -187,10 +185,6 @@ class TransportDocumentSummariesControllerTest {
                   .jsonPath("$.[0].carrierCode")
                   .hasJsonPath()
                   .jsonPath("$.[0].carrierCodeListProvider")
-                  .hasJsonPath()
-                  .jsonPath("$.[0].declaredValueCurrency")
-                  .hasJsonPath()
-                  .jsonPath("$.[0].declaredValue")
                   .hasJsonPath()
                   .jsonPath("$.[0].numberOfRiderPages")
                   .hasJsonPath()

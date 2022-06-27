@@ -4,7 +4,7 @@
     "required": [
       "documentStatus",
       "isElectronic",
-      "isShippedOnboardType",
+      "isShippedOnBoardType",
       "isToOrder",
       "shippingInstructionCreatedDateTime",
       "shippingInstructionReference",
@@ -12,7 +12,6 @@
     ],
     "type": "object",
     "description": "A 'shallow' representation of the Shipping Instruction. This version of the Shipping Instruction does not contain nested objects. For a 'rich' version of the Shipping Instruction please use the `GET` endPoint.\n",
-    "additionalProperties": false,
     "properties": {
       "shippingInstructionReference": {
         "maxLength": 100,
@@ -56,17 +55,23 @@
           "SWB"
         ]
       },
-      "isShippedOnboardType": {
+      "isShippedOnBoardType": {
         "type": "boolean",
-        "description": "Specifies whether the Transport document is a received for shipment, or shipped onboard."
+        "description": "Specifies whether the Transport document is a received for shipment, or shipped on board."
       },
       "numberOfCopies": {
         "type": "integer",
-        "description": "The requested number of copies of the Transport document to be issued by the carrier. Only applicable for physical documents"
+        "description": "The requested number of copies of the Transport document to be issued by the carrier. Only applicable for physical documents",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
       "numberOfOriginals": {
         "type": "integer",
-        "description": "Number of original copies of the negotiable bill of lading that has been requested by the customer.\n"
+        "description": "Number of original copies of the negotiable bill of lading that has been requested by the customer.\n",
+        "format": "int32",
+        "minimum": -2147483648,
+        "maximum": 2147483647
       },
       "isElectronic": {
         "type": "boolean",

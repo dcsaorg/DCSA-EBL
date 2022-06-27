@@ -1,13 +1,12 @@
 {
-  "type": "object",
-  "description": "The `shippingInstructionReference` along with the `documentStatus`, created and updated timestamps is returned\n",
   "required": [
     "documentStatus",
     "shippingInstructionCreatedDateTime",
     "shippingInstructionReference",
     "shippingInstructionUpdatedDateTime"
   ],
-  "additionalProperties": false,
+  "type": "object",
+  "description": "The `shippingInstructionReference` along with the `documentStatus`, created and updated timestamps is returned\n",
   "properties": {
     "shippingInstructionReference": {
       "maxLength": 100,

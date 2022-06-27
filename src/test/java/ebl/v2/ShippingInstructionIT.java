@@ -68,7 +68,7 @@ class ShippingInstructionIT {
         .body("errors[0].reason", equalTo("invalidInput"))
         .body("errors[0].message", containsString("isToOrder"))
         .body("errors[0].message", containsString("utilizedTransportEquipments"))
-        .body("errors[0].message", containsString("isShippedOnboardType"))
+        .body("errors[0].message", containsString("isShippedOnBoardType"))
         .body("statusCode", equalTo(400))
         .body("statusCodeText", equalTo("Bad Request"))
         .extract()

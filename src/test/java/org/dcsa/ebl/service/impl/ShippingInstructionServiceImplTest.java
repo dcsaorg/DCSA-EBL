@@ -174,7 +174,7 @@ class ShippingInstructionServiceImplTest {
 
     shippingInstruction = new ShippingInstruction();
     shippingInstruction.setId(UUID.randomUUID());
-    shippingInstruction.setIsShippedOnboardType(true);
+    shippingInstruction.setIsShippedOnBoardType(true);
     shippingInstruction.setIsElectronic(true);
     shippingInstruction.setIsToOrder(true);
     shippingInstruction.setShippingInstructionReference(UUID.randomUUID().toString());
