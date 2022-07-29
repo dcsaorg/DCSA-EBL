@@ -153,7 +153,7 @@ class TransportDocumentServiceImplTest {
     transportDocument.setTransportDocumentCreatedDateTime(now);
     transportDocument.setTransportDocumentUpdatedDateTime(now);
     transportDocument.setReceivedForShipmentDate(LocalDate.now());
-    transportDocument.setPlaceOfIssue("1");
+    transportDocument.setPlaceOfIssue(UUID.fromString("73d03b6e-4350-411d-8cde-fc7b48895c46"));
 
     address = new Address();
     address.setCity("Amsterdam");
@@ -193,7 +193,7 @@ class TransportDocumentServiceImplTest {
     locationTO = new LocationTO();
     locationTO.setLocationName("DCSA Headquarters");
     locationTO.setAddress(address);
-    locationTO.setId("1");
+    locationTO.setId(UUID.fromString("73d03b6e-4350-411d-8cde-fc7b48895c46"));
 
     chargeTO = new ChargeTO();
     chargeTO.setChargeType("chargeTypeCode");
@@ -251,14 +251,14 @@ class TransportDocumentServiceImplTest {
     LocationTO dischargeLocation = new LocationTO();
     dischargeLocation.setFacilityCode("123456");
     dischargeLocation.setFacilityCodeListProvider(FacilityCodeListProvider.SMDG);
-    dischargeLocation.setId("7bf6f428-58f0-4347-9ce8-d6be2f5d5745");
+    dischargeLocation.setId(UUID.fromString("7bf6f428-58f0-4347-9ce8-d6be2f5d5745"));
     dischargeLocation.setAddressID(UUID.fromString("8fecc6d0-2a78-401d-948a-b9753f6b53d5"));
     dischargeLocation.setFacilityID(UUID.fromString("74dcf8e6-4ed4-439e-a935-ec183df73013"));
 
     LocationTO loadLocation = new LocationTO();
     loadLocation.setFacilityCode("654321");
     loadLocation.setFacilityCodeListProvider(FacilityCodeListProvider.SMDG);
-    loadLocation.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
+    loadLocation.setId(UUID.fromString("c703277f-84ca-4816-9ccf-fad8e202d3b6"));
 
     transportTO = new TransportTO();
     transportTO.setTransportPlanStageSequenceNumber(1);
@@ -280,7 +280,7 @@ class TransportDocumentServiceImplTest {
     partyContactDetailsTO.setName("Maersk Incorporated");
 
     partyTO = new PartyTO();
-    partyTO.setId(UUID.randomUUID().toString());
+    partyTO.setId(UUID.randomUUID());
     partyTO.setPartyContactDetails(List.of(partyContactDetailsTO));
     partyTO.setPartyName("Maersk");
   }

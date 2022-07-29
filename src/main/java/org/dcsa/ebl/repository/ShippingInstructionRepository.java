@@ -22,7 +22,7 @@ public interface ShippingInstructionRepository
 
   @Modifying
   @Query("UPDATE shipping_instruction SET place_of_issue = :placeOfIssue where id = :id")
-  Mono<Boolean> setPlaceOfIssueFor(String placeOfIssue, UUID id);
+  Mono<Boolean> setPlaceOfIssueFor(UUID placeOfIssue, UUID id);
 
   // TODO DDT-994
   @Query(

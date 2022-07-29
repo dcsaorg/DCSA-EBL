@@ -124,7 +124,7 @@ class ShippingInstructionServiceImplTest {
     carrier.setSmdgCode("MSK");
 
     location = new Location();
-    location.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
+    location.setId(UUID.fromString("c703277f-84ca-4816-9ccf-fad8e202d3b6"));
     location.setLocationName("Hamburg");
     location.setAddressID(UUID.fromString("8fecc6d0-2a78-401d-948a-b9753f6b53d5"));
     location.setFacilityID(UUID.fromString("74dcf8e6-4ed4-439e-a935-ec183df73013"));
@@ -142,7 +142,7 @@ class ShippingInstructionServiceImplTest {
     reference.setReferenceType(ReferenceTypeCode.FF);
 
     party = new Party();
-    party.setId("a680fe72-503e-40b3-9cfc-dcadafdecf15");
+    party.setId(UUID.fromString("a680fe72-503e-40b3-9cfc-dcadafdecf15"));
     party.setPartyName("DCSA");
     party.setAddressID(address.getId());
 
