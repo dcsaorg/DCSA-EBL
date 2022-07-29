@@ -64,7 +64,7 @@ class ShippingInstructionControllerTest {
   void init() {
     // populate DTO with relevant objects to verify json schema returned
     LocationTO locationTO = new LocationTO();
-    locationTO.setId("c703277f-84ca-4816-9ccf-fad8e202d3b6");
+    locationTO.setId(UUID.fromString("c703277f-84ca-4816-9ccf-fad8e202d3b6"));
     locationTO.setLocationName("Hamburg");
     locationTO.setAddressID(UUID.fromString("8fecc6d0-2a78-401d-948a-b9753f6b53d5"));
     locationTO.setFacilityID(UUID.fromString("74dcf8e6-4ed4-439e-a935-ec183df73013"));

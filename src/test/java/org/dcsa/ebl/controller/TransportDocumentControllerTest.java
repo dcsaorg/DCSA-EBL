@@ -92,7 +92,7 @@ class TransportDocumentControllerTest {
     LocationTO locationTO = new LocationTO();
     locationTO.setLocationName("DCSA Headquarters");
     locationTO.setAddress(address);
-    locationTO.setId("1");
+    locationTO.setId(UUID.fromString("16637da1-9811-40db-98bc-50c1f080eb6a"));
 
     ChargeTO chargeTO = new ChargeTO();
     chargeTO.setChargeType("chargeTypeCode");
@@ -200,7 +200,7 @@ class TransportDocumentControllerTest {
     partyContactDetailsTO.setName("Maersk Incorporated");
 
     PartyTO partyTO = new PartyTO();
-    partyTO.setId(UUID.randomUUID().toString());
+    partyTO.setId(UUID.randomUUID());
     partyTO.setPartyName("Maersk");
     partyTO.setPartyContactDetails(List.of(partyContactDetailsTO));
 
